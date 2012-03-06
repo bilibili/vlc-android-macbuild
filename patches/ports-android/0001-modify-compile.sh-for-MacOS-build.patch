@@ -1,14 +1,14 @@
-From 81ee504968bf47fccb3885b80db48ade1347f101 Mon Sep 17 00:00:00 2001
+From acc7b95b0c6612c2e21dd26e13b5695e9cfa44a9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
-Subject: [PATCH] modify compile.sh for MacOS build
+Subject: [PATCH 1/2] modify compile.sh for MacOS build
 
 ---
- compile.sh |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ compile.sh |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index 28c5624..b17451c 100755
+index 28c5624..e9ed879 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -35,7 +35,7 @@ fi
@@ -30,6 +30,19 @@ index 28c5624..b17451c 100755
  echo "Building the contribs"
  mkdir contrib/android; cd contrib/android
  ../bootstrap --host=arm-linux-androideabi --disable-disc --disable-sout --enable-small \
+@@ -76,6 +79,12 @@ mkdir contrib/android; cd contrib/android
+ 
+ # TODO: mpeg2, dts, theora
+ 
++if  test -d "../../../../tarballs" ; then
++    echo "fetch local tarballs"
++    mkdir -p ../tarballs
++    cp -n ../../../../tarballs/* ../tarballs/
++fi
++
+ make fetch
+ make
+ 
 -- 
 1.7.7.4
 

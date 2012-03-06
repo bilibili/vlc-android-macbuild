@@ -1,0 +1,51 @@
+From a0a743050d85c25849b3723339284a6676fa8f1a Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Wed, 7 Mar 2012 03:14:44 +0800
+Subject: [PATCH 2/2] fix build for patch-1003 and patch-1004 on ports-android
+
+---
+ compile.sh                 |    4 +---
+ vlc-android/jni/Android.mk |    3 +++
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/compile.sh b/compile.sh
+index e9ed879..ad3774f 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -62,9 +62,7 @@ mkdir contrib/android; cd contrib/android
+     --disable-sdl \
+     --disable-SDL_image \
+     --disable-fontconfig \
+-    --disable-ass \
+-    --disable-freetyp2 \
+-    --disable-fribidi \
++    --enable-iconv \
+     --disable-zvbi \
+     --disable-kate \
+     --disable-caca \
+diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
+index 9fe7b28..7eeafc0 100644
+--- a/vlc-android/jni/Android.mk
++++ b/vlc-android/jni/Android.mk
+@@ -9,8 +9,10 @@ LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
+ 
+ ifeq ($(NO_NEON),)
+ ARCH=armeabi-v7a
++LOCAL_CFLAGS := -funsafe-math-optimizations
+ else
+ ARCH=armeabi
++LOCAL_CFLAGS := -msoft-float -mfloat-abi=soft -mtune=arm1136j-s
+ endif
+ 
+ ifeq ($(NO_NDK_V7),1)
+@@ -32,6 +34,7 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+ 	-lliveMedia -lUsageEnvironment -lBasicUsageEnvironment -lgroupsock \
+ 	-lspeex -lspeexdsp \
+ 	-lxml2 -lpng \
++        -lass -lfreetype -lfribidi -liconv \
+ 	$(CPP_STATIC)
+ 
+ include $(BUILD_SHARED_LIBRARY)
+-- 
+1.7.7.4
+
