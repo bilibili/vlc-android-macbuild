@@ -1,0 +1,14 @@
+vlc-android-macbuild
+-------
+
+Most files in vlc-android-macbuild are under the GUN lesser General Public License version 2.1 or later (LGPL v2.1+). Read the file COPYING.LGPLv2.1 for details.
+
+VLC
+-------
+Most files of VLC are licensed under the GPL v2+ and LGPL v2.1+. Read files below for licensing details.
+
+  vlc-ports-android/COPYING
+  vlc-ports-android/vlc/COPYING
+  vlc-ports-android/vlc/COPYING.LIB
+
+There are many libraries used in VLC. Read their source code or visit http://videolan.org for licensing details.

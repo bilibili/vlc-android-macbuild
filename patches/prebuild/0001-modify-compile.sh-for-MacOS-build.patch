@@ -1,0 +1,35 @@
+From 81ee504968bf47fccb3885b80db48ade1347f101 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 5 Mar 2012 17:18:45 +0800
+Subject: [PATCH] modify compile.sh for MacOS build
+
+---
+ compile.sh |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/compile.sh b/compile.sh
+index 28c5624..b17451c 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -35,7 +35,7 @@ fi
+ 
+ # Add the NDK toolchain to the PATH, needed both for contribs and for building
+ # stub libraries
+-export PATH=${ANDROID_NDK}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin:${PATH}
++export PATH=${ANDROID_NDK}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin:${PATH}
+ 
+ # 1/ libvlc, libvlccore and its plugins
+ 
+@@ -53,6 +53,9 @@ echo "Applying the patches"
+ cd vlc
+ git am ../patches/*.patch || git am --abort
+ 
++echo "Applying the patches for MacOS"
++git am ../../patches/contrib/*.patch || git am --abort
++
+ echo "Building the contribs"
+ mkdir contrib/android; cd contrib/android
+ ../bootstrap --host=arm-linux-androideabi --disable-disc --disable-sout --enable-small \
+-- 
+1.7.7.4
+
