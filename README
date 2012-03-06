@@ -1,0 +1,10 @@
+# HOWTO
+ 1. Install necessary tools.
+    Read this article http://www.doitscared.com/?p=649
+
+ 2. Fetch build scripts for mac
+    git clone git@github.com:bbcallen/vlc-android-build.git vlc-android-build
+
+ 3. Start build
+    cd vlc-android-build
+    sh pull_and_build.sh
