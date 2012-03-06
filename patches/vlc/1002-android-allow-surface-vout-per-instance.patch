@@ -1,0 +1,168 @@
+From f9f55b669ab4f36055467de9048048f818e4b5b1 Mon Sep 17 00:00:00 2001
+From: tewilove <tewilove@gmail.com>
+Date: Fri, 3 Feb 2012 16:23:41 +0900
+Subject: [PATCH] android: allow surface vout per instance
+
+---
+ modules/video_output/androidsurface.c |   62 ++++++++++++++++++++++----------
+ 1 files changed, 42 insertions(+), 20 deletions(-)
+
+diff --git a/modules/video_output/androidsurface.c b/modules/video_output/androidsurface.c
+index af2cdc1..ba9e3c8 100644
+--- a/modules/video_output/androidsurface.c
++++ b/modules/video_output/androidsurface.c
+@@ -64,9 +64,9 @@ vlc_module_end()
+  * JNI prototypes
+  *****************************************************************************/
+ 
+-extern void *jni_LockAndGetAndroidSurface();
+-extern void  jni_UnlockAndroidSurface();
+-extern void  jni_SetAndroidSurfaceSize(int width, int height);
++typedef void *(*jni_LockAndGetAndroidSurface_t)(vlc_object_t *);
++typedef void (*jni_UnlockAndroidSurface_t)(vlc_object_t *);
++typedef void (*jni_SetAndroidSurfaceSize_t)(vlc_object_t *, int, int);
+ 
+ // _ZN7android7Surface4lockEPNS0_11SurfaceInfoEb
+ typedef void (*Surface_lock)(void *, void *, int);
+@@ -90,7 +90,11 @@ struct vout_display_sys_t {
+     Surface_lock s_lock;
+     Surface_lock2 s_lock2;
+     Surface_unlockAndPost s_unlockAndPost;
+-
++    void *p_jni;
++    jni_LockAndGetAndroidSurface_t jni_LockAndGetAndroidSurface;
++    jni_UnlockAndroidSurface_t jni_UnlockAndroidSurface;
++    jni_SetAndroidSurfaceSize_t jni_SetAndroidSurfaceSize;
++    vlc_object_t *p_vout;
+     picture_resource_t resource;
+ };
+ 
+@@ -115,7 +119,18 @@ struct picture_sys_t
+ static int  AndroidLockSurface(picture_t *);
+ static void AndroidUnlockSurface(picture_t *);
+ 
+-static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
++static inline void *LoadJNI(const char *psz_lib, vout_display_sys_t *sys) {
++    void *p_library = dlopen(psz_lib, RTLD_NOW);
++    if (p_library) {
++        sys->jni_LockAndGetAndroidSurface = (jni_LockAndGetAndroidSurface_t) dlsym(p_library, "JNI_LockAndGetAndroidSurface");
++        sys->jni_UnlockAndroidSurface = (jni_UnlockAndroidSurface_t) dlsym(p_library, "JNI_UnlockAndroidSurface");
++        sys->jni_SetAndroidSurfaceSize = (jni_SetAndroidSurfaceSize_t) dlsym(p_library, "JNI_SetAndroidSurfaceSize");
++        if (sys->jni_LockAndGetAndroidSurface && sys->jni_UnlockAndroidSurface && sys->jni_SetAndroidSurfaceSize)
++            return p_library;
++        dlclose(p_library);
++    }
++    return NULL;
++}
+ 
+ static inline void *LoadSurface(const char *psz_lib, vout_display_sys_t *sys) {
+     void *p_library = dlopen(psz_lib, RTLD_NOW);
+@@ -132,6 +147,10 @@ static inline void *LoadSurface(const char *psz_lib, vout_display_sys_t *sys) {
+     return NULL;
+ }
+ 
++static void *InitJNI(vout_display_sys_t *sys) {
++    return LoadJNI("libvlcjni.so", sys);
++}
++
+ static void *InitLibrary(vout_display_sys_t *sys) {
+     void *p_library;
+     if ((p_library = LoadSurface("libsurfaceflinger_client.so", sys)))
+@@ -145,29 +164,33 @@ static int Open(vlc_object_t *p_this) {
+     vout_display_t *vd = (vout_display_t *)p_this;
+     vout_display_sys_t *sys;
+     void *p_library;
+-
+-    /* */
+-    if (vlc_mutex_trylock(&single_instance) != 0) {
+-        msg_Err(vd, "Can't start more than one instance at a time");
+-        return VLC_EGENERIC;
+-    }
++    void *p_jni;
+ 
+     /* Allocate structure */
+     sys = (struct vout_display_sys_t*) calloc(1, sizeof(*sys));
+     if (!sys) {
+-        vlc_mutex_unlock(&single_instance);
+         return VLC_ENOMEM;
+     }
+ 
+     /* */
++    sys->p_jni = p_jni = InitJNI(sys);
++    if (!p_jni) {
++        free(sys);
++        msg_Err(vd, "Could not initialize libvlcjni.so!");
++        return VLC_EGENERIC;
++    }
++    /* */
+     sys->p_library = p_library = InitLibrary(sys);
+     if (!p_library) {
+         free(sys);
++        dlclose(p_jni);
+         msg_Err(vd, "Could not initialize libui.so/libgui.so/libsurfaceflinger_client.so!");
+-        vlc_mutex_unlock(&single_instance);
+         return VLC_EGENERIC;
+     }
+ 
++    /* */
++    sys->p_vout = vd->p_parent;
++
+     /* Setup chroma */
+     video_format_t fmt = vd->fmt;
+     fmt.i_chroma = VLC_CODEC_RGB32;
+@@ -224,7 +247,6 @@ enomem:
+     free(rsc->p_sys);
+     free(sys);
+     dlclose(p_library);
+-    vlc_mutex_unlock(&single_instance);
+     return VLC_ENOMEM;
+ }
+ 
+@@ -234,8 +256,8 @@ static void Close(vlc_object_t *p_this) {
+ 
+     picture_pool_Delete(sys->pool);
+     dlclose(sys->p_library);
++    dlclose(sys->p_jni);
+     free(sys);
+-    vlc_mutex_unlock(&single_instance);
+ }
+ 
+ static picture_pool_t *Pool(vout_display_t *vd, unsigned count) {
+@@ -254,11 +276,11 @@ static int  AndroidLockSurface(picture_t *picture) {
+     sw = picture->p[0].i_visible_pitch / picture->p[0].i_pixel_pitch;
+     sh = picture->p[0].i_visible_lines;
+ 
+-    picsys->surf = surf = jni_LockAndGetAndroidSurface();
++    picsys->surf = surf = sys->jni_LockAndGetAndroidSurface(sys->p_vout);
+     info = &(picsys->info);
+ 
+     if (unlikely(!surf)) {
+-        jni_UnlockAndroidSurface();
++        sys->jni_UnlockAndroidSurface(sys->p_vout);
+         return VLC_EGENERIC;
+     }
+ 
+@@ -270,9 +292,9 @@ static int  AndroidLockSurface(picture_t *picture) {
+     // input size doesn't match the surface size,
+     // request a resize
+     if (info->w != sw || info->h != sh) {
+-        jni_SetAndroidSurfaceSize(sw, sh);
++        sys->jni_SetAndroidSurfaceSize(sys->p_vout, sw, sh);
+         sys->s_unlockAndPost(surf);
+-        jni_UnlockAndroidSurface();
++        sys->jni_UnlockAndroidSurface(sys->p_vout);
+         return VLC_EGENERIC;
+     }
+ 
+@@ -289,7 +311,7 @@ static void AndroidUnlockSurface(picture_t *picture) {
+ 
+     if (likely(picsys->surf))
+         sys->s_unlockAndPost(picsys->surf);
+-    jni_UnlockAndroidSurface();
++    sys->jni_UnlockAndroidSurface(sys->p_vout);
+ }
+ 
+ static void Display(vout_display_t *vd, picture_t *picture, subpicture_t *subpicture) {
+-- 
+1.5.6.5
+

@@ -16,7 +16,7 @@ fi
 cd vlc-ports-android
 
 echo "Applying the patches for MacOS"
-git am ../patches/prebuild/*.patch || git am --abort
+git am ../patches/ports-android/*.patch || git am --abort
 
 
 

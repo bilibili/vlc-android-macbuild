@@ -3,6 +3,10 @@ vlc-android-macbuild
 
 Most files in vlc-android-macbuild are under the GUN lesser General Public License version 2.1 or later (LGPL v2.1+). Read the file COPYING.LGPLv2.1 for details.
 
+/patches/vlc/100*.patch
+-------
+These patches are supposed to be contributed by tewilove <tewilove@gmail.com> under the LGPL (may be v2.1+).
+
 VLC
 -------
 Most files of VLC are licensed under the GPL v2+ and LGPL v2.1+. Read files below for licensing details.

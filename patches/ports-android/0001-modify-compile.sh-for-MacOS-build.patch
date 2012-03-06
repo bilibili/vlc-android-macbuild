@@ -25,7 +25,7 @@ index 28c5624..b17451c 100755
  git am ../patches/*.patch || git am --abort
  
 +echo "Applying the patches for MacOS"
-+git am ../../patches/contrib/*.patch || git am --abort
++git am ../../patches/vlc/*.patch || git am --abort
 +
  echo "Building the contribs"
  mkdir contrib/android; cd contrib/android
