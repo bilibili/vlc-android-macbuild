@@ -1,4 +1,4 @@
-From acc7b95b0c6612c2e21dd26e13b5695e9cfa44a9 Mon Sep 17 00:00:00 2001
+From dacd0e2152fde35b5306f8be68e1c70113b8aa18 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH 1/2] modify compile.sh for MacOS build

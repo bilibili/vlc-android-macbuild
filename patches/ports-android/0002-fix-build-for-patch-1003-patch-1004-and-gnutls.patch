@@ -1,12 +1,12 @@
-From a317344ab4f6f4d948e69cf6750451c5433dce12 Mon Sep 17 00:00:00 2001
+From ada3323e0439f1ce00c5fb0ef3e8e0b41b5ebbd7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 7 Mar 2012 03:14:44 +0800
-Subject: [PATCH 2/2] fix build for patch-1003 and patch-1004 on ports-android
+Subject: [PATCH 2/2] fix build for patch-1003, patch-1004 and gnutls
 
 ---
  compile.sh                 |    4 +---
- vlc-android/jni/Android.mk |    1 +
- 2 files changed, 2 insertions(+), 3 deletions(-)
+ vlc-android/jni/Android.mk |    2 ++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
 index e9ed879..ad3774f 100755
@@ -24,13 +24,14 @@ index e9ed879..ad3774f 100755
      --disable-kate \
      --disable-caca \
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 9fe7b28..77ab654 100644
+index 9fe7b28..5823be4 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
-@@ -32,6 +32,7 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+@@ -32,6 +32,8 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
  	-lliveMedia -lUsageEnvironment -lBasicUsageEnvironment -lgroupsock \
  	-lspeex -lspeexdsp \
  	-lxml2 -lpng \
++	-lgnutls -lgcrypt -lgpg-error\
 +        -lass -lfreetype -lfribidi -liconv \
  	$(CPP_STATIC)
  
