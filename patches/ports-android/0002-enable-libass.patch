@@ -1,18 +1,18 @@
-From ada3323e0439f1ce00c5fb0ef3e8e0b41b5ebbd7 Mon Sep 17 00:00:00 2001
+From 507f09d8586576861b5ce5e5ceb0de8c9cb546b7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 7 Mar 2012 03:14:44 +0800
-Subject: [PATCH 2/2] fix build for patch-1003, patch-1004 and gnutls
+Subject: [PATCH 2/2] enable libass
 
 ---
- compile.sh                 |    4 +---
- vlc-android/jni/Android.mk |    2 ++
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ compile.sh                 |    6 +++---
+ vlc-android/jni/Android.mk |    1 +
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index e9ed879..ad3774f 100755
+index e9ed879..48b4b04 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -62,9 +62,7 @@ mkdir contrib/android; cd contrib/android
+@@ -62,9 +62,9 @@ mkdir contrib/android; cd contrib/android
      --disable-sdl \
      --disable-SDL_image \
      --disable-fontconfig \
@@ -20,19 +20,20 @@ index e9ed879..ad3774f 100755
 -    --disable-freetyp2 \
 -    --disable-fribidi \
 +    --enable-iconv \
++    --enable-gcrypt \
++    --enable-gnutls \
      --disable-zvbi \
      --disable-kate \
      --disable-caca \
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 9fe7b28..5823be4 100644
+index fcbf818..c1bdabc 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
-@@ -32,6 +32,8 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+@@ -32,6 +32,7 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
  	-lliveMedia -lUsageEnvironment -lBasicUsageEnvironment -lgroupsock \
  	-lspeex -lspeexdsp \
- 	-lxml2 -lpng \
-+	-lgnutls -lgcrypt -lgpg-error\
-+        -lass -lfreetype -lfribidi -liconv \
+ 	-lxml2 -lpng -lgnutls -lgcrypt -lgpg-error \
++	-liconv -lfreetype -lfribidi -lass \
  	$(CPP_STATIC)
  
  include $(BUILD_SHARED_LIBRARY)
