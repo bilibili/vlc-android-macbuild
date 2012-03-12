@@ -1,4 +1,4 @@
-From 507f09d8586576861b5ce5e5ceb0de8c9cb546b7 Mon Sep 17 00:00:00 2001
+From da14b9030241d5dfb2a67ba474462ecd10f63da2 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 7 Mar 2012 03:14:44 +0800
 Subject: [PATCH 2/2] enable libass
@@ -9,10 +9,10 @@ Subject: [PATCH 2/2] enable libass
  2 files changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index e9ed879..48b4b04 100755
+index 7c3d102..7cdfbc1 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -62,9 +62,9 @@ mkdir contrib/android; cd contrib/android
+@@ -64,9 +64,9 @@ mkdir contrib/android; cd contrib/android
      --disable-sdl \
      --disable-SDL_image \
      --disable-fontconfig \
@@ -26,7 +26,7 @@ index e9ed879..48b4b04 100755
      --disable-kate \
      --disable-caca \
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index fcbf818..c1bdabc 100644
+index a12908e..1a886dc 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -32,6 +32,7 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
