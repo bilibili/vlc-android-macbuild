@@ -1,7 +1,7 @@
-From da14b9030241d5dfb2a67ba474462ecd10f63da2 Mon Sep 17 00:00:00 2001
+From b15b003e7c658969343338d131c7380ac0cc0707 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 7 Mar 2012 03:14:44 +0800
-Subject: [PATCH 2/2] enable libass
+Subject: [PATCH 2/3] enable libass
 
 ---
  compile.sh                 |    6 +++---

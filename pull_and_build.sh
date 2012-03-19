@@ -1,3 +1,5 @@
+#! /bin/sh
+
 # fetch vlc-ports-android
 
 if [ ! -d "vlc-ports-android" ]; then

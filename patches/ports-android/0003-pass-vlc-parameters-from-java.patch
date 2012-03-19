@@ -1,12 +1,12 @@
-From ae9d2e98168deeb330b7634cdafc3b6adf726bb1 Mon Sep 17 00:00:00 2001
+From 9edbc7b33e9b3bf4a218a14a9f84cbbf2ba35b26 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 16 Mar 2012 15:26:55 +0800
-Subject: [PATCH] pass vlc parameters from java
+Subject: [PATCH 3/3] pass vlc parameters from java
 
 ---
  vlc-android/jni/libvlcjni.c                  |   58 ++++++++++++++++++++++++++
- vlc-android/src/org/videolan/vlc/LibVLC.java |   29 +++++++++----
- 2 files changed, 79 insertions(+), 8 deletions(-)
+ vlc-android/src/org/videolan/vlc/LibVLC.java |   27 +++++++++---
+ 2 files changed, 78 insertions(+), 7 deletions(-)
 
 diff --git a/vlc-android/jni/libvlcjni.c b/vlc-android/jni/libvlcjni.c
 index 1c99033..abbff24 100644
@@ -84,7 +84,7 @@ index 1c99033..abbff24 100644
  {
      /* Don't add any invalid options, otherwise it causes LibVLC to crash */
 diff --git a/vlc-android/src/org/videolan/vlc/LibVLC.java b/vlc-android/src/org/videolan/vlc/LibVLC.java
-index e3f7682..ff78075 100644
+index 01d59a5..50b95ad 100644
 --- a/vlc-android/src/org/videolan/vlc/LibVLC.java
 +++ b/vlc-android/src/org/videolan/vlc/LibVLC.java
 @@ -21,7 +21,6 @@
@@ -104,12 +104,7 @@ index e3f7682..ff78075 100644
  
      public native void detachSurface();
  
-@@ -81,19 +80,33 @@ public class LibVLC {
-      * @return
-      * @throws LibVlcException
-      */
--    public static LibVLC getInstance() throws LibVlcException {
-+    private static LibVLC getInstance() throws LibVlcException {
+@@ -85,15 +84,29 @@ public class LibVLC {
          if (sInstance == null) {
              /* First call */
              sInstance = new LibVLC();
@@ -121,7 +116,7 @@ index e3f7682..ff78075 100644
      }
  
 -    public static LibVLC getExistingInstance() {
-+    private static LibVLC getExistingInstance() {
++    static LibVLC getExistingInstance() {
          return sInstance;
      }
 +    
