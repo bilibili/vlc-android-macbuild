@@ -1,0 +1,31 @@
+From ed0b1e3fa430532b5b84cbdb168c6be969b7145a Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Wed, 21 Mar 2012 17:18:43 +0800
+Subject: [PATCH 1/5] build for armv6j
+
+---
+ compile.sh |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/compile.sh b/compile.sh
+index 92f54a8..b095aab 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -19,8 +19,13 @@ export NO_NDK_V7=0
+ 
+ EOF
+ 
++
++# patched for armv6j
++export NO_NEON=1
++
++
+ if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" ]; then
+-   echo "You must define ANDROID_NDK and ANDROID_SDK before starting."
++:   echo "You must define ANDROID_NDK and ANDROID_SDK before starting."
+    echo "They must point to your NDK and SDK directories."
+    exit 1
+ fi
+-- 
+1.7.9.4
+
