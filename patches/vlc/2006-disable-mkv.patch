@@ -1,0 +1,25 @@
+From bfb7f8dd1c055f6660ba346a503569bd07d738ea Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sat, 24 Mar 2012 17:13:08 +0800
+Subject: [PATCH] disable mkv
+
+---
+ extras/package/android/configure.sh |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/extras/package/android/configure.sh b/extras/package/android/configure.sh
+index 3af8fa7..14b9475 100755
+--- a/extras/package/android/configure.sh
++++ b/extras/package/android/configure.sh
+@@ -54,7 +54,7 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+                 --enable-android-surface \
+                 --enable-android-audiotrack \
+                 --enable-debug \
+-                --enable-mkv \
++                --disable-mkv \
+                 --disable-taglib \
+                 --disable-vlc --disable-shared \
+                 --disable-vlm --disable-sout \
+-- 
+1.7.9.4
+

@@ -1,0 +1,59 @@
+From 773149a277bf7744ca16dcd08eb5a93691517eb7 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 22 Mar 2012 18:45:25 +0800
+Subject: [PATCH 3/4] disable unused libav codec
+
+---
+ contrib/src/ffmpeg/rules.mak |   34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
+
+diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
+index 2097ff8..eeb1216 100644
+--- a/contrib/src/ffmpeg/rules.mak
++++ b/contrib/src/ffmpeg/rules.mak
+@@ -6,8 +6,42 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=HEAD;sf=tgz
+ FFMPEGCONF = \
+ 	--cc="$(CC)" \
+ 	--disable-doc \
++	--disable-network \
++	--disable-protocols \
+ 	--disable-decoder=libvpx \
+ 	--disable-decoder=bink \
++	--disable-decoders \
++	--enable-decoder=aac \
++	--enable-decoder=aac_latm \
++	--enable-decoder=aasc \
++	--enable-decoder=ac3 \
++	--enable-decoder=amrnb \
++	--enable-decoder=amrwb \
++	--enable-decoder=bmp \
++	--enable-decoder=flac \
++	--enable-decoder=flv \
++	--enable-decoder=gif \
++	--enable-decoder=h263 \
++	--enable-decoder=h263i \
++	--enable-decoder=h264 \
++	--enable-decoder=jpegls \
++	--enable-decoder=mjpeg \
++	--enable-decoder=mjpegb \
++	--enable-decoder=mp3 \
++	--enable-decoder=mp3adu \
++	--enable-decoder=mp3adufloat \
++	--enable-decoder=mp3float \
++	--enable-decoder=mp3on4 \
++	--enable-decoder=mp3on4float \
++	--enable-decoder=mpeg1video \
++	--enable-decoder=mpeg2video \
++	--enable-decoder=mpeg4 \
++	--enable-decoder=mpeg4v1 \
++	--enable-decoder=mpeg4v2 \
++	--enable-decoder=mpeg4v3 \
++	--enable-decoder=png \
++	--enable-decoder=vorbis \
++	--enable-decoder=vp8 \
+ 	--enable-libgsm \
+ 	--enable-libopenjpeg \
+ 	--disable-debug \
+-- 
+1.7.9.4
+

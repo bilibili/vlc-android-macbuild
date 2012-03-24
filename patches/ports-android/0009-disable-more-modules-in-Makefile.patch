@@ -1,0 +1,25 @@
+From 679ae50f1b52b3615d0527b18c86a47acf8f039b Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 26 Mar 2012 01:17:47 +0800
+Subject: [PATCH 9/9] disable more modules in Makefile
+
+---
+ Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 572ac12..03d6634 100644
+--- a/Makefile
++++ b/Makefile
+@@ -35,7 +35,7 @@ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)
+ 	@echo
+ 	$(VERBOSE)cd $(SRC) && ant $(ANT_OPTS) debug
+ 
+-VLC_MODULES=`find $(VLC_BUILD_DIR)/modules -name 'lib*_plugin.a'|grep -v -E "stats|access_bd|oldrc|real|hotkeys|gestures|sap|dynamicoverlay|rss|logo|libball|bargraph|clone|access_shm|mosaic|logo|imem|osdmenu|puzzle|mediadirs|t140|ripple|motion|sharpen|grain|posterize|mirror|wall|scene|blendbench|psychedelic|alphamask|netsync|audioscrobbler|imem|motiondetect|export|smf|podcast|bluescreen|erase|record|speex_resampler|remoteosd|magnify|gradient|spdif|dash|xml|flac|ogg|rar|access_upd|vdr|sdp|stream_filter_rar|access_mms|rtp|zip|compressor|karaoke|aout_file|dirac|tta|avi|playlist|folder|osd_parser|decomp|subtitle|vobsub|voc|asf|wave|visual|marq|subsdelay|aiff" | tr \\\\n \ `
++VLC_MODULES=`find $(VLC_BUILD_DIR)/modules -name 'lib*_plugin.a'|grep -v -E "stats|access_bd|oldrc|real|hotkeys|gestures|sap|dynamicoverlay|rss|logo|libball|bargraph|clone|access_shm|mosaic|logo|imem|osdmenu|puzzle|mediadirs|t140|ripple|motion|sharpen|grain|posterize|mirror|wall|scene|blendbench|psychedelic|alphamask|netsync|audioscrobbler|imem|motiondetect|export|smf|podcast|bluescreen|erase|record|speex_resampler|remoteosd|magnify|gradient|spdif|libstream_filter_dash_|libxml_|libflac_|libflacsys_|libogg_|libaccess_rar_|libaccess_udp_|libaccess_vdr_|libsdp_|libstream_filter_rar_|libaccess_mms_|librtp_|libzip_|libcompressor_|libkaraoke_|libaout_file_|libdirac_|libtta_|libavi_|libplaylist_|libfolder_|libosd_parser_|libdecomp_|libsubtitle_|libvobsub_|libvoc_|libasf_|libwave_|libvisual_|libmarq_|libsubsde_|libay_|libaiff_|libcvdsub_|libsvcdsub_|libdvdsub_|libdvbsub_|libdts|libsubsdelay_|libaccess_attachment_|libwav_|libspeex_|libpacketizer_dirac|libpacketizer_flac" | tr \\\\n \ `
+ 
+ $(LIBVLCJNI_H):
+ 	$(VERBOSE)if [ -z "$(VLC_BUILD_DIR)" ]; then echo "VLC_BUILD_DIR not defined" ; exit 1; fi
+-- 
+1.7.9.4
+

@@ -1,0 +1,34 @@
+From 29005954a02e1437fbf1b450524f3ea1c93fa22f Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Fri, 23 Mar 2012 19:31:59 +0800
+Subject: [PATCH] disable taglib
+
+---
+ extras/package/android/configure.sh |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/extras/package/android/configure.sh b/extras/package/android/configure.sh
+index ecc784d..6b720de 100755
+--- a/extras/package/android/configure.sh
++++ b/extras/package/android/configure.sh
+@@ -50,7 +50,7 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+                 --enable-android-audiotrack \
+                 --enable-debug \
+                 --enable-mkv \
+-                --enable-taglib \
++                --disable-taglib \
+                 --disable-vlc --disable-shared \
+                 --disable-vlm --disable-sout \
+                 --disable-dbus \
+@@ -85,7 +85,7 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+                 --disable-qt4 \
+                 --disable-skins2 \
+                 --disable-mtp \
+-                --enable-taglib \
++                --disable-taglib \
+                 --disable-notify \
+                 --disable-freetype \
+                 --disable-libass \
+-- 
+1.7.9.4
+
