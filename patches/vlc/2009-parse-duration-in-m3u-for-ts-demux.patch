@@ -1,0 +1,109 @@
+From 68097510e7c8199c0edebabe33e133590318fb90 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 27 Mar 2012 22:51:57 +0800
+Subject: [PATCH] parse duration in m3u for ts demux
+
+---
+ modules/demux/ts.c               |   12 ++++++++++++
+ modules/stream_filter/httplive.c |   19 +++++++++++++++++++
+ 2 files changed, 31 insertions(+)
+
+diff --git a/modules/demux/ts.c b/modules/demux/ts.c
+index 022df6a..058c888 100644
+--- a/modules/demux/ts.c
++++ b/modules/demux/ts.c
+@@ -328,6 +328,9 @@ struct demux_sys_t
+ 
+     /* */
+     bool        b_start_record;
++
++    /* */
++    mtime_t     i_httplive_total_duration;  /* total duration parsed from m3u */
+ };
+ 
+ static int Demux    ( demux_t *p_demux );
+@@ -716,6 +719,10 @@ static int Open( vlc_object_t *p_this )
+             break;
+     }
+ 
++    /* obtain total duration parsed from m3u file */
++    p_sys->i_httplive_total_duration = var_InheritInteger( p_demux->s, "httplive-total-duration" );
++    msg_Err( p_demux, "httplive-total-duration get %x, %x, %lld msec", p_demux->s, p_sys->i_httplive_total_duration);
++
+     return VLC_SUCCESS;
+ }
+ 
+@@ -1024,6 +1031,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+             {
+                 *pi64 = 0;
+             }
++
++            if( *pi64 == 0 && p_sys->i_httplive_total_duration > 0 )
++            {
++                *pi64 = p_sys->i_httplive_total_duration;
++            }
+         }
+         else
+         {
+diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
+index a8dfc4b..9294555 100644
+--- a/modules/stream_filter/httplive.c
++++ b/modules/stream_filter/httplive.c
+@@ -43,6 +43,9 @@
+ #include <vlc_memory.h>
+ #include <vlc_gcrypt.h>
+ 
++#define HTTPLIVE_TOTAL_DURATION_TEXT N_("httplive total duration")
++#define HTTPLIVE_TOTAL_DURATION_LONGTEXT N_("httplive total duration parsed from m3u8")
++
+ /*****************************************************************************
+  * Module descriptor
+  *****************************************************************************/
+@@ -55,6 +58,7 @@ vlc_module_begin()
+     set_description(N_("Http Live Streaming stream filter"))
+     set_capability("stream_filter", 20)
+     set_callbacks(Open, Close)
++    add_integer("httplive-total-duration", 0, HTTPLIVE_TOTAL_DURATION_TEXT, HTTPLIVE_TOTAL_DURATION_LONGTEXT, true)
+ vlc_module_end()
+ 
+ /*****************************************************************************
+@@ -1047,6 +1051,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+ 
+         /* */
+         int segment_duration = -1;
++        int total_duration_secs = 0;
+         do
+         {
+             /* Next line */
+@@ -1056,7 +1061,14 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+             p_begin = p_read;
+ 
+             if (strncmp(line, "#EXTINF", 7) == 0)
++            {
++                segment_duration = 0;
+                 err = parse_SegmentInformation(hls, line, &segment_duration);
++                if (err == VLC_SUCCESS && segment_duration > 0)
++                {
++                    total_duration_secs += segment_duration;
++                }
++            }
+             else if (strncmp(line, "#EXT-X-TARGETDURATION", 21) == 0)
+                 err = parse_TargetDuration(s, hls, line);
+             else if (strncmp(line, "#EXT-X-MEDIA-SEQUENCE", 21) == 0)
+@@ -1087,6 +1099,13 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+ 
+         } while (err == VLC_SUCCESS);
+ 
++        if (err == VLC_SUCCESS && total_duration_secs > 0)
++        {
++            var_Create(s, "httplive-total-duration", VLC_VAR_INTEGER);
++            var_SetInteger(s, "httplive-total-duration", ((int64_t)total_duration_secs) * 1000 * 1000);
++            msg_Err(s, "httplive-total-duration set %x, %d sec", s, total_duration_secs);
++        }
++
+         free(line);
+     }
+ 
+-- 
+1.7.9.4
+
