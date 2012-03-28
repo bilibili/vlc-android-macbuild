@@ -1,0 +1,182 @@
+From 5afc4cab8af2dab449ad31f0e3ef1b0c74d8a54e Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Wed, 28 Mar 2012 19:30:05 +0800
+Subject: [PATCH] fix position and length for streaming mpegts segments hls
+
+---
+ modules/demux/ts.c               |   54 ++++++++++++++++++++++++++++++++++++++
+ modules/stream_filter/httplive.c |   20 ++++++++++++++
+ 2 files changed, 74 insertions(+)
+
+diff --git a/modules/demux/ts.c b/modules/demux/ts.c
+index f9c2f4d..b5bb9c7 100644
+--- a/modules/demux/ts.c
++++ b/modules/demux/ts.c
+@@ -328,6 +328,14 @@ struct demux_sys_t
+ 
+     /* */
+     bool        b_start_record;
++
++    /* */
++    mtime_t     i_httplive_total_duration;  /* total duration parsed from m3u */
++
++    /* */
++    mtime_t     i_segment_start_time; /* as start time after resync pcr */
++    mtime_t     i_resync_first_pcr; /* first pcr after resync */
++    bool        b_need_resync_pcr;
+ };
+ 
+ static int Demux    ( demux_t *p_demux );
+@@ -706,6 +714,13 @@ static int Open( vlc_object_t *p_this )
+             break;
+     }
+ 
++    /* obtain total duration parsed from m3u file */
++    p_sys->i_httplive_total_duration = var_InheritInteger( p_demux->s, "httplive-total-duration" );
++
++    p_sys->i_segment_start_time = -1;
++    p_sys->i_resync_first_pcr = -1;
++    p_sys->b_need_resync_pcr = false;
++
+     return VLC_SUCCESS;
+ }
+ 
+@@ -991,6 +1006,20 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+             {
+                 *pi64 = 0;
+             }
++
++            /* add i_segment_start_time to resync PCR */
++            if (*pi64 == 0 &&
++                p_sys->i_segment_start_time >= 0 &&
++                p_sys->i_current_pcr - p_sys->i_resync_first_pcr >= 0)
++            {
++                *pi64 = (p_sys->i_current_pcr - p_sys->i_resync_first_pcr) * 100 / 9;
++                *pi64 = *pi64 + p_sys->i_segment_start_time;
++            }
++
++            if (*pi64 == 0 && p_sys->i_current_pcr - p_sys->i_first_pcr >= 0 )
++            {
++                *pi64 = (p_sys->i_current_pcr - p_sys->i_first_pcr) * 100 / 9;
++            }
+         }
+         else
+         {
+@@ -1008,6 +1037,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+             {
+                 *pi64 = 0;
+             }
++
++            if( *pi64 == 0 && p_sys->i_httplive_total_duration > 0 )
++            {
++                *pi64 = p_sys->i_httplive_total_duration;
++            }
+         }
+         else
+         {
+@@ -1947,8 +1981,26 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+     if( i_pcr < 0 )
+         return;
+ 
++    /* handle first PCR if not obtain in Open() */
++    if( p_sys->i_pid_ref_pcr == -1 )
++    {
++        p_sys->i_pid_ref_pcr = PIDGet( p_bk );
++        p_sys->i_first_pcr = i_pcr;
++        p_sys->i_current_pcr = i_pcr;
++    }
++
+     if( p_sys->i_pid_ref_pcr == pid->i_pid )
++    {
++        /* reset PCR if discontinuitied */
++        if( p_sys->b_need_resync_pcr )
++        {
++            p_sys->i_segment_start_time = var_InheritInteger( p_demux->s, "httplive-segment-start-time" );   
++            p_sys->i_resync_first_pcr = i_pcr;
++            p_sys->b_need_resync_pcr = false;
++        }
++
+         p_sys->i_current_pcr = AdjustPCRWrapAround( p_demux, i_pcr );
++    }
+ 
+     /* Search program and set the PCR */
+     for( int i = 0; i < p_sys->i_pmt; i++ )
+@@ -2053,6 +2105,8 @@ static bool GatherPES( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+             msg_Warn( p_demux, "discontinuity received 0x%x instead of 0x%x (pid=%d)",
+                       i_cc, ( pid->i_cc + 1 )&0x0f, pid->i_pid );
+ 
++            p_demux->p_sys->b_need_resync_pcr = true;
++
+             pid->i_cc = i_cc;
+             if( pid->es->p_pes && pid->es->fmt.i_cat != VIDEO_ES )
+             {
+diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
+index a8dfc4b..e984c17 100644
+--- a/modules/stream_filter/httplive.c
++++ b/modules/stream_filter/httplive.c
+@@ -1047,6 +1047,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+ 
+         /* */
+         int segment_duration = -1;
++        int total_duration_secs = 0;
+         do
+         {
+             /* Next line */
+@@ -1056,7 +1057,14 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+             p_begin = p_read;
+ 
+             if (strncmp(line, "#EXTINF", 7) == 0)
++            {
++                segment_duration = 0;
+                 err = parse_SegmentInformation(hls, line, &segment_duration);
++                if (err == VLC_SUCCESS && segment_duration > 0)
++                {
++                    total_duration_secs += segment_duration;
++                }
++            }
+             else if (strncmp(line, "#EXT-X-TARGETDURATION", 21) == 0)
+                 err = parse_TargetDuration(s, hls, line);
+             else if (strncmp(line, "#EXT-X-MEDIA-SEQUENCE", 21) == 0)
+@@ -1087,6 +1095,12 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+ 
+         } while (err == VLC_SUCCESS);
+ 
++        if (err == VLC_SUCCESS && total_duration_secs > 0)
++        {
++            var_Create(s, "httplive-total-duration", VLC_VAR_INTEGER);
++            var_SetInteger(s, "httplive-total-duration", ((int64_t)total_duration_secs) * 1000 * 1000);
++        }
++
+         free(line);
+     }
+ 
+@@ -2346,6 +2360,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+ 
+     bool b_found = false;
+     uint64_t length = 0;
++    uint64_t segment_start_secs = 0;
+     uint64_t size = hls->size;
+     int count = vlc_array_count(hls->segments);
+ 
+@@ -2385,6 +2400,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+             vlc_mutex_unlock(&hls->lock);
+             return VLC_EGENERIC;
+         }
++
++        segment_start_secs += segment->duration;
+     }
+ 
+     /* */
+@@ -2397,6 +2414,9 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+     /* */
+     if (b_found)
+     {
++        var_Create(s, "httplive-segment-start-time", VLC_VAR_INTEGER);
++        var_SetInteger(s, "httplive-segment-start-time", segment_start_secs * 1000 * 1000);
++
+         /* restore segment to start position */
+         segment_t *segment = segment_GetSegment(hls, p_sys->playback.segment);
+         if (segment == NULL)
+-- 
+1.7.9.4
+
