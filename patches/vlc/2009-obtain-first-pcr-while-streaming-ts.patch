@@ -1,0 +1,31 @@
+From 4e90dd9cc07e2d28850c24824eba712244569db4 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Wed, 28 Mar 2012 12:11:25 +0800
+Subject: [PATCH 2009/2009] obtain first pcr while streaming ts
+
+---
+ modules/demux/ts.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/modules/demux/ts.c b/modules/demux/ts.c
+index fa9fd26..85bf740 100644
+--- a/modules/demux/ts.c
++++ b/modules/demux/ts.c
+@@ -1958,6 +1958,14 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+     if( i_pcr < 0 )
+         return;
+ 
++    /* handle first PCR if not obtain in Open() */
++    if( p_sys->i_pid_ref_pcr == -1 )
++    {
++        p_sys->i_pid_ref_pcr = PIDGet( p_bk );
++        p_sys->i_first_pcr = i_pcr;
++        p_sys->i_current_pcr = i_pcr;
++    }
++
+     if( p_sys->i_pid_ref_pcr == pid->i_pid )
+         p_sys->i_current_pcr = AdjustPCRWrapAround( p_demux, i_pcr );
+ 
+-- 
+1.7.9.4
+

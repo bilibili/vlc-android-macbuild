@@ -1,7 +1,7 @@
-From 47abd6b4618c15b7ea723fb5f566c09b1962cf90 Mon Sep 17 00:00:00 2001
+From f27dd71bbaef2b2d31bd7461fdf7a53fceef60f8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 27 Mar 2012 23:11:58 +0800
-Subject: [PATCH] parse duration in m3u for ts demux
+Subject: [PATCH 2008/2009] parse duration in m3u for ts demux
 
 ---
  modules/demux/ts.c               |   11 +++++++++++
@@ -9,7 +9,7 @@ Subject: [PATCH] parse duration in m3u for ts demux
  2 files changed, 25 insertions(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index 022df6a..fc4df0a 100644
+index f9c2f4d..fa9fd26 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
 @@ -328,6 +328,9 @@ struct demux_sys_t
@@ -22,7 +22,7 @@ index 022df6a..fc4df0a 100644
  };
  
  static int Demux    ( demux_t *p_demux );
-@@ -716,6 +719,9 @@ static int Open( vlc_object_t *p_this )
+@@ -706,6 +709,9 @@ static int Open( vlc_object_t *p_this )
              break;
      }
  
@@ -32,7 +32,7 @@ index 022df6a..fc4df0a 100644
      return VLC_SUCCESS;
  }
  
-@@ -1024,6 +1030,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+@@ -1008,6 +1014,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
              {
                  *pi64 = 0;
              }
