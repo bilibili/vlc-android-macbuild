@@ -91,7 +91,7 @@ index f9c2f4d..b5bb9c7 100644
 +        /* reset PCR if discontinuitied */
 +        if( p_sys->b_need_resync_pcr )
 +        {
-+            p_sys->i_segment_start_time = var_InheritInteger( p_demux->s, "httplive-segment-start-time" );   
++            p_sys->i_segment_start_time = var_InheritInteger( p_demux->s, "httplive-segment-start-time" );
 +            p_sys->i_resync_first_pcr = i_pcr;
 +            p_sys->b_need_resync_pcr = false;
 +        }
