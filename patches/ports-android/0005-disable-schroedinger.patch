@@ -1,0 +1,24 @@
+From 9409812af89816350e31976ca731e714c21b69cc Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sat, 24 Mar 2012 16:55:12 +0800
+Subject: [PATCH 5/8] disable schroedinger
+
+---
+ compile.sh |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/compile.sh b/compile.sh
+index 7ba2e88..cbed62b 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -79,6 +79,7 @@ mkdir contrib/android; cd contrib/android
+     --disable-sidplay2 \
+     --disable-taglib \
+     --disable-live555 \
++    --disable-schroedinger \
+     --disable-samplerate
+ 
+ # TODO: mpeg2, dts, theora
+-- 
+1.7.9.4
+
