@@ -1,0 +1,45 @@
+From 54e435ee29e239a08091f21fac3919f6ae7b81a4 Mon Sep 17 00:00:00 2001
+From: Jean-Baptiste Kempf <jb@videolan.org>
+Date: Thu, 29 Mar 2012 00:29:42 +0200
+Subject: [PATCH 2/2] Contrib: support Tegra2 CPUs on Android
+
+Cortex-a9 but no NEON? Seriously?
+---
+ contrib/bootstrap    |    1 +
+ contrib/src/main.mak |    5 +++++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/contrib/bootstrap b/contrib/bootstrap
+index 907b705..df3dd85 100755
+--- a/contrib/bootstrap
++++ b/contrib/bootstrap
+@@ -178,6 +178,7 @@ check_android_sdk()
+ 	[ -z "${ANDROID_NDK}" ] && echo "You must set ANDROID_NDK environment variable" && exit 1
+ 	add_make "ANDROID_NDK := ${ANDROID_NDK}"
+ 	test -z "${NO_NEON}" && add_make_enabled "HAVE_NEON"
++	test -n "${TEGRA2}" && add_make_enabled "HAVE_TEGRA2"
+ }
+ 
+ test -z "$PREFIX" || add_make "PREFIX := $PREFIX"
+diff --git a/contrib/src/main.mak b/contrib/src/main.mak
+index 6c13589..4de50a2 100644
+--- a/contrib/src/main.mak
++++ b/contrib/src/main.mak
+@@ -106,9 +106,14 @@ ifdef HAVE_NEON
+     ANDROID_ABI = armeabi-v7a
+     ANDROID_CPU_FLAGS = -mfpu=neon -mcpu=cortex-a8
+ else
++ifdef HAVE_TEGRA2
++    ANDROID_ABI = armeabi-v7a
++    ANDROID_CPU_FLAGS = -mfpu=vfpv3-d16 -mcpu=cortex-a9
++else
+     ANDROID_ABI = armeabi
+     ANDROID_CPU_FLAGS = -mcpu=arm1136jf-s -mfpu=vfp
+ endif
++endif
+ EXTRA_CFLAGS += -D__STDC_VERSION__=199901L -I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/include
+ EXTRA_CFLAGS += -I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/libs/$(ANDROID_ABI)/include
+ EXTRA_CFLAGS += -mfloat-abi=softfp $(ANDROID_CPU_FLAGS)
+-- 
+1.7.9.4
+

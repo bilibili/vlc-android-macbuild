@@ -1,0 +1,39 @@
+From d61052a0987d751ecda0b763c900f834f3358612 Mon Sep 17 00:00:00 2001
+From: Jean-Baptiste Kempf <jb@videolan.org>
+Date: Thu, 29 Mar 2012 00:24:44 +0200
+Subject: [PATCH 1/2] Contrib: Android simplifications
+
+---
+ contrib/src/main.mak |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/contrib/src/main.mak b/contrib/src/main.mak
+index 4035436..6c13589 100644
+--- a/contrib/src/main.mak
++++ b/contrib/src/main.mak
+@@ -102,15 +102,16 @@ endif
+ ifdef HAVE_ANDROID
+ CC :=  $(HOST)-gcc --sysroot=$(ANDROID_NDK)/platforms/android-9/arch-arm
+ CXX := $(HOST)-g++ --sysroot=$(ANDROID_NDK)/platforms/android-9/arch-arm
+-
+-# Kludge for C++ prebuilt compiler
+-EXTRA_CFLAGS += -D__STDC_VERSION__=199901L
+-EXTRA_CFLAGS += -I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/include
+ ifdef HAVE_NEON
+-    EXTRA_CFLAGS += -I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/libs/armeabi-v7a/include -mfloat-abi=softfp -mfpu=neon -mcpu=cortex-a8
++    ANDROID_ABI = armeabi-v7a
++    ANDROID_CPU_FLAGS = -mfpu=neon -mcpu=cortex-a8
+ else
+-    EXTRA_CFLAGS += -I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/libs/armeabi/include -mfloat-abi=softfp -mcpu=arm1136jf-s -mfpu=vfp
++    ANDROID_ABI = armeabi
++    ANDROID_CPU_FLAGS = -mcpu=arm1136jf-s -mfpu=vfp
+ endif
++EXTRA_CFLAGS += -D__STDC_VERSION__=199901L -I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/include
++EXTRA_CFLAGS += -I$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/libs/$(ANDROID_ABI)/include
++EXTRA_CFLAGS += -mfloat-abi=softfp $(ANDROID_CPU_FLAGS)
+ endif
+ 
+ ifdef HAVE_MACOSX
+-- 
+1.7.9.4
+

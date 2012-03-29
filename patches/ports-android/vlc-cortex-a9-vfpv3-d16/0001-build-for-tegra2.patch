@@ -1,23 +1,24 @@
-From e0b57a13bf07e8e0b815327506e548037f286782 Mon Sep 17 00:00:00 2001
+From dc2b0e65e4b2a6f53aae56e364cf2a8e585c2475 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 29 Mar 2012 16:55:54 +0800
-Subject: [PATCH] build-for-armv6j
+Subject: [PATCH] build for tegra2
 
 ---
- compile.sh |    5 +++++
- 1 file changed, 5 insertions(+)
+ compile.sh |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/compile.sh b/compile.sh
-index d172500..20ced80 100755
+index d172500..66fdb4f 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -19,6 +19,11 @@ export NO_NDK_V7=0
+@@ -19,6 +19,12 @@ export NO_NDK_V7=0
  
  EOF
  
 +
 +# patched for armv6j
 +export NO_NEON=1
++export TEGRA2=1
 +
 +
  if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" ]; then
