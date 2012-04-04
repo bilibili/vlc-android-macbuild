@@ -1,4 +1,4 @@
--ports-android
+#! /bin/sh
 
 export BILI_VLC_TARGET="vlc-armv7a-neon"
 

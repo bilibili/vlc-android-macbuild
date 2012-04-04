@@ -1,19 +1,93 @@
-From ad76b6e5fb65cba837f8012e67ea3ad37229d92c Mon Sep 17 00:00:00 2001
+From 8fb720e1138a468583096ad77ec985064dc2198e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 1 Apr 2012 18:52:24 +0800
-Subject: [PATCH 2/2] another libvlcjni wrapper
+Subject: [PATCH 2/4] another libvlcjni wrapper
 
 ---
- vlc-android/jni/libvlcjni_danmaku.c | 1000 +++++++++++++++++++++++++++++++++++
- 1 file changed, 1000 insertions(+)
+ Makefile                            |    7 +-
+ vlc-android/jni/Android.mk          |   15 +-
+ vlc-android/jni/Application.mk      |    2 +
+ vlc-android/jni/libvlcjni_danmaku.c | 1016 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 1033 insertions(+), 7 deletions(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
 
+diff --git a/Makefile b/Makefile
+index ac3102d..60d6194 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,12 @@
+ # Sources and objects
+ 
++LIBVLCJNI_MODULE_NAME = libvlcjni.so
++
+ ifeq ($(NO_NEON),)
+ ARCH = armeabi-v7a
++else ifneq ($(TEGRA2),)
++ARCH = armeabi-v7a
++LIBVLCJNI_MODULE_NAME = libvlcjni-tegra2.so
+ else
+ ARCH = armeabi
+ endif
+@@ -11,7 +16,7 @@ JAVA_SOURCES=$(SRC)/src/org/videolan/vlc/*.java
+ JNI_SOURCES=$(SRC)/jni/*.c $(SRC)/jni/*.h
+ VLC_APK=$(SRC)/bin/VLC-debug.apk
+ LIBVLCJNI=	\
+-	$(SRC)/obj/local/$(ARCH)/libvlcjni.so \
++	$(SRC)/obj/local/$(ARCH)/$(LIBVLCJNI_MODULE_NAME) \
+ 	$(SRC)/obj/local/$(ARCH)/libiomx-ics.so \
+ 	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
+ 
+diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
+index d9b8ba5..928946b 100644
+--- a/vlc-android/jni/Android.mk
++++ b/vlc-android/jni/Android.mk
+@@ -1,18 +1,21 @@
+ LOCAL_PATH := $(call my-dir)
+ include $(CLEAR_VARS)
+ 
+-LOCAL_MODULE    := libvlcjni
+-
+-LOCAL_SRC_FILES := libvlcjni.c aout.c thumbnailer.c pthread-condattr.c pthread-rwlocks.c
+-
+-LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
+-
+ ifeq ($(NO_NEON),)
+ ARCH=armeabi-v7a
++LOCAL_MODULE    := libvlcjni
++else ifneq ($(TEGRA2),)
++ARCH=armeabi-v7a
++LOCAL_MODULE    := libvlcjni-tegra2
+ else
+ ARCH=armeabi
++LOCAL_MODULE    := libvlcjni
+ endif
+ 
++LOCAL_SRC_FILES := libvlcjni_danmaku.c aout.c pthread-condattr.c pthread-rwlocks.c
++
++LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
++
+ ifeq ($(NO_NDK_V7),1)
+ CPP_STATIC=$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/libs/$(ARCH)/libstdc++.a
+ else
+diff --git a/vlc-android/jni/Application.mk b/vlc-android/jni/Application.mk
+index 9507cee..3e5f176 100644
+--- a/vlc-android/jni/Application.mk
++++ b/vlc-android/jni/Application.mk
+@@ -1,6 +1,8 @@
+ APP_PLATFORM := android-9
+ ifeq ($(NO_NEON),)
+ APP_ABI := armeabi-v7a
++else ifneq ($(TEGRA2),)
++APP_ABI := armeabi-v7a
+ else
+ APP_ABI := armeabi
+ endif
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..aa710a1
+index 0000000..5c74c7e
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,1000 @@
+@@ -0,0 +1,1016 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *
@@ -127,31 +201,33 @@ index 0000000..aa710a1
 +void setString(JNIEnv *env, jobject item, const char* field, const char* value);
 +static void vlc_event_callback(const libvlc_event_t *ev, void *data);
 +
-+libvlc_media_t *new_media(jint instance, JNIEnv *env, jobject thiz, jstring filePath)
++libvlc_media_t *new_media(jint instance, JNIEnv *env, jobject thiz, jstring fileLocation, bool noOmx)
 +{
 +    libvlc_instance_t *libvlc = (libvlc_instance_t*)instance;
 +    jboolean isCopy;
-+    const char *psz_path = (*env)->GetStringUTFChars(env, filePath, &isCopy);
-+    libvlc_media_t *p_md = libvlc_media_new_path(libvlc, psz_path);
-+    (*env)->ReleaseStringUTFChars(env, filePath, psz_path);
++    const char *psz_location = (*env)->GetStringUTFChars(env, fileLocation, &isCopy);
++    libvlc_media_t *p_md = libvlc_media_new_path(libvlc, psz_location);
++    (*env)->ReleaseStringUTFChars(env, fileLocation, psz_location);
 +    if (!p_md)
 +        return NULL;
 +
-+    jclass cls = (*env)->GetObjectClass(env, thiz);
-+    jmethodID methodId = (*env)->GetMethodID(env, cls, "useIOMX", "()Z");
-+    if ((*env)->CallBooleanMethod(env, thiz, methodId)) {
-+        /*
-+         * Set higher caching values if using iomx decoding, since some omx
-+         * decoders have a very high latency, and if the preroll data isn't
-+         * enough to make the decoder output a frame, the playback timing gets
-+         * started too soon, and every decoded frame appears to be too late.
-+         * On Nexus One, the decoder latency seems to be 25 input packets
-+         * for 320x170 H.264, a few packets less on higher resolutions.
-+         * On Nexus S, the decoder latency seems to be about 7 packets.
-+         */
-+        libvlc_media_add_option(p_md, ":file-caching=1500");
-+        libvlc_media_add_option(p_md, ":network-caching=1500");
-+        libvlc_media_add_option(p_md, ":codec=iomx,all");
++    if (!noOmx) {
++		jclass cls = (*env)->GetObjectClass(env, thiz);
++		jmethodID methodId = (*env)->GetMethodID(env, cls, "useIOMX", "()Z");
++		if ((*env)->CallBooleanMethod(env, thiz, methodId)) {
++			/*
++			 * Set higher caching values if using iomx decoding, since some omx
++			 * decoders have a very high latency, and if the preroll data isn't
++			 * enough to make the decoder output a frame, the playback timing gets
++			 * started too soon, and every decoded frame appears to be too late.
++			 * On Nexus One, the decoder latency seems to be 25 input packets
++			 * for 320x170 H.264, a few packets less on higher resolutions.
++			 * On Nexus S, the decoder latency seems to be about 7 packets.
++			 */
++			libvlc_media_add_option(p_md, ":file-caching=1500");
++			libvlc_media_add_option(p_md, ":network-caching=1500");
++			libvlc_media_add_option(p_md, ":codec=iomx,all");
++		}
 +    }
 +    return p_md;
 +}
@@ -429,6 +505,20 @@ index 0000000..aa710a1
 +    LOGI("LibVLC initialized: %p", instance);
 +}
 +
++jstring Java_org_videolan_vlc_LibVLC_nativeToURI(JNIEnv *env, jobject thiz, jstring path)
++{
++    jboolean isCopy;
++    /* Get C string */
++    const char* psz_path = (*env)->GetStringUTFChars(env, path, &isCopy);
++    /* Convert the path to URI */
++    char* psz_location = make_URI(psz_path, "file");
++    /* Box into jstring */
++    jstring t = (*env)->NewStringUTF(env, psz_location);
++    /* Clean up */
++    (*env)->ReleaseStringUTFChars(env, path, psz_path);
++    free(psz_location);
++    return t;
++}
 +
 +void Java_org_videolan_vlc_LibVLC_nativeDestroy(JNIEnv *env, jobject thiz)
 +{
@@ -571,7 +661,7 @@ index 0000000..aa710a1
 +            (*env)->FindClass(env, "java/lang/String"),
 +            (*env)->NewStringUTF(env, ""));
 +
-+    libvlc_media_t *m = new_media(instance, env, thiz, mrl);
++    libvlc_media_t *m = new_media(instance, env, thiz, mrl, false);
 +    if (!m)
 +    {
 +        LOGE("readMediaMeta: Couldn't create the media!");
@@ -614,7 +704,7 @@ index 0000000..aa710a1
 +    releaseMediaPlayer(env, thiz);
 +
 +    /* Create a new item */
-+    libvlc_media_t *m = new_media(instance, env, thiz, mrl);
++    libvlc_media_t *m = new_media(instance, env, thiz, mrl, false);
 +    if (!m)
 +    {
 +        LOGE("readMedia: Couldn't create the media!");
@@ -663,10 +753,10 @@ index 0000000..aa710a1
 +}
 +
 +jboolean Java_org_videolan_vlc_LibVLC_hasVideoTrack(JNIEnv *env, jobject thiz,
-+                                                    jint i_instance, jstring filePath)
++                                                    jint i_instance, jstring fileLocation)
 +{
 +    /* Create a new item and assign it to the media player. */
-+    libvlc_media_t *p_m = new_media(i_instance, env, thiz, filePath);
++    libvlc_media_t *p_m = new_media(i_instance, env, thiz, fileLocation, false);
 +    if (p_m == NULL)
 +    {
 +        LOGE("Couldn't create the media!");
@@ -713,7 +803,7 @@ index 0000000..aa710a1
 +    }
 +
 +    /* Create a new item and assign it to the media player. */
-+    libvlc_media_t *p_m = new_media(instance, env, thiz, mrl);
++    libvlc_media_t *p_m = new_media(instance, env, thiz, mrl, false);
 +    if (p_m == NULL)
 +    {
 +        LOGE("Couldn't create the media!");
@@ -773,8 +863,8 @@ index 0000000..aa710a1
 +    pthread_mutex_unlock(&monitor->doneMutex);
 +}
 +
-+jlong Java_org_videolan_vlc_LibVLC_getLengthFromFile(JNIEnv *env, jobject thiz,
-+                                                     jint i_instance, jstring filePath)
++jlong Java_org_videolan_vlc_LibVLC_getLengthFromLocation(JNIEnv *env, jobject thiz,
++                                                     jint i_instance, jstring fileLocation)
 +{
 +    jlong length = 0;
 +    struct length_change_monitor *monitor;
@@ -788,7 +878,7 @@ index 0000000..aa710a1
 +    monitor->length_changed = false;
 +
 +    /* Create a new item and assign it to the media player. */
-+    libvlc_media_t *m = new_media(i_instance, env, thiz, filePath);
++    libvlc_media_t *m = new_media(i_instance, env, thiz, fileLocation, false);
 +    if (m == NULL)
 +    {
 +        LOGE("Couldn't create the media to play!");

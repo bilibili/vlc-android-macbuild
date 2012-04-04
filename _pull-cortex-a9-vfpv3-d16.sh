@@ -1,4 +1,4 @@
--ports-android
+#! /bin/sh
 
 export BILI_VLC_TARGET="vlc-cortex-a9-vfpv3-d16"
 
