@@ -1,0 +1,27 @@
+From 69e48a0919a0325bb0623432a9f27dbd5920cdeb Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Fri, 6 Apr 2012 17:47:28 +0800
+Subject: [PATCH] build for release
+
+---
+ vlc-android/jni/log.h |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/vlc-android/jni/log.h b/vlc-android/jni/log.h
+index f82fbcd..85fbf7c 100644
+--- a/vlc-android/jni/log.h
++++ b/vlc-android/jni/log.h
+@@ -29,6 +29,10 @@
+ #endif
+ 
+ #ifndef NDEBUG
++#define NDEBUG
++#endif
++
++#ifndef NDEBUG
+ # define LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
+ # define LOGV(...)  __android_log_print(ANDROID_LOG_VERBOSE,LOG_TAG,__VA_ARGS__)
+ #else
+-- 
+1.7.9.4
+
