@@ -1,0 +1,50 @@
+From 6b1a13caf95ba3875297ff6b889cfccba67d9248 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Fri, 23 Mar 2012 17:59:42 +0800
+Subject: [PATCH 2/4] disable modules
+
+---
+ compile.sh                 |    4 ++++
+ vlc-android/jni/Android.mk |   10 ++++------
+ 2 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/compile.sh b/compile.sh
+index 79ac6e8..4170575 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -77,6 +77,10 @@ mkdir contrib/android; cd contrib/android
+     --disable-tremor \
+     --disable-vorbis \
+     --disable-sidplay2 \
++    --disable-taglib \
++    --disable-live555 \
++    --disable-schroedinger \
++    --disable-matroska \
+     --disable-samplerate
+ 
+ # TODO: mpeg2, dts, theora
+diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
+index d9b8ba5..fa2a8a9 100644
+--- a/vlc-android/jni/Android.mk
++++ b/vlc-android/jni/Android.mk
+@@ -26,13 +26,11 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+ 	$(VLC_BUILD_DIR)/src/.libs/libvlccore.a \
+ 	$(VLC_BUILD_DIR)/compat/.libs/libcompat.a \
+ 	-ldl -lz -lm -llog \
+-	-ldvbpsi -lebml -lmatroska -ltag \
+-	-logg -lFLAC -ltheora \
++	-ldvbpsi \
++	-ltheora \
+ 	-lmpeg2 -ldca -la52 \
+-	-lavformat -lavcodec -lswscale -lavutil -lpostproc -lgsm -lopenjpeg \
+-	-lliveMedia -lUsageEnvironment -lBasicUsageEnvironment -lgroupsock \
+-	-lspeex -lspeexdsp \
+-	-lxml2 -lpng -lgnutls -lgcrypt -lgpg-error \
++	-lavformat -lavcodec -lswscale -lavutil -lpostproc -lopenjpeg \
++	-lpng -lgnutls -lgcrypt -lgpg-error \
+ 	$(CPP_STATIC)
+ 
+ include $(BUILD_SHARED_LIBRARY)
+-- 
+1.7.9.4
+
