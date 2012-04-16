@@ -1,7 +1,7 @@
-From 6b1a13caf95ba3875297ff6b889cfccba67d9248 Mon Sep 17 00:00:00 2001
+From dd966a699434227e4580cf395896a9538631a14f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
-Subject: [PATCH 2/4] disable modules
+Subject: [PATCH 2/6] disable modules
 
 ---
  compile.sh                 |    4 ++++
@@ -9,10 +9,10 @@ Subject: [PATCH 2/4] disable modules
  2 files changed, 8 insertions(+), 6 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index 79ac6e8..4170575 100755
+index bc610f0..5c23229 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -77,6 +77,10 @@ mkdir contrib/android; cd contrib/android
+@@ -81,6 +81,10 @@ mkdir contrib/android; cd contrib/android
      --disable-tremor \
      --disable-vorbis \
      --disable-sidplay2 \

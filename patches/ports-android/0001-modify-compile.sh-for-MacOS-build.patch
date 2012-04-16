@@ -1,14 +1,14 @@
-From 5363f07a638c1138750b43aa9852d2ad546b0fe9 Mon Sep 17 00:00:00 2001
+From 2c61486863c695dd3174e10c3fc7253fb70d5002 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
-Subject: [PATCH 1/4] modify compile.sh for MacOS build
+Subject: [PATCH 1/6] modify compile.sh for MacOS build
 
 ---
  compile.sh |   11 ++++++++++-
  1 file changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/compile.sh b/compile.sh
-index b0989d3..79ac6e8 100755
+index 6650cce..bc610f0 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -35,7 +35,7 @@ fi
@@ -20,7 +20,7 @@ index b0989d3..79ac6e8 100755
  
  # 1/ libvlc, libvlccore and its plugins
  TESTED_HASH=c2841b2243f4
-@@ -55,6 +55,9 @@ echo "Applying the patches"
+@@ -59,6 +59,9 @@ echo "Applying the patches"
  cd vlc
  git am ../patches/*.patch || git am --abort
  
@@ -30,7 +30,7 @@ index b0989d3..79ac6e8 100755
  echo "Building the contribs"
  mkdir contrib/android; cd contrib/android
  ../bootstrap --host=arm-linux-androideabi --disable-disc --disable-sout --enable-small \
-@@ -78,6 +81,12 @@ mkdir contrib/android; cd contrib/android
+@@ -82,6 +85,12 @@ mkdir contrib/android; cd contrib/android
  
  # TODO: mpeg2, dts, theora
  

@@ -1,0 +1,35 @@
+From 4e7055a7f3064f9a25f762017a86d49ea6f48674 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 16 Apr 2012 23:20:57 +0800
+Subject: [PATCH 4/6] disable modules in configure.sh
+
+---
+ configure.sh |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/configure.sh b/configure.sh
+index 03f21d0..7c35ebb 100755
+--- a/configure.sh
++++ b/configure.sh
+@@ -46,15 +46,15 @@ STRIP="${CROSS_COMPILE}strip" \
+ RANLIB="${CROSS_COMPILE}ranlib" \
+ AR="${CROSS_COMPILE}ar" \
+ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-linux $EXTRA_PARAMS \
+-                --enable-live555 --enable-realrtsp \
++                --disable-live555 --disable-realrtsp \
+                 --enable-avformat \
+                 --enable-swscale \
+                 --enable-avcodec \
+                 --enable-opensles \
+                 --enable-android-surface \
+                 --enable-debug \
+-                --enable-mkv \
+-                --enable-taglib \
++                --disable-mkv \
++                --disable-taglib \
+                 --enable-iomx \
+                 --disable-vlc --disable-shared \
+                 --disable-vlm \
+-- 
+1.7.9.4
+

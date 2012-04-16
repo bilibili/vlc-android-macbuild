@@ -1,0 +1,25 @@
+From c958af9684078ac888c2bc5488d78766516b218d Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 17 Apr 2012 00:54:24 +0800
+Subject: [PATCH] fix configure path
+
+---
+ configure.sh |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.sh b/configure.sh
+index 7c35ebb..1b55c43 100755
+--- a/configure.sh
++++ b/configure.sh
+@@ -7,7 +7,7 @@ fi
+ 
+ ANDROID_API=android-9
+ 
+-VLC_SOURCEDIR="`dirname $0`/../../.."
++VLC_SOURCEDIR="`dirname $0`/vlc"
+ 
+ CFLAGS="-g -O2 -mlong-calls -fstrict-aliasing -mfloat-abi=softfp -funsafe-math-optimizations"
+ LDFLAGS="-Wl,-Bdynamic,-dynamic-linker=/system/bin/linker -Wl,--no-undefined"
+-- 
+1.7.9.4
+
