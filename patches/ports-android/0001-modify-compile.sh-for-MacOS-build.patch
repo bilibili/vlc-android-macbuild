@@ -1,14 +1,14 @@
-From 2c61486863c695dd3174e10c3fc7253fb70d5002 Mon Sep 17 00:00:00 2001
+From 15f8399deaf8c66a91c276f5426b88ad386fc8b1 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
-Subject: [PATCH 1/6] modify compile.sh for MacOS build
+Subject: [PATCH 1/5] modify compile.sh for MacOS build
 
 ---
  compile.sh |   11 ++++++++++-
  1 file changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/compile.sh b/compile.sh
-index 6650cce..bc610f0 100755
+index 248bf1f..26c2209 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -35,7 +35,7 @@ fi
@@ -19,7 +19,7 @@ index 6650cce..bc610f0 100755
 +export PATH=${ANDROID_NDK}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin:${PATH}
  
  # 1/ libvlc, libvlccore and its plugins
- TESTED_HASH=c2841b2243f4
+ TESTED_HASH=15b1a1b94
 @@ -59,6 +59,9 @@ echo "Applying the patches"
  cd vlc
  git am ../patches/*.patch || git am --abort

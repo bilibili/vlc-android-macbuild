@@ -1,17 +1,17 @@
-From 4e7055a7f3064f9a25f762017a86d49ea6f48674 Mon Sep 17 00:00:00 2001
+From bf3d13005afe07ee9855b49fb23772cab93b565b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH 4/6] disable modules in configure.sh
+Subject: [PATCH 4/5] disable modules in configure.sh
 
 ---
  configure.sh |    6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/configure.sh b/configure.sh
-index 03f21d0..7c35ebb 100755
+index 3f48c50..577691a 100755
 --- a/configure.sh
 +++ b/configure.sh
-@@ -46,15 +46,15 @@ STRIP="${CROSS_COMPILE}strip" \
+@@ -46,7 +46,7 @@ STRIP="${CROSS_COMPILE}strip" \
  RANLIB="${CROSS_COMPILE}ranlib" \
  AR="${CROSS_COMPILE}ar" \
  sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-linux $EXTRA_PARAMS \
@@ -20,7 +20,8 @@ index 03f21d0..7c35ebb 100755
                  --enable-avformat \
                  --enable-swscale \
                  --enable-avcodec \
-                 --enable-opensles \
+@@ -54,8 +54,8 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+                 --enable-audiotrack \
                  --enable-android-surface \
                  --enable-debug \
 -                --enable-mkv \

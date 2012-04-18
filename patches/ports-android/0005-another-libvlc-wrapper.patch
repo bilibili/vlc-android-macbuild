@@ -1,16 +1,17 @@
-From 10d725ae5b89f76de65e1b229d39446ac2e0cc04 Mon Sep 17 00:00:00 2001
+From a28d973547a8604044d86111dd7dfb9bcc7bac3c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
-Subject: [PATCH 5/6] another libvlc wrapper
+Subject: [PATCH 5/5] another libvlc wrapper
 
 ---
  Makefile                                |    7 +-
+ compile.sh                              |    2 +-
  vlc-android/jni/Android.mk              |   15 +-
  vlc-android/jni/Application.mk          |    2 +
  vlc-android/jni/libvlcjni.c             |  122 ++++-
- vlc-android/jni/libvlcjni_danmaku.c     |  909 +++++++++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c     |  911 +++++++++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku.inc.c |   79 +++
- 6 files changed, 1113 insertions(+), 21 deletions(-)
+ 7 files changed, 1116 insertions(+), 22 deletions(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
@@ -40,6 +41,19 @@ index 03d6634..8b1fb16 100644
  	$(SRC)/obj/local/$(ARCH)/libiomx-ics.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
  
+diff --git a/compile.sh b/compile.sh
+index e3e973a..f950d60 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -28,7 +28,7 @@ fi
+ if [ -z "$NO_NDK_V7" ]; then
+     # try to detect NDK version
+     REL=$(grep "r7" $ANDROID_NDK/RELEASE.TXT)
+-    if [ -z $REL ]; then
++    if [ -z "$REL" ]; then
+         export NO_NDK_V7=1
+     fi
+ fi
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
 index fa2a8a9..38e7330 100644
 --- a/vlc-android/jni/Android.mk
@@ -279,10 +293,10 @@ index eb63b4c..646ac69 100644
      jfieldID field = (*env)->GetFieldID(env, clazz,
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..2792bb9
+index 0000000..415d63f
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,909 @@
+@@ -0,0 +1,911 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -803,12 +817,14 @@ index 0000000..2792bb9
 +
 +    int user_argc = (*env)->GetArrayLength(env, options);
 +    int i = 0;
++    LOGD("libvlc_media_add_option");
 +    for (i = 0; i < user_argc; i++)
 +    {
 +        jstring opt = (*env)->GetObjectArrayElement(env, options, i);
 +        if (opt) {
 +            const char* optString = (char *) (*env)->GetStringUTFChars(env, opt, NULL);
 +            if (optString) {
++                LOGD(optString);
 +                libvlc_media_add_option(m, optString);
 +                (*env)->ReleaseStringUTFChars(env, opt, optString);
 +            }
@@ -1046,7 +1062,7 @@ index 0000000..2792bb9
 +{
 +    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
 +    if (mp)
-+        libvlc_media_player_pause(mp);
++        libvlc_media_player_set_pause(mp, 1);
 +}
 +
 +void Java_org_videolan_vlc_LibVLC_stop(JNIEnv *env, jobject thiz)

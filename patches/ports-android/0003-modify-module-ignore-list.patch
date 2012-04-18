@@ -1,7 +1,7 @@
-From ca95ec5d806f1191cb8e401ddb603c71749013de Mon Sep 17 00:00:00 2001
+From 33f861acf0f0b39b15f048badaba66e56bd7992f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 24 Mar 2012 19:47:54 +0800
-Subject: [PATCH 3/6] modify module ignore list
+Subject: [PATCH 3/5] modify module ignore list
 
 ---
  Makefile |    2 +-

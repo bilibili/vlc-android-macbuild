@@ -1,7 +1,7 @@
-From dd966a699434227e4580cf395896a9538631a14f Mon Sep 17 00:00:00 2001
+From c83b601ba902c607d8024f8cfdefa697c8c1ee03 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
-Subject: [PATCH 2/6] disable modules
+Subject: [PATCH 2/5] disable modules
 
 ---
  compile.sh                 |    4 ++++
@@ -9,7 +9,7 @@ Subject: [PATCH 2/6] disable modules
  2 files changed, 8 insertions(+), 6 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index bc610f0..5c23229 100755
+index 26c2209..e3e973a 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -81,6 +81,10 @@ mkdir contrib/android; cd contrib/android
