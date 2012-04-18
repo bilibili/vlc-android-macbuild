@@ -1,4 +1,4 @@
-From a28d973547a8604044d86111dd7dfb9bcc7bac3c Mon Sep 17 00:00:00 2001
+From 9675ac2f7a59c18565652305c3266d9d74687ade Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
 Subject: [PATCH 5/5] another libvlc wrapper
@@ -8,10 +8,10 @@ Subject: [PATCH 5/5] another libvlc wrapper
  compile.sh                              |    2 +-
  vlc-android/jni/Android.mk              |   15 +-
  vlc-android/jni/Application.mk          |    2 +
- vlc-android/jni/libvlcjni.c             |  122 ++++-
- vlc-android/jni/libvlcjni_danmaku.c     |  911 +++++++++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni.c             |  122 +++-
+ vlc-android/jni/libvlcjni_danmaku.c     |  917 +++++++++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku.inc.c |   79 +++
- 7 files changed, 1116 insertions(+), 22 deletions(-)
+ 7 files changed, 1122 insertions(+), 22 deletions(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
@@ -293,10 +293,10 @@ index eb63b4c..646ac69 100644
      jfieldID field = (*env)->GetFieldID(env, clazz,
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..415d63f
+index 0000000..552660f
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,911 @@
+@@ -0,0 +1,917 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -815,6 +815,9 @@ index 0000000..415d63f
 +        return;
 +    }
 +
++    /* Create a media player playing environment */
++    libvlc_media_player_t *mp = libvlc_media_player_new((libvlc_instance_t*)instance);
++
 +    int user_argc = (*env)->GetArrayLength(env, options);
 +    int i = 0;
 +    LOGD("libvlc_media_add_option");
@@ -824,15 +827,19 @@ index 0000000..415d63f
 +        if (opt) {
 +            const char* optString = (char *) (*env)->GetStringUTFChars(env, opt, NULL);
 +            if (optString) {
-+                LOGD(optString);
-+                libvlc_media_add_option(m, optString);
++                LOGD("  %s", optString);
++                if (!strncmp(optString, ":aout=", 6)) {
++                    // seems ":aout" does not effect libvlc_media_add_option()
++                    LOGD("    set libvlc_audio_output_set:%s", optString);
++                    libvlc_audio_output_set(mp, optString + 6);
++                } else {
++                    libvlc_media_add_option(m, optString);
++                }
++
 +                (*env)->ReleaseStringUTFChars(env, opt, optString);
 +            }
 +        }
 +    }
-+
-+    /* Create a media player playing environment */
-+    libvlc_media_player_t *mp = libvlc_media_player_new((libvlc_instance_t*)instance);
 +
 +    jobject myJavaLibVLC = (*env)->NewGlobalRef(env, thiz);
 +
@@ -1207,7 +1214,6 @@ index 0000000..415d63f
 +        return (jint) libvlc_video_get_spu_count(mp);
 +    return -1;
 +}
-+
 diff --git a/vlc-android/jni/libvlcjni_danmaku.inc.c b/vlc-android/jni/libvlcjni_danmaku.inc.c
 new file mode 100644
 index 0000000..8156569
