@@ -1,4 +1,4 @@
-From 9675ac2f7a59c18565652305c3266d9d74687ade Mon Sep 17 00:00:00 2001
+From 674dc90007c941deab43003e73dd6e11f37c6d1f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
 Subject: [PATCH 5/5] another libvlc wrapper
@@ -1216,7 +1216,7 @@ index 0000000..552660f
 +}
 diff --git a/vlc-android/jni/libvlcjni_danmaku.inc.c b/vlc-android/jni/libvlcjni_danmaku.inc.c
 new file mode 100644
-index 0000000..8156569
+index 0000000..be6314d
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.inc.c
 @@ -0,0 +1,79 @@
@@ -1256,7 +1256,7 @@ index 0000000..8156569
 +    libvlc_MediaPlayerPausableChanged,
 +//        libvlc_MediaPlayerTitleChanged,
 +//        libvlc_MediaPlayerSnapshotTaken,
-+//        libvlc_MediaPlayerLengthChanged,
++    libvlc_MediaPlayerLengthChanged,
 +//        libvlc_MediaPlayerVout,
 +};
 +
