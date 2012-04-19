@@ -1,14 +1,14 @@
-From 773149a277bf7744ca16dcd08eb5a93691517eb7 Mon Sep 17 00:00:00 2001
+From a1f79b191070dc0666e75acc3688de2e50951934 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
-Subject: [PATCH 3/4] disable unused libav codec
+Subject: [PATCH 3/5] disable unused libav codec
 
 ---
  contrib/src/ffmpeg/rules.mak |   34 ++++++++++++++++++++++++++++++++++
  1 file changed, 34 insertions(+)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 2097ff8..eeb1216 100644
+index e91ed35..837e23b 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
 @@ -6,8 +6,42 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=HEAD;sf=tgz

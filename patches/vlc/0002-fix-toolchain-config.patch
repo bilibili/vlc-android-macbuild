@@ -1,17 +1,17 @@
-From ee43cdc4f14eee727c584d2fa8d12a79678cae28 Mon Sep 17 00:00:00 2001
+From cd7fabf73cda584fe38c660a761c2be87069a3c6 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 18:21:02 +0800
-Subject: [PATCH 4/4] fix toolchain config
+Subject: [PATCH 2/5] fix toolchain config
 
 ---
  contrib/src/main.mak |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
 
 diff --git a/contrib/src/main.mak b/contrib/src/main.mak
-index 93d647f..8880e03 100644
+index 9625500..3990357 100644
 --- a/contrib/src/main.mak
 +++ b/contrib/src/main.mak
-@@ -377,6 +377,7 @@ ifdef HAVE_MACOSX
+@@ -417,6 +417,7 @@ ifdef HAVE_DARWIN_OS
  endif
  	echo "set(CMAKE_C_COMPILER $(CC))" >> $@
  	echo "set(CMAKE_CXX_COMPILER $(CXX))" >> $@
@@ -20,5 +20,5 @@ index 93d647f..8880e03 100644
  	echo "set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)" >> $@
  	echo "set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)" >> $@
 -- 
-1.7.7.4
+1.7.9.4
 

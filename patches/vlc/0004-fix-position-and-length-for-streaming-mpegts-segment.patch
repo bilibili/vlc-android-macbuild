@@ -1,7 +1,8 @@
-From 5afc4cab8af2dab449ad31f0e3ef1b0c74d8a54e Mon Sep 17 00:00:00 2001
+From 834b662cb015f7a485f17adb029b37c8b5022209 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH] fix position and length for streaming mpegts segments hls
+Subject: [PATCH 4/5] fix position and length for streaming mpegts segments
+ hls
 
 ---
  modules/demux/ts.c               |   54 ++++++++++++++++++++++++++++++++++++++
@@ -9,7 +10,7 @@ Subject: [PATCH] fix position and length for streaming mpegts segments hls
  2 files changed, 74 insertions(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index f9c2f4d..b5bb9c7 100644
+index f9c2f4d..0cf0630 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
 @@ -328,6 +328,14 @@ struct demux_sys_t
@@ -111,7 +112,7 @@ index f9c2f4d..b5bb9c7 100644
              if( pid->es->p_pes && pid->es->fmt.i_cat != VIDEO_ES )
              {
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index a8dfc4b..e984c17 100644
+index 433dca0..be691ef 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1047,6 +1047,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
@@ -150,7 +151,7 @@ index a8dfc4b..e984c17 100644
          free(line);
      }
  
-@@ -2346,6 +2360,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2345,6 +2359,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
  
      bool b_found = false;
      uint64_t length = 0;
@@ -158,7 +159,7 @@ index a8dfc4b..e984c17 100644
      uint64_t size = hls->size;
      int count = vlc_array_count(hls->segments);
  
-@@ -2385,6 +2400,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2384,6 +2399,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
              vlc_mutex_unlock(&hls->lock);
              return VLC_EGENERIC;
          }
@@ -167,7 +168,7 @@ index a8dfc4b..e984c17 100644
      }
  
      /* */
-@@ -2397,6 +2414,9 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2396,6 +2413,9 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
      /* */
      if (b_found)
      {
