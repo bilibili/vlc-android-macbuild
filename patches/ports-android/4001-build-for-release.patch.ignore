@@ -1,12 +1,26 @@
-From 69e48a0919a0325bb0623432a9f27dbd5920cdeb Mon Sep 17 00:00:00 2001
+From 8c6ea43ddb357cb3a7e7ebbe7e4c73f708a14313 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 6 Apr 2012 17:47:28 +0800
 Subject: [PATCH] build for release
 
 ---
+ configure.sh          |    2 +-
  vlc-android/jni/log.h |    4 ++++
- 1 file changed, 4 insertions(+)
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
+diff --git a/configure.sh b/configure.sh
+index 577691a..1ed6b81 100755
+--- a/configure.sh
++++ b/configure.sh
+@@ -53,7 +53,7 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+                 --enable-opensles \
+                 --enable-audiotrack \
+                 --enable-android-surface \
+-                --enable-debug \
++                --disable-debug \
+                 --disable-mkv \
+                 --disable-taglib \
+                 --enable-iomx \
 diff --git a/vlc-android/jni/log.h b/vlc-android/jni/log.h
 index f82fbcd..85fbf7c 100644
 --- a/vlc-android/jni/log.h
