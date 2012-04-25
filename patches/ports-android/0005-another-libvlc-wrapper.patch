@@ -1,4 +1,4 @@
-From 674dc90007c941deab43003e73dd6e11f37c6d1f Mon Sep 17 00:00:00 2001
+From 4c15edc9b0a7ebdf56fe7a807b0dfbf62d440687 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
 Subject: [PATCH 5/5] another libvlc wrapper
@@ -9,9 +9,9 @@ Subject: [PATCH 5/5] another libvlc wrapper
  vlc-android/jni/Android.mk              |   15 +-
  vlc-android/jni/Application.mk          |    2 +
  vlc-android/jni/libvlcjni.c             |  122 +++-
- vlc-android/jni/libvlcjni_danmaku.c     |  917 +++++++++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c     |  916 +++++++++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku.inc.c |   79 +++
- 7 files changed, 1122 insertions(+), 22 deletions(-)
+ 7 files changed, 1121 insertions(+), 22 deletions(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
@@ -42,7 +42,7 @@ index 03d6634..8b1fb16 100644
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
  
 diff --git a/compile.sh b/compile.sh
-index e3e973a..f950d60 100755
+index a37b8c9..0165277 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -28,7 +28,7 @@ fi
@@ -100,7 +100,7 @@ index 9507cee..3e5f176 100644
  APP_ABI := armeabi
  endif
 diff --git a/vlc-android/jni/libvlcjni.c b/vlc-android/jni/libvlcjni.c
-index eb63b4c..646ac69 100644
+index 264b3b6..ddd1f21 100644
 --- a/vlc-android/jni/libvlcjni.c
 +++ b/vlc-android/jni/libvlcjni.c
 @@ -36,6 +36,8 @@
@@ -293,10 +293,10 @@ index eb63b4c..646ac69 100644
      jfieldID field = (*env)->GetFieldID(env, clazz,
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..552660f
+index 0000000..7977a97
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,917 @@
+@@ -0,0 +1,916 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -902,7 +902,7 @@ index 0000000..552660f
 +            break;
 +        }
 +
-+    free(p_tracks);
++    libvlc_media_tracks_info_release(p_tracks, i_nbTracks);
 +    libvlc_media_release(p_m);
 +
 +    return hasVideo;
@@ -955,7 +955,6 @@ index 0000000..552660f
 +            setInt(env, item, "Type", p_tracks[i].i_type);
 +            setString(env, item, "Codec", (const char*)vlc_fourcc_GetDescription(0,p_tracks[i].i_codec));
 +            setString(env, item, "Language", p_tracks[i].psz_language);
-+            free(p_tracks[i].psz_language);
 +
 +            if (p_tracks[i].i_type == libvlc_track_video)
 +            {
@@ -971,7 +970,7 @@ index 0000000..552660f
 +        }
 +    }
 +
-+    free(p_tracks);
++    libvlc_media_tracks_info_release(p_tracks, i_nbTracks);
 +    libvlc_media_release(p_m);
 +    return array;
 +}
