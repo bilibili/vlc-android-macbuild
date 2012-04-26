@@ -3,3 +3,4 @@ tarballs
 /vlc-armv7a-neon
 /vlc-cortex-a9-vfpv3-d16
 /_ndk_stack.sh
+/_addr2line.sh
