@@ -1,7 +1,7 @@
-From 4c15edc9b0a7ebdf56fe7a807b0dfbf62d440687 Mon Sep 17 00:00:00 2001
+From 4221253802a5c09f9887be5414995994dc0436b0 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
-Subject: [PATCH 5/5] another libvlc wrapper
+Subject: [PATCH 7/7] another libvlc wrapper
 
 ---
  Makefile                                |    7 +-
@@ -16,7 +16,7 @@ Subject: [PATCH 5/5] another libvlc wrapper
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
 diff --git a/Makefile b/Makefile
-index 03d6634..8b1fb16 100644
+index 1c81c7f..58387da 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,12 @@
@@ -42,20 +42,20 @@ index 03d6634..8b1fb16 100644
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
  
 diff --git a/compile.sh b/compile.sh
-index a37b8c9..0165277 100755
+index 8fea803..83a10a2 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -28,7 +28,7 @@ fi
+@@ -30,7 +30,7 @@ fi
  if [ -z "$NO_NDK_V7" ]; then
      # try to detect NDK version
-     REL=$(grep "r7" $ANDROID_NDK/RELEASE.TXT)
+     REL=$(grep -o '^r[0-9]*' $ANDROID_NDK/RELEASE.TXT 2>/dev/null|cut -b2-)
 -    if [ -z $REL ]; then
 +    if [ -z "$REL" ]; then
          export NO_NDK_V7=1
      fi
  fi
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index fa2a8a9..38e7330 100644
+index 6527640..714836c 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -1,18 +1,21 @@
@@ -64,7 +64,7 @@ index fa2a8a9..38e7330 100644
  
 -LOCAL_MODULE    := libvlcjni
 -
--LOCAL_SRC_FILES := libvlcjni.c aout.c thumbnailer.c pthread-condattr.c pthread-rwlocks.c
+-LOCAL_SRC_FILES := libvlcjni.c aout.c thumbnailer.c pthread-condattr.c pthread-rwlocks.c eventfd.c
 -
 -LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
 -
@@ -79,7 +79,7 @@ index fa2a8a9..38e7330 100644
 +LOCAL_MODULE    := libvlcjni
  endif
  
-+LOCAL_SRC_FILES := libvlcjni_danmaku.c aout.c pthread-condattr.c pthread-rwlocks.c
++LOCAL_SRC_FILES := libvlcjni_danmaku.c aout.c pthread-condattr.c pthread-rwlocks.c eventfd.c
 +
 +LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
 +
@@ -100,7 +100,7 @@ index 9507cee..3e5f176 100644
  APP_ABI := armeabi
  endif
 diff --git a/vlc-android/jni/libvlcjni.c b/vlc-android/jni/libvlcjni.c
-index 264b3b6..ddd1f21 100644
+index b6c0d18..717efe6 100644
 --- a/vlc-android/jni/libvlcjni.c
 +++ b/vlc-android/jni/libvlcjni.c
 @@ -36,6 +36,8 @@

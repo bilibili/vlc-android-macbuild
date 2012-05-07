@@ -1,22 +1,22 @@
-From 33f861acf0f0b39b15f048badaba66e56bd7992f Mon Sep 17 00:00:00 2001
+From 76c444262b3b695fd453b8d591e57aedc6132e68 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 24 Mar 2012 19:47:54 +0800
-Subject: [PATCH 3/5] modify module ignore list
+Subject: [PATCH 3/7] modify module ignore list
 
 ---
  Makefile |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index ac3102d..03d6634 100644
+index 41d4b08..23dd1ec 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -35,7 +35,7 @@ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)
  	@echo
  	$(VERBOSE)cd $(SRC) && ant $(ANT_OPTS) debug
  
--VLC_MODULES=`find $(VLC_BUILD_DIR)/modules -name 'lib*_plugin.a'|grep -v -E "stats|access_bd|oldrc|real|hotkeys|gestures|sap|dynamicoverlay|rss|logo|libball|bargraph|clone|access_shm|mosaic|logo|imem|osdmenu|puzzle|mediadirs|t140|ripple|motion|sharpen|grain|posterize|mirror|wall|scene|blendbench|psychedelic|alphamask|netsync|audioscrobbler|imem|motiondetect|export|smf|podcast|bluescreen|erase|record|speex_resampler|remoteosd|magnify|gradient|spdif" | tr \\\\n \ `
-+VLC_MODULES=`find $(VLC_BUILD_DIR)/modules -name 'lib*_plugin.a'|grep -v -E "stats|access_bd|oldrc|real|hotkeys|gestures|sap|dynamicoverlay|rss|logo|libball|bargraph|clone|access_shm|mosaic|logo|imem|osdmenu|puzzle|mediadirs|t140|ripple|motion|sharpen|grain|posterize|mirror|wall|scene|blendbench|psychedelic|alphamask|netsync|audioscrobbler|imem|motiondetect|export|smf|podcast|bluescreen|erase|record|speex_resampler|remoteosd|magnify|gradient|spdif|libstream_filter_dash_|libxml_|libflac_|libflacsys_|libogg_|libaccess_rar_|libaccess_udp_|libaccess_vdr_|libsdp_|libstream_filter_rar_|libaccess_mms_|librtp_|libzip_|libcompressor_|libkaraoke_|libaout_file_|libdirac_|libtta_|libavi_|libplaylist_|libfolder_|libosd_parser_|libdecomp_|libsubtitle_|libvobsub_|libvoc_|libasf_|libwave_|libvisual_|libmarq_|libsubsde_|libay_|libaiff_|libcvdsub_|libsvcdsub_|libdvdsub_|libdvbsub_|libdts|libsubsdelay_|libaccess_attachment_|libwav_|libspeex_|libpacketizer_dirac|libpacketizer_flac" | tr \\\\n \ `
+-VLC_MODULES=`find $(VLC_BUILD_DIR)/modules -name 'lib*_plugin.a'|grep -v -E "stats|access_bd|oldrc|real|hotkeys|gestures|sap|dynamicoverlay|rss|libball|bargraph|clone|access_shm|mosaic|imem|osdmenu|puzzle|mediadirs|t140|ripple|motion|sharpen|grain|posterize|mirror|wall|scene|blendbench|psychedelic|alphamask|netsync|audioscrobbler|imem|motiondetect|export|smf|podcast|bluescreen|erase|record|speex_resampler|remoteosd|magnify|gradient|spdif|dtstofloat32" | tr \\\\n \ `
++VLC_MODULES=`find $(VLC_BUILD_DIR)/modules -name 'lib*_plugin.a'|grep -v -E "stats|access_bd|oldrc|real|hotkeys|gestures|sap|dynamicoverlay|rss|libball|bargraph|clone|access_shm|mosaic|imem|osdmenu|puzzle|mediadirs|t140|ripple|motion|sharpen|grain|posterize|mirror|wall|scene|blendbench|psychedelic|alphamask|netsync|audioscrobbler|imem|motiondetect|export|smf|podcast|bluescreen|erase|record|speex_resampler|remoteosd|magnify|gradient|spdif|dtstofloat32|libstream_filter_dash_|libxml_|libflac_|libflacsys_|libogg_|libaccess_rar_|libaccess_udp_|libaccess_vdr_|libsdp_|libstream_filter_rar_|libaccess_mms_|librtp_|libzip_|libcompressor_|libkaraoke_|libaout_file_|libdirac_|libtta_|libavi_|libplaylist_|libfolder_|libosd_parser_|libdecomp_|libsubtitle_|libvobsub_|libvoc_|libasf_|libwave_|libvisual_|libmarq_|libsubsde_|libay_|libaiff_|libcvdsub_|libsvcdsub_|libdvdsub_|libdvbsub_|libdts|libsubsdelay_|libaccess_attachment_|libwav_|libspeex_|libpacketizer_dirac|libpacketizer_flac" | tr \\\\n \ `
  
  $(LIBVLCJNI_H):
  	$(VERBOSE)if [ -z "$(VLC_BUILD_DIR)" ]; then echo "VLC_BUILD_DIR not defined" ; exit 1; fi

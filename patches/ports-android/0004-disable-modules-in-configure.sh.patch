@@ -1,14 +1,14 @@
-From bf3d13005afe07ee9855b49fb23772cab93b565b Mon Sep 17 00:00:00 2001
+From b4f6ac5a111471bf8ae0cb28432a4379f507bbf4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH 4/5] disable modules in configure.sh
+Subject: [PATCH 4/7] disable modules in configure.sh
 
 ---
  configure.sh |    6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/configure.sh b/configure.sh
-index 3f48c50..577691a 100755
+index fd313f9..ab51923 100755
 --- a/configure.sh
 +++ b/configure.sh
 @@ -46,7 +46,7 @@ STRIP="${CROSS_COMPILE}strip" \

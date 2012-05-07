@@ -1,0 +1,48 @@
+From 054c011d6b4b4c17e566dee0660ede98f0f99011 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 8 May 2012 12:32:02 +0800
+Subject: [PATCH 6/7] vlc repo reset script
+
+---
+ _reset_vlc.sh |   29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+ create mode 100644 _reset_vlc.sh
+
+diff --git a/_reset_vlc.sh b/_reset_vlc.sh
+new file mode 100644
+index 0000000..4a14275
+--- /dev/null
++++ b/_reset_vlc.sh
+@@ -0,0 +1,29 @@
++#! /bin/sh
++
++# 1/ libvlc, libvlccore and its plugins
++TESTED_HASH=a685fdeb8d
++if [ ! -d "vlc" ]; then
++    echo "VLC source not found, cloning"
++    git clone git://git.videolan.org/vlc.git vlc
++    cd vlc
++else
++    echo "VLC source found"
++    cd vlc
++    git fetch origin
++fi
++
++echo "======================================="
++echo "Reset to brance android ${TESTED_HASH}"
++git checkout -B android ${TESTED_HASH}
++
++echo "======================================="
++echo "Applying the patches"
++git am ../patches/*.patch || git am --abort
++
++echo "======================================="
++echo "Applying the patches for libvlc_danmaku"
++git am ../../patches/vlc/*.patch || git am --abort
++
++echo "======================================="
++
++cd -
+-- 
+1.7.9.4
+

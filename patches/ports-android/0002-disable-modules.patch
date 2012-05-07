@@ -1,7 +1,7 @@
-From c83b601ba902c607d8024f8cfdefa697c8c1ee03 Mon Sep 17 00:00:00 2001
+From 23540328573786bea82ee7d1c3790f914c9d872e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
-Subject: [PATCH 2/5] disable modules
+Subject: [PATCH 2/7] disable modules
 
 ---
  compile.sh                 |    4 ++++
@@ -9,10 +9,10 @@ Subject: [PATCH 2/5] disable modules
  2 files changed, 8 insertions(+), 6 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index 26c2209..e3e973a 100755
+index 0d689fb..8fea803 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -81,6 +81,10 @@ mkdir contrib/android; cd contrib/android
+@@ -105,6 +105,10 @@ cd contrib/android
      --disable-tremor \
      --disable-vorbis \
      --disable-sidplay2 \
@@ -22,9 +22,9 @@ index 26c2209..e3e973a 100755
 +    --disable-matroska \
      --disable-samplerate
  
- # TODO: mpeg2, dts, theora
+ # TODO: mpeg2, theora
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index d9b8ba5..fa2a8a9 100644
+index c6642e6..6527640 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -26,13 +26,11 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \

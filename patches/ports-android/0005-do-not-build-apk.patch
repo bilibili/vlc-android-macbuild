@@ -1,0 +1,25 @@
+From d6cc9b4cbacf3f704d18a3da3c538256c98af516 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 8 May 2012 11:30:23 +0800
+Subject: [PATCH 5/7] do not build apk
+
+---
+ Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 23dd1ec..1c81c7f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -33,7 +33,7 @@ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)
+ 	@echo
+ 	@echo "=== Building $@ for $(ARCH) ==="
+ 	@echo
+-	$(VERBOSE)cd $(SRC) && ant $(ANT_OPTS) debug
++	$(VERBOSE)cd $(SRC)
+ 
+ VLC_MODULES=`find $(VLC_BUILD_DIR)/modules -name 'lib*_plugin.a'|grep -v -E "stats|access_bd|oldrc|real|hotkeys|gestures|sap|dynamicoverlay|rss|libball|bargraph|clone|access_shm|mosaic|imem|osdmenu|puzzle|mediadirs|t140|ripple|motion|sharpen|grain|posterize|mirror|wall|scene|blendbench|psychedelic|alphamask|netsync|audioscrobbler|imem|motiondetect|export|smf|podcast|bluescreen|erase|record|speex_resampler|remoteosd|magnify|gradient|spdif|dtstofloat32|libstream_filter_dash_|libxml_|libflac_|libflacsys_|libogg_|libaccess_rar_|libaccess_udp_|libaccess_vdr_|libsdp_|libstream_filter_rar_|libaccess_mms_|librtp_|libzip_|libcompressor_|libkaraoke_|libaout_file_|libdirac_|libtta_|libavi_|libplaylist_|libfolder_|libosd_parser_|libdecomp_|libsubtitle_|libvobsub_|libvoc_|libasf_|libwave_|libvisual_|libmarq_|libsubsde_|libay_|libaiff_|libcvdsub_|libsvcdsub_|libdvdsub_|libdvbsub_|libdts|libsubsdelay_|libaccess_attachment_|libwav_|libspeex_|libpacketizer_dirac|libpacketizer_flac" | tr \\\\n \ `
+ 
+-- 
+1.7.9.4
+
