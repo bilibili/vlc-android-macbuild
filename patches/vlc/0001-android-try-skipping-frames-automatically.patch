@@ -1,14 +1,14 @@
-From 8f7fa7f9925f781d2bfa56cc303fba5e8846ff8e Mon Sep 17 00:00:00 2001
+From 9b73a241cca11ae27100868622c4ebad1436be91 Mon Sep 17 00:00:00 2001
 From: tewilove <tewilove@gmail.com>
 Date: Wed, 15 Feb 2012 20:45:29 -0800
-Subject: [PATCH 1/5] android: try skipping frames automatically
+Subject: [PATCH 1/7] android: try skipping frames automatically
 
 ---
  modules/codec/avcodec/video.c |   55 +++++++++++++++++++++++++++++++++++++++++
  1 file changed, 55 insertions(+)
 
 diff --git a/modules/codec/avcodec/video.c b/modules/codec/avcodec/video.c
-index 60ce6b6..b74a52f 100644
+index 2ea9b2d..0245620 100644
 --- a/modules/codec/avcodec/video.c
 +++ b/modules/codec/avcodec/video.c
 @@ -84,6 +84,14 @@ struct decoder_sys_t

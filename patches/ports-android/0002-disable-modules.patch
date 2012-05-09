@@ -1,7 +1,7 @@
 From 23540328573786bea82ee7d1c3790f914c9d872e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
-Subject: [PATCH 2/7] disable modules
+Subject: [PATCH 2/8] disable modules
 
 ---
  compile.sh                 |    4 ++++

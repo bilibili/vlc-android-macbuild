@@ -1,7 +1,7 @@
-From a1f79b191070dc0666e75acc3688de2e50951934 Mon Sep 17 00:00:00 2001
+From 1dc7b9c66c3861b06572da6e3a8560e7e3e95e21 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
-Subject: [PATCH 3/5] disable unused libav codec
+Subject: [PATCH 3/7] disable unused libav codec
 
 ---
  contrib/src/ffmpeg/rules.mak |   34 ++++++++++++++++++++++++++++++++++

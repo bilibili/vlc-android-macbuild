@@ -1,7 +1,7 @@
 From b4f6ac5a111471bf8ae0cb28432a4379f507bbf4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH 4/7] disable modules in configure.sh
+Subject: [PATCH 4/8] disable modules in configure.sh
 
 ---
  configure.sh |    6 +++---
