@@ -9,6 +9,7 @@
     cd vlc-android-macbuild
     sh _pull_armv7a-neon.sh
     cd vlc-armv7a-neon
+    sh _reset_vlc.sh
     sh compile.sh
 
 # NOTICE
