@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bili_titlebar_background" >
+
+        <!-- align left -->
+
+        <LinearLayout
+            android:id="@+id/left"
+            android:layout_width="fill_parent"
+            android:layout_height="48dip"
+            android:layout_alignParentLeft="true"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/back"
+                style="@style/TitleBarButton"
+                android:contentDescription="@null"
+                android:src="@drawable/bili_titlebar_back_button" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</merge>

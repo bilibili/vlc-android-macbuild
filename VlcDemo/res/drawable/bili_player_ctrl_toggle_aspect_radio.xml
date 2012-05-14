@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<level-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:drawable="@drawable/bili_player_aspect_radio_is_adjust_video"
+        android:maxLevel="0"/>
+    <item
+        android:drawable="@drawable/bili_player_aspect_radio_is_4_3"
+        android:maxLevel="1"/>
+    <item
+        android:drawable="@drawable/bili_player_aspect_radio_is_16_9"
+        android:maxLevel="2"/>
+</level-list>

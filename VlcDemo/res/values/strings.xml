@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, VlcDemoActivity!</string>
+    <string name="app_name">VlcDemo</string>
+
+    <!--  -->
+    <string name="player_pause">Pause</string>
+    <string name="player_play">Play</string>
+    <string name="player_previous">Previous</string>
+    <string name="player_next">Next</string>
+    <string name="loading">加载中…</string>
+    <string name="no_more">没有更多的了</string>
+    <string name="next_page">显示更多</string>
+    <string name="retry">重试</string>
+    <string name="quit">退出</string>
+    <string name="really_quit">确定要退出么？</string>
+    <string name="yes">是</string>
+    <string name="no">否</string>
+
+    <!-- for VideoView -->
+    <string name="PreloadingView_lineend_start_resolve_param">准备播放数据\n</string>
+    <string name="PreloadingView_lineend_param_resolved">数据解析完成\n</string>
+    <string name="PreloadingView_span_resolving_playable_url">检查视频地址…</string>
+    <string name="PreloadingView_span_preparing_player">开始视频缓冲…</string>
+    <string name="PreloadingView_lineend_failed">【失败】\n</string>
+    <string name="PreloadingView_lineend_succeeded">【完成】\n</string>
+    <string name="PreloadingView_fmt_lineend_succeeded_to_forward">【重定向:%d】\n</string>
+    <string name="PreloadingView_lineend_will_start">即将开始播放</string>
+    <string name="PreloadingView_lineend_will_fail">播放参数解析失败</string>
+    <string name="PreloadingView_lineend_will_cancel">即将退出</string>
+    <string name="PreloadingView_lineend_select_android_player">选择播放器v1(HW)\n</string>
+    <string name="PreloadingView_lineend_select_vlc_player">选择播放器v2(SW)\n</string>
+    <string name="PreloadingView_lineend_select_auto_player">选择混合播放模式\n</string>
+    <string name="PreloadingView_lineend_select_3rd_player">选择第三方播放器\n</string>
+    <string name="PreloadingView_fmt_lineend_start_resolve_segment">准备播放第%d段视频\n</string>
+    <string name="PreloadingView_press_back_to_exit">再次按后退可以结束播放</string>
+    <string name="PreloadingView_fmt_lineend_found_youku_stream">发现视频源(参考码率 %dkbps)\n</string>
+    <string name="PreloadingView_fmt_lineend_select_youku_stream">选择视频源(参考码率 %dkbps)\n</string>
+    <string name="PreloadingView_fmt_lineend_auto_mode_android_failed">\n播放器v1(HW)失败:%1$d,%2$d\n</string>
+
+    <!--  -->
+    <string name="VideoView_buffering">正在缓冲…</string>
+    <string name="VideoView_error_title">错误</string>
+    <string name="VideoView_error_text_invalid_progressive_playback">暂不支持在线播放此视频</string>
+    <string name="VideoView_error_text_unknown">播放视频的时候发生未知错误</string>
+    <string name="VideoView_error_text_server_died">失去与视频服务器的连接</string>
+    <string name="VideoView_error_button">OK</string>
+
+    <!--  -->
+    <string name="PlayMode_android_player_hw">v1 HW</string>
+    <string name="PlayMode_vlc_player_sw">v2 SW</string>
+    <string name="PlayMode_vlc_player_hw_sw">v2 HW/SW</string>
+
+    <!--  -->
+    <string name="Vlc_load_error">播放器v2初始化失败</string>
+
+</resources>
