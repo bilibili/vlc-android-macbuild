@@ -1,0 +1,25 @@
+From 86e773430060a1c9f734218e9383c01462c00917 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 8 May 2012 11:30:23 +0800
+Subject: [PATCH 2/6] do not build apk
+
+---
+ Makefile |    2 +-
+ 1 个文件被修改，插入 1 行(+)，删除 1 行(-)
+
+diff --git a/Makefile b/Makefile
+index 54a5002..b9eb5f4 100644
+--- a/Makefile
++++ b/Makefile
+@@ -34,7 +34,7 @@ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)
+ 	@echo
+ 	@echo "=== Building $@ for $(ARCH) ==="
+ 	@echo
+-	$(VERBOSE)cd $(SRC) && ant $(ANT_OPTS) debug
++	$(VERBOSE)cd $(SRC)
+ 
+ VLC_MODULES=`find $(VLC_BUILD_DIR)/modules -name 'lib*_plugin.a'|grep -v -E "stats|access_bd|oldrc|real|hotkeys|gestures|sap|dynamicoverlay|rss|libball|bargraph|clone|access_shm|mosaic|imem|osdmenu|puzzle|mediadirs|t140|ripple|motion|sharpen|grain|posterize|mirror|wall|scene|blendbench|psychedelic|alphamask|netsync|audioscrobbler|imem|motiondetect|export|smf|podcast|bluescreen|erase|record|speex_resampler|remoteosd|magnify|gradient|spdif|dtstofloat32" | tr \\\\n \ `
+ 
+-- 
+1.7.10.2
+

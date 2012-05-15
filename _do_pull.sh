@@ -27,4 +27,13 @@ echo "patch "${BILI_VLC_TARGET}
 cd ${BILI_VLC_TARGET}
 git am ../patches/ports-android/${BILI_VLC_TARGET}/*.patch || git am --abort
 git am ../patches/ports-android/*.patch || git am --abort
+
+if [[ ${BILI_VLC_MODULE_MODE} == 'lite' ]]; then
+    git am ../patches/ports-android/modules-lite/*.patch
+elif [[ ${BILI_VLC_MODULE_MODE} == 'live' ]]; then
+    git am ../patches/ports-android/modules-live/*.patch
+elif [[ ${BILI_VLC_MODULE_MODE} == 'full' ]]; then
+    git am ../patches/ports-android/modules-full/*.patch
+fi
+
 cd -

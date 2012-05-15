@@ -1,7 +1,7 @@
-From c83302b49338505bed501656c066983a196eff47 Mon Sep 17 00:00:00 2001
+From 9f68306aec35f7cea516740dd825725051a8ac70 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 15 May 2012 17:37:16 +0800
-Subject: [PATCH 9/9] update vlc to 0ef62578e5b6
+Subject: [PATCH 6/6] update vlc to 0ef62578e5b6
 
 ---
  _reset_vlc.sh |    2 +-

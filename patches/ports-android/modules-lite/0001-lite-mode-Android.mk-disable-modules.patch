@@ -1,7 +1,7 @@
-From 3a7ff4c359ecaf27f61df73ff345b0808ec9e6a5 Mon Sep 17 00:00:00 2001
+From 948e12c60c2cc2550641cc41793425f0fffe7f3e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
-Subject: [PATCH 2/9] disable modules
+Subject: [PATCH 1/4] lite-mode: Android.mk: disable modules
 
 ---
  compile.sh                 |    4 ++++
@@ -9,7 +9,7 @@ Subject: [PATCH 2/9] disable modules
  2 个文件被修改，插入 8 行(+)，删除 6 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index 20987e7..e12fbd3 100755
+index 0927297..64e3053 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -127,6 +127,10 @@ cd contrib/android
@@ -24,10 +24,10 @@ index 20987e7..e12fbd3 100755
  
  # TODO: mpeg2, theora
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 06480cb..ecad30c 100644
+index 84701bc..a15b94c 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
-@@ -26,13 +26,11 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+@@ -29,13 +29,11 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
  	$(VLC_BUILD_DIR)/src/.libs/libvlccore.a \
  	$(VLC_BUILD_DIR)/compat/.libs/libcompat.a \
  	-ldl -lz -lm -llog \

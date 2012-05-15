@@ -1,14 +1,15 @@
-From 7becce8a81d6a3ed98e5ff313176c3b259f0b1aa Mon Sep 17 00:00:00 2001
+From f5e7e0149881952132e7290d22cea99ff39b035e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
-Subject: [PATCH 1/9] modify compile.sh for MacOS build
+Subject: [PATCH] modify compile.sh for MacOS build
 
 ---
- compile.sh |   43 ++++++++++++++++++++++++++++++++++++++++++-
- 1 个文件被修改，插入 42 行(+)，删除 1 行(-)
+ compile.sh |   49 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 个文件被修改，插入 48 行(+)，删除 1 行(-)
+ create mode 100644 patches-extra/.gitignore
 
 diff --git a/compile.sh b/compile.sh
-index 5e2be69..20987e7 100755
+index 5e2be69..513448e 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -37,7 +37,18 @@ fi
@@ -17,30 +18,32 @@ index 5e2be69..20987e7 100755
  # stub libraries
 -export PATH=${ANDROID_NDK}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin:${PATH}
 +BUILD_PLATFORM='unknown'
-+if [[ "$(uname)" == 'Linux' ]]; then
++if [ "$(uname)" == 'Linux' ]; then
 +   BUILD_PLATFORM='linux'
-+elif [[ "$(uname)" == 'Darwin' ]]; then
++elif [ "$(uname)" == 'Darwin' ]; then
 +   BUILD_PLATFORM='darwin'
 +fi
 +
-+if [[ ${BUILD_PLATFORM} == 'darwin' ]]; then
++if [ ${BUILD_PLATFORM} == 'darwin' ]; then
 +    export PATH=${ANDROID_NDK}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/darwin-x86/bin:${PATH}
-+elif [[ ${BUILD_PLATFORM} == 'linux' ]]; then
++elif [ ${BUILD_PLATFORM} == 'linux' ]; then
 +    export PATH=${ANDROID_NDK}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin:${PATH}
 +fi
  
  # 1/ libvlc, libvlccore and its plugins
  TESTED_HASH=0ef62578e5b6
-@@ -48,6 +59,25 @@ if [ ! -d "vlc" ]; then
+@@ -48,6 +59,30 @@ if [ ! -d "vlc" ]; then
      git checkout -B android ${TESTED_HASH}
      echo "Applying the patches"
      git am ../patches/*.patch
 +
-+    if [[ ${BUILD_PLATFORM} == 'darwin' ]]; then
++    if [ ${BUILD_PLATFORM} == 'darwin' ]; then
 +        git am ../../patches/vlc-on-macosx/*.patch
 +    fi
 +    git am ../../patches/vlc/*.patch
-+
++    if [ -f "../patches-extra/*.patch" ]; then
++        git am ../patches-extra/*.patch
++    fi
 +elif [ '$1' != '-f' ]; then
 +    echo "VLC source found, build without hash check"
 +    cd vlc
@@ -49,15 +52,18 @@ index 5e2be69..20987e7 100755
 +    git am ../patches/*.patch || git am --abort
 +    echo "======================================="
 +    echo "Applying the patches for libvlc_danmaku"
-+    if [[ ${BUILD_PLATFORM} == 'darwin' ]]; then
++    if [ ${BUILD_PLATFORM} == 'darwin' ]; then
 +        git am ../../patches/vlc-on-macosx/*.patch || git am --abort
 +    fi
 +    git am ../../patches/vlc/*.patch || git am --abort
++    if [ -f "../patch-extra/*.patch" ]; then
++        git am ../patches-extra/*.patch || git am --abort
++    fi
 +    echo "======================================="
  else
      echo "VLC source found"
      cd vlc
-@@ -64,6 +94,10 @@ git reset --hard origin
+@@ -64,6 +99,11 @@ git reset --hard origin
  git pull origin master
  git checkout -B android ${TESTED_HASH}
  git am ../patches/*
@@ -65,10 +71,11 @@ index 5e2be69..20987e7 100755
 +    git am ../../patches/vlc-on-macosx/*.patch
 +fi
 +git am ../../patches/vlc/*.patch
++git am ../patches-extra/*.patch
  
  *** : This will delete any changes you made to the current branch ***
  
-@@ -72,6 +106,7 @@ EOF
+@@ -72,6 +112,7 @@ EOF
      fi
  fi
  
@@ -76,7 +83,7 @@ index 5e2be69..20987e7 100755
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
-@@ -102,6 +137,12 @@ if test -z "${NO_NEON}" -o -n "${TEGRA2}"; then
+@@ -102,6 +143,12 @@ if test -z "${NO_NEON}" -o -n "${TEGRA2}"; then
      echo "NOTHUMB := -marm" >> config.mak
  fi
  
@@ -89,6 +96,9 @@ index 5e2be69..20987e7 100755
  make fetch
  make
  
+diff --git a/patches-extra/.gitignore b/patches-extra/.gitignore
+new file mode 100644
+index 0000000..e69de29
 -- 
 1.7.10.2
 

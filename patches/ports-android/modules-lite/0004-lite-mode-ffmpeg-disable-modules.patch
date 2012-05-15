@@ -1,0 +1,78 @@
+From c260bcb5919b719d0b5f07b95b9271c491220ffc Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 15 May 2012 21:35:29 +0800
+Subject: [PATCH 4/4] lite-mode: ffmpeg: disable modules
+
+---
+ .../0001-disable-unused-libav-codec.patch          |   59 ++++++++++++++++++++
+ 1 个文件被修改，插入 59 行(+)
+ create mode 100644 patches-extra/0001-disable-unused-libav-codec.patch
+
+diff --git a/patches-extra/0001-disable-unused-libav-codec.patch b/patches-extra/0001-disable-unused-libav-codec.patch
+new file mode 100644
+index 0000000..ed99ea4
+--- /dev/null
++++ b/patches-extra/0001-disable-unused-libav-codec.patch
+@@ -0,0 +1,59 @@
++From 1dc7b9c66c3861b06572da6e3a8560e7e3e95e21 Mon Sep 17 00:00:00 2001
++From: bbcallen <bbcallen@gmail.com>
++Date: Thu, 22 Mar 2012 18:45:25 +0800
++Subject: [PATCH 3/7] disable unused libav codec
++
++---
++ contrib/src/ffmpeg/rules.mak |   34 ++++++++++++++++++++++++++++++++++
++ 1 file changed, 34 insertions(+)
++
++diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
++index e91ed35..837e23b 100644
++--- a/contrib/src/ffmpeg/rules.mak
+++++ b/contrib/src/ffmpeg/rules.mak
++@@ -6,8 +6,42 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=HEAD;sf=tgz
++ FFMPEGCONF = \
++ 	--cc="$(CC)" \
++ 	--disable-doc \
+++	--disable-network \
+++	--disable-protocols \
++ 	--disable-decoder=libvpx \
++ 	--disable-decoder=bink \
+++	--disable-decoders \
+++	--enable-decoder=aac \
+++	--enable-decoder=aac_latm \
+++	--enable-decoder=aasc \
+++	--enable-decoder=ac3 \
+++	--enable-decoder=amrnb \
+++	--enable-decoder=amrwb \
+++	--enable-decoder=bmp \
+++	--enable-decoder=flac \
+++	--enable-decoder=flv \
+++	--enable-decoder=gif \
+++	--enable-decoder=h263 \
+++	--enable-decoder=h263i \
+++	--enable-decoder=h264 \
+++	--enable-decoder=jpegls \
+++	--enable-decoder=mjpeg \
+++	--enable-decoder=mjpegb \
+++	--enable-decoder=mp3 \
+++	--enable-decoder=mp3adu \
+++	--enable-decoder=mp3adufloat \
+++	--enable-decoder=mp3float \
+++	--enable-decoder=mp3on4 \
+++	--enable-decoder=mp3on4float \
+++	--enable-decoder=mpeg1video \
+++	--enable-decoder=mpeg2video \
+++	--enable-decoder=mpeg4 \
+++	--enable-decoder=mpeg4v1 \
+++	--enable-decoder=mpeg4v2 \
+++	--enable-decoder=mpeg4v3 \
+++	--enable-decoder=png \
+++	--enable-decoder=vorbis \
+++	--enable-decoder=vp8 \
++ 	--enable-libgsm \
++ 	--enable-libopenjpeg \
++ 	--disable-debug \
++-- 
++1.7.9.4
++
+-- 
+1.7.10.2
+

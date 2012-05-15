@@ -2,6 +2,15 @@ tarballs
 /vlc-armv6j
 /vlc-armv7a-neon
 /vlc-cortex-a9-vfpv3-d16
+/vlc-lite-armv6j
+/vlc-lite-armv7a-neon
+/vlc-lite-cortex-a9-vfpv3-d16
+/vlc-full-armv6j
+/vlc-full-armv7a-neon
+/vlc-full-cortex-a9-vfpv3-d16
+/vlc-live-armv6j
+/vlc-live-armv7a-neon
+/vlc-live-cortex-a9-vfpv3-d16
 /_ndk_stack.sh
 /_addr2line.sh
 /tmp
