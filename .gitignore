@@ -40,6 +40,7 @@ bili.keystore.properties
 # temp files
 Thumbs.db
 Desktop.ini
+.DS_Store
 *.tmp
 *.bak
 *.swp
