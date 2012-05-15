@@ -1,4 +1,10 @@
 # HOWTO
+ 0. Requirements (AFAIK)
+  * MacOS or CentOS
+  * ADK
+  * NDK-r7c
+  * git 1.7.9.4
+
  1. Install necessary tools.
     Read this article http://www.doitscared.com/?p=649
 
