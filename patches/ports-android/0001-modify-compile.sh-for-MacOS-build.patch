@@ -1,14 +1,14 @@
-From 615b33a9f463a6f7a6bcd311a2e8034eb6b9b38a Mon Sep 17 00:00:00 2001
+From a9ace7f8304f20b3decf2c03d21e879d83ce2b1b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH] modify compile.sh for MacOS build
 
 ---
  compile.sh |   43 ++++++++++++++++++++++++++++++++++++++++++-
- 1 个文件被修改，插入 42 行(+)，删除 1 行(-)
+ 1 file changed, 42 insertions(+), 1 deletion(-)
 
 diff --git a/compile.sh b/compile.sh
-index 8c2d614..721ff9c 100755
+index 8c2d614..a6c0c6b 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -37,7 +37,18 @@ fi
@@ -50,9 +50,9 @@ index 8c2d614..721ff9c 100755
 +    echo "======================================="
 +    echo "Applying the patches for libvlc_danmaku"
 +    if [[ ${BUILD_PLATFORM} == 'darwin' ]]; then
-+        git am ../../patches/vlc-on-macosx/*.patch
++        git am ../../patches/vlc-on-macosx/*.patch || git am --abort
 +    fi
-+    git am ../../patches/vlc/*.patch
++    git am ../../patches/vlc/*.patch || git am --abort
 +    echo "======================================="
  else
      echo "VLC source found"
@@ -90,5 +90,5 @@ index 8c2d614..721ff9c 100755
  make
  
 -- 
-1.7.10.2
+1.7.9.4
 

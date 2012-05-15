@@ -5,3 +5,44 @@ tarballs
 /_ndk_stack.sh
 /_addr2line.sh
 /tmp
+
+# svn
+.svn/
+
+# vlc build env
+vlc-android-macbuild/
+
+# built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+*.jar
+
+# native module
+*.so
+
+# generated files
+bin/
+gen/
+
+# Local configuration file (sdk path, etc)
+.metadata
+local.properties
+.classpath
+lint.xml
+bili.keystore.properties
+
+# temp files
+Thumbs.db
+Desktop.ini
+*.tmp
+*.bak
+*.swp
+
+# temp ignore
+
