@@ -1,17 +1,17 @@
-From 76c444262b3b695fd453b8d591e57aedc6132e68 Mon Sep 17 00:00:00 2001
+From 79fd2c131ae9807802bb1ea242e4cc79e33c8f38 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 24 Mar 2012 19:47:54 +0800
-Subject: [PATCH 3/8] modify module ignore list
+Subject: [PATCH 3/9] modify module ignore list
 
 ---
  Makefile |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ 1 个文件被修改，插入 1 行(+)，删除 1 行(-)
 
 diff --git a/Makefile b/Makefile
-index 41d4b08..23dd1ec 100644
+index 54a5002..91f7123 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -35,7 +35,7 @@ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)
+@@ -36,7 +36,7 @@ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)
  	@echo
  	$(VERBOSE)cd $(SRC) && ant $(ANT_OPTS) debug
  
@@ -21,5 +21,5 @@ index 41d4b08..23dd1ec 100644
  $(LIBVLCJNI_H):
  	$(VERBOSE)if [ -z "$(VLC_BUILD_DIR)" ]; then echo "VLC_BUILD_DIR not defined" ; exit 1; fi
 -- 
-1.7.9.4
+1.7.10.2
 

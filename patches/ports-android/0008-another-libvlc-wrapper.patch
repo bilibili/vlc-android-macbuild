@@ -1,22 +1,21 @@
-From 2c17a2497f15d54b750c49a8c17f3af3c713ba9c Mon Sep 17 00:00:00 2001
+From 91e7196adc673a7a52b579128571453042e58193 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
-Subject: [PATCH 8/8] another libvlc wrapper
+Subject: [PATCH 8/9] another libvlc wrapper
 
 ---
  Makefile                                |    7 +-
  compile.sh                              |    2 +-
  vlc-android/jni/Android.mk              |   15 +-
  vlc-android/jni/Application.mk          |    2 +
- vlc-android/jni/libvlcjni.c             |  122 +++-
  vlc-android/jni/libvlcjni_danmaku.c     |  916 +++++++++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku.inc.c |   79 +++
- 7 files changed, 1121 insertions(+), 22 deletions(-)
+ 6 个文件被修改，插入 1013 行(+)，删除 8 行(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
 diff --git a/Makefile b/Makefile
-index 1c81c7f..58387da 100644
+index e547900..41d5914 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,12 @@
@@ -39,10 +38,10 @@ index 1c81c7f..58387da 100644
 -	$(SRC)/obj/local/$(ARCH)/libvlcjni.so \
 +	$(SRC)/obj/local/$(ARCH)/$(LIBVLCJNI_MODULE_NAME) \
  	$(SRC)/obj/local/$(ARCH)/libiomx-ics.so \
+ 	$(SRC)/obj/local/$(ARCH)/libiomx-hc.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
- 
 diff --git a/compile.sh b/compile.sh
-index 8fea803..83a10a2 100755
+index e12fbd3..64e3053 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -30,7 +30,7 @@ fi
@@ -55,7 +54,7 @@ index 8fea803..83a10a2 100755
      fi
  fi
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 6527640..714836c 100644
+index ecad30c..a15b94c 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -1,18 +1,21 @@
@@ -99,198 +98,6 @@ index 9507cee..3e5f176 100644
  else
  APP_ABI := armeabi
  endif
-diff --git a/vlc-android/jni/libvlcjni.c b/vlc-android/jni/libvlcjni.c
-index b6c0d18..717efe6 100644
---- a/vlc-android/jni/libvlcjni.c
-+++ b/vlc-android/jni/libvlcjni.c
-@@ -36,6 +36,8 @@
- #define LOG_TAG "VLC/JNI/main"
- #include "log.h"
- 
-+#include "libvlcjni_danmaku.inc.c"
-+
- libvlc_media_t *new_media(jint instance, JNIEnv *env, jobject thiz, jstring fileLocation, bool noOmx)
- {
-     libvlc_instance_t *libvlc = (libvlc_instance_t*)instance;
-@@ -144,8 +146,8 @@ static void vlc_event_callback(const libvlc_event_t *ev, void *data)
- 
-     int status = (*myVm)->GetEnv(myVm, (void**) &env, JNI_VERSION_1_2);
-     if (status < 0) {
--        LOGD("vlc_event_callback: failed to get JNI environment, "
--             "assuming native thread");
-+        //LOGD("vlc_event_callback: failed to get JNI environment, "
-+        //     "assuming native thread");
-         status = (*myVm)->AttachCurrentThread(myVm, &env, NULL);
-         if (status < 0)
-             return;
-@@ -159,15 +161,54 @@ static void vlc_event_callback(const libvlc_event_t *ev, void *data)
-         goto end;
-     }
- 
-+    jobject eventObject = NULL;
-+
-+    /* Find the callback ID */
-+    jmethodID methodObtain = (*env)->GetMethodID(env, cls, "obtainEventObject", "()Lorg/videolan/vlc/LibVlcEvent;");
-+    if (methodObtain) {
-+        eventObject = (*env)->CallObjectMethod(env, eventManagerInstance, methodObtain);
-+        if (eventObject == NULL) {
-+            LOGE("EventManager: failed to obtainEventObject");
-+            goto end;
-+        }
-+    } else {
-+        LOGE("EventManager: failed to get the obtainEventObject method");
-+        goto end;
-+    }
-+
-+    setInt(env, eventObject, "mEventType", (int)ev->type);
-+
-+    switch (ev->type) {
-+    case libvlc_MediaPlayerBuffering: {
-+        float cache = ev->u.media_player_buffering.new_cache;
-+        vlc_event_set_float(env, eventObject, cache);
-+        break;
-+    }
-+    case libvlc_MediaPlayerSeekableChanged: {
-+        int seekable = ev->u.media_player_seekable_changed.new_seekable;
-+        vlc_event_set_int(env, eventObject, seekable);
-+        break;
-+    }
-+    case libvlc_MediaPlayerPausableChanged: {
-+        int pausable = ev->u.media_player_pausable_changed.new_pausable;
-+        vlc_event_set_int(env, eventObject, pausable);
-+        break;
-+    }
-+    }
-+
-     /* Find the callback ID */
--    jmethodID methodID = (*env)->GetMethodID(env, cls, "callback", "(I)V");
-+    jmethodID methodID = (*env)->GetMethodID(env, cls, "callback", "(ILorg/videolan/vlc/LibVlcEvent;)V");
-     if (methodID) {
--        (*env)->CallVoidMethod(env, eventManagerInstance, methodID, ev->type);
-+        (*env)->CallVoidMethod(env, eventManagerInstance, methodID, ev->type, eventObject);
-     } else {
-         LOGE("EventManager: failed to get the callback method");
-+        goto end;
-     }
- 
- end:
-+    if (eventObject)
-+        (*env)->DeleteLocalRef(env, eventObject);
-+
-     if (isAttached)
-         (*myVm)->DetachCurrentThread(myVm);
- }
-@@ -218,6 +259,44 @@ void Java_org_videolan_vlc_LibVLC_detachSurface(JNIEnv *env, jobject thiz) {
-     pthread_mutex_unlock(&vout_android_lock);
- }
- 
-+void Java_org_videolan_vlc_LibVLC_nativeInitEx(JNIEnv *env, jobject thiz, jarray arguments)
-+{
-+    libvlc_instance_t *instance = NULL;
-+    if (arguments == NULL) {
-+        Java_org_videolan_vlc_LibVLC_nativeInit(env, thiz);
-+        return;
-+    }
-+
-+	int user_argc = (*env)->GetArrayLength(env, arguments);
-+	char **user_argv = (char **) calloc(user_argc, sizeof(char *));
-+	int i = 0;
-+	for (i = 0; i < user_argc; i++)
-+	{
-+		jstring argument = (*env)->GetObjectArrayElement(env, arguments, i);
-+		if (argument)
-+			user_argv[i] = (char *) (*env)->GetStringUTFChars(env, argument, NULL);
-+	}
-+	instance = libvlc_new(user_argc, (const char **) user_argv);
-+	for (i = 0; i < user_argc; i++)
-+	{
-+		jstring argument = (*env)->GetObjectArrayElement(env, arguments, i);
-+		if (argument)
-+			(*env)->ReleaseStringUTFChars(env, argument, user_argv[i]);
-+	}
-+
-+    jclass clazz = (*env)->GetObjectClass(env, thiz);
-+    jfieldID field = (*env)->GetFieldID(env, clazz, "mLibVlcInstance", "I");
-+    (*env)->SetIntField(env, thiz, field, (jint) instance);
-+
-+    if (!instance)
-+    {
-+        jclass exc = (*env)->FindClass(env, "org/videolan/vlc/LibVlcException");
-+        (*env)->ThrowNew(env, exc, "Unable to instantiate LibVLC");
-+    }
-+
-+    LOGI("LibVLC initialized: %p", instance);
-+}
-+
- void Java_org_videolan_vlc_LibVLC_nativeInit(JNIEnv *env, jobject thiz)
- {
-     /* Don't add any invalid options, otherwise it causes LibVLC to crash */
-@@ -319,7 +398,7 @@ void Java_org_videolan_vlc_LibVLC_setEventManager(JNIEnv *env, jobject thiz, job
-         return;
-     }
- 
--    jmethodID methodID = (*env)->GetMethodID(env, cls, "callback", "(I)V");
-+    jmethodID methodID = (*env)->GetMethodID(env, cls, "callback", "(ILorg/videolan/vlc/LibVlcEvent;)V");
-     if (!methodID) {
-         LOGE("setEventManager: failed to get the callback method");
-         return;
-@@ -423,8 +502,8 @@ jobjectArray Java_org_videolan_vlc_LibVLC_readMediaMeta(JNIEnv *env,
-    return array;
- }
- 
--void Java_org_videolan_vlc_LibVLC_readMedia(JNIEnv *env, jobject thiz,
--                                            jint instance, jstring mrl)
-+void Java_org_videolan_vlc_LibVLC_readMediaEx(JNIEnv *env, jobject thiz,
-+                                            jint instance, jstring mrl, jarray options)
- {
-     /* Release previous media player, if any */
-     releaseMediaPlayer(env, thiz);
-@@ -437,6 +516,20 @@ void Java_org_videolan_vlc_LibVLC_readMedia(JNIEnv *env, jobject thiz,
-         return;
-     }
- 
-+    int user_argc = (*env)->GetArrayLength(env, options);
-+    int i = 0;
-+    for (i = 0; i < user_argc; i++)
-+    {
-+        jstring opt = (*env)->GetObjectArrayElement(env, options, i);
-+        if (opt) {
-+            const char* optString = (char *) (*env)->GetStringUTFChars(env, opt, NULL);
-+            if (optString) {
-+                libvlc_media_add_option(m, optString);
-+                (*env)->ReleaseStringUTFChars(env, opt, optString);
-+            }
-+        }
-+    }
-+
-     /* Create a media player playing environment */
-     libvlc_media_player_t *mp = libvlc_media_player_new((libvlc_instance_t*)instance);
- 
-@@ -456,16 +549,17 @@ void Java_org_videolan_vlc_LibVLC_readMedia(JNIEnv *env, jobject thiz,
- 
-     /* Connect the event manager */
-     libvlc_event_manager_t *ev = libvlc_media_player_event_manager(mp);
--    static const libvlc_event_type_t mp_events[] = {
--        libvlc_MediaPlayerPlaying,
--        libvlc_MediaPlayerPaused,
--        libvlc_MediaPlayerEndReached,
--        libvlc_MediaPlayerStopped,
--    };
--    int i;
-     for (i = 0; i < (sizeof(mp_events) / sizeof(*mp_events)); ++i)
-         libvlc_event_attach(ev, mp_events[i], vlc_event_callback, myVm);
- 
-+    libvlc_media_t *md = libvlc_media_player_get_media(mp);
-+    if (md) {
-+        ev = libvlc_media_event_manager(md);
-+        for (i = 0; i < sizeof(md_events) / sizeof(*md_events); i++) {
-+            libvlc_event_attach(ev, md_events[i], vlc_event_callback, myVm);
-+        }
-+    }
-+
-     /* Keep a pointer to this media player */
-     jclass clazz = (*env)->GetObjectClass(env, thiz);
-     jfieldID field = (*env)->GetFieldID(env, clazz,
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
 index 0000000..7977a97
@@ -1299,5 +1106,5 @@ index 0000000..be6314d
 +
 +#endif
 -- 
-1.7.9.4
+1.7.10.2
 

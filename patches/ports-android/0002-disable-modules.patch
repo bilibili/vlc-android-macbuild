@@ -1,18 +1,18 @@
-From 23540328573786bea82ee7d1c3790f914c9d872e Mon Sep 17 00:00:00 2001
+From 3a7ff4c359ecaf27f61df73ff345b0808ec9e6a5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
-Subject: [PATCH 2/8] disable modules
+Subject: [PATCH 2/9] disable modules
 
 ---
  compile.sh                 |    4 ++++
  vlc-android/jni/Android.mk |   10 ++++------
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ 2 个文件被修改，插入 8 行(+)，删除 6 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index 0d689fb..8fea803 100755
+index 20987e7..e12fbd3 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -105,6 +105,10 @@ cd contrib/android
+@@ -127,6 +127,10 @@ cd contrib/android
      --disable-tremor \
      --disable-vorbis \
      --disable-sidplay2 \
@@ -24,7 +24,7 @@ index 0d689fb..8fea803 100755
  
  # TODO: mpeg2, theora
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index c6642e6..6527640 100644
+index 06480cb..ecad30c 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -26,13 +26,11 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
@@ -46,5 +46,5 @@ index c6642e6..6527640 100644
  
  include $(BUILD_SHARED_LIBRARY)
 -- 
-1.7.9.4
+1.7.10.2
 

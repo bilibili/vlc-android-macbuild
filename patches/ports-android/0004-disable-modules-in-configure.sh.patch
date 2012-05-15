@@ -1,11 +1,11 @@
-From b4f6ac5a111471bf8ae0cb28432a4379f507bbf4 Mon Sep 17 00:00:00 2001
+From 51e8e8fc89ddf0a97a4cf489ac638c91d7b2e37f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH 4/8] disable modules in configure.sh
+Subject: [PATCH 4/9] disable modules in configure.sh
 
 ---
  configure.sh |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ 1 个文件被修改，插入 3 行(+)，删除 3 行(-)
 
 diff --git a/configure.sh b/configure.sh
 index fd313f9..ab51923 100755
@@ -32,5 +32,5 @@ index fd313f9..ab51923 100755
                  --disable-vlc --disable-shared \
                  --disable-vlm \
 -- 
-1.7.9.4
+1.7.10.2
 

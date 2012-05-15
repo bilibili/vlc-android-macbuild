@@ -1,14 +1,14 @@
-From a9ace7f8304f20b3decf2c03d21e879d83ce2b1b Mon Sep 17 00:00:00 2001
+From 7becce8a81d6a3ed98e5ff313176c3b259f0b1aa Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
-Subject: [PATCH] modify compile.sh for MacOS build
+Subject: [PATCH 1/9] modify compile.sh for MacOS build
 
 ---
  compile.sh |   43 ++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
+ 1 个文件被修改，插入 42 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index 8c2d614..a6c0c6b 100755
+index 5e2be69..20987e7 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -37,7 +37,18 @@ fi
@@ -30,10 +30,10 @@ index 8c2d614..a6c0c6b 100755
 +fi
  
  # 1/ libvlc, libvlccore and its plugins
- TESTED_HASH=5069692bfb
+ TESTED_HASH=0ef62578e5b6
 @@ -48,6 +59,25 @@ if [ ! -d "vlc" ]; then
+     git checkout -B android ${TESTED_HASH}
      echo "Applying the patches"
-     cd vlc
      git am ../patches/*.patch
 +
 +    if [[ ${BUILD_PLATFORM} == 'darwin' ]]; then
@@ -90,5 +90,5 @@ index 8c2d614..a6c0c6b 100755
  make
  
 -- 
-1.7.9.4
+1.7.10.2
 
