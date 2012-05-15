@@ -3,7 +3,8 @@
   * MacOS or CentOS
   * ADK
   * NDK-r7c
-  * git 1.7.9.4
+  * upgrade config.sub of automake (for Linux if necessary)
+  * git 1.7.9.4 (or above)
 
  1. Install necessary tools.
     Read this article http://www.doitscared.com/?p=649
@@ -24,3 +25,7 @@
  1. Patches under /patches/vlc is OK for other build OS. They are licensed under LGPLv2.1, hmmm, supposed.
 
  2. This build is used in my own app. Some jni interfaces have been modified. You should modify or ignore patches under /patches/ports-android and /patches/vlc. Mail me if you have any problem about these patches.
+
+#TROUBLESHOOT
+ * Invalid configuration `arm-linux-androideabi'
+   upgrade config.sub of automake, see _install_libs_on_centos.sh for more information
