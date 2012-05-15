@@ -1,4 +1,4 @@
-From 6a8118068efbb82500745d4e84044b01046a0d8b Mon Sep 17 00:00:00 2001
+From ecb6471923b7bc5f5fd88bb05fed5f1a94a7c150 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 15:23:34 +0800
 Subject: [PATCH 7/9] vlc lib install script
@@ -10,15 +10,15 @@ Subject: [PATCH 7/9] vlc lib install script
 
 diff --git a/_install_vlc.sh b/_install_vlc.sh
 new file mode 100644
-index 0000000..a234632
+index 0000000..69f3dcc
 --- /dev/null
 +++ b/_install_vlc.sh
 @@ -0,0 +1,5 @@
 +#! /bin/sh
 +
-+cp -R vlc-android/libs/ ../../iBiliPlayer/libs/
-+rm ../../iBiliPlayer/libs/*/gdb.setup
-+rm ../../iBiliPlayer/libs/*/gdbserver
++cp -R vlc-android/libs/ ../VlcDemo/libs/
++rm ../VlcDemo/libs/*/gdb.setup
++rm ../VlcDemo/libs/*/gdbserver
 -- 
 1.7.10.2
 

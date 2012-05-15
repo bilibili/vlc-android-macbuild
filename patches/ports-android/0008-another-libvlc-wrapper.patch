@@ -1,4 +1,4 @@
-From 91e7196adc673a7a52b579128571453042e58193 Mon Sep 17 00:00:00 2001
+From 7386be691c5c800e130b70db970e95eae5205416 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
 Subject: [PATCH 8/9] another libvlc wrapper
