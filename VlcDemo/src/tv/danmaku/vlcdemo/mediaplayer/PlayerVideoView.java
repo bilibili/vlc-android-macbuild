@@ -261,7 +261,8 @@ public class PlayerVideoView extends SurfaceView implements MediaPlayerControl {
             int currentPlayMode = getCurrentPlayMode();
             switch (currentPlayMode) {
             case PlayerAdapter.USE_ANDROID_PLAYER:
-                mMediaPlayer = DefMediaPlayer.create(getContext());
+                //mMediaPlayer = DefMediaPlayer.create(getContext());
+            	mMediaPlayer = LibVlcMediaPlayer.create(getContext());
                 break;
             case PlayerAdapter.USE_VLC_PLAYER:
                 mMediaPlayer = LibVlcMediaPlayer.create(getContext());

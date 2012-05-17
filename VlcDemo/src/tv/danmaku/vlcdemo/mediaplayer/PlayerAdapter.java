@@ -169,6 +169,7 @@ public class PlayerAdapter implements Handler.Callback {
 		return mWeakActivity.get();
 	}
 
+	@SuppressWarnings("unused")
 	final private Context getContext() {
 		return getActivity();
 	}

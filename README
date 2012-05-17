@@ -6,6 +6,7 @@
   * upgrade config.sub of automake (for Linux if necessary)
   * git 1.7.9.4 (or above)
   * cmake 2.8.7 (not tested with lower version)
+  * automake 1.11.3 (do not use 1.12 or above)
 
  1. Install necessary tools.
     Read this article http://www.doitscared.com/?p=649

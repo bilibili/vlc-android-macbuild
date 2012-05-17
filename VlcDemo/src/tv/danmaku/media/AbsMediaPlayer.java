@@ -36,6 +36,10 @@ public abstract class AbsMediaPlayer {
     public static final int MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK = MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK;
     public static final int MEDIA_ERROR_SERVER_DIED = MediaPlayer.MEDIA_ERROR_SERVER_DIED;
     public static final int MEDIA_ERROR_UNKNOWN = MediaPlayer.MEDIA_ERROR_UNKNOWN;
+    
+    // not defined before 2.3
+    public static final int MEDIA_INFO_BUFFERING_END = 702;
+    public static final int MEDIA_INFO_BUFFERING_START = 701;
 
     protected AbsMediaPlayer.OnBufferingUpdateListener mOnBufferingUpdateListener = null;
     protected AbsMediaPlayer.OnCompletionListener mOnCompletionListener = null;

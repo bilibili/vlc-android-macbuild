@@ -32,7 +32,7 @@ public class LibVlcMediaPlayer extends AbsMediaPlayer {
     // HW/SW
     public static final String[] sCodec_Iomx = new String[] {
             ":codec=iomx,all", ":file-caching=3000", ":network-caching=3000" };
-    public static final String[] sCodec_All = new String[] { ":codec=all", };
+    public static final String[] sCodec_All = new String[] { ":codec=avformat,all", };
 
     public static final int MSG_VIDEO_SIZE_CHANGED = 0;
     public static final int MSG_FAKE_PREPARED = 1;
@@ -306,7 +306,7 @@ public class LibVlcMediaPlayer extends AbsMediaPlayer {
                             if (mOnInfoListener != null) {
                                 mOnInfoListener
                                         .onInfo(LibVlcMediaPlayer.this,
-                                                MediaPlayer.MEDIA_INFO_BUFFERING_START,
+                                        		AbsMediaPlayer.MEDIA_INFO_BUFFERING_START,
                                                 0);
                             }
                         }
@@ -314,7 +314,7 @@ public class LibVlcMediaPlayer extends AbsMediaPlayer {
                         if (percent >= 100.0f) {
                             if (mOnInfoListener != null) {
                                 mOnInfoListener.onInfo(LibVlcMediaPlayer.this,
-                                		MediaPlayer.MEDIA_INFO_BUFFERING_END,
+                                		AbsMediaPlayer.MEDIA_INFO_BUFFERING_END,
                                         0);
                             }
 

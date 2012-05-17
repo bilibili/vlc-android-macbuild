@@ -152,10 +152,6 @@ public class PlayerControllerView extends RelativeLayout {
         }
     }
 
-    // danmaku open-close
-    private static final int LEVEL_DANMAKU_IS_OPEN = 0;
-    private static final int LEVEL_DANMAKU_IS_CLOSED = 1;
-
     // resize video view
     public static final int LEVEL_ASPECT_RADIO_ADJUST_VIDEO = 0;
     public static final int LEVEL_ASPECT_RADIO_IS_4_3 = 1;
