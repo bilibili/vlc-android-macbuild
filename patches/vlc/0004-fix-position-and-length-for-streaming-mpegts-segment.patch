@@ -1,4 +1,4 @@
-From 015f0e7cc774ae2282cfcd78b4dc1f91c5cd4ce2 Mon Sep 17 00:00:00 2001
+From 16b19086bb9480bf6984d3bcf9ea482c27822a6f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
 Subject: [PATCH 4/7] fix position and length for streaming mpegts segments
@@ -7,7 +7,7 @@ Subject: [PATCH 4/7] fix position and length for streaming mpegts segments
 ---
  modules/demux/ts.c               |   54 ++++++++++++++++++++++++++++++++++++++
  modules/stream_filter/httplive.c |   20 ++++++++++++++
- 2 files changed, 74 insertions(+)
+ 2 个文件被修改，插入 74 行(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
 index f9c2f4d..0cf0630 100644
@@ -112,7 +112,7 @@ index f9c2f4d..0cf0630 100644
              if( pid->es->p_pes && pid->es->fmt.i_cat != VIDEO_ES )
              {
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 433dca0..be691ef 100644
+index 86f97b6..fb916b2 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1047,6 +1047,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
@@ -151,7 +151,7 @@ index 433dca0..be691ef 100644
          free(line);
      }
  
-@@ -2345,6 +2359,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2346,6 +2360,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
  
      bool b_found = false;
      uint64_t length = 0;
@@ -159,7 +159,7 @@ index 433dca0..be691ef 100644
      uint64_t size = hls->size;
      int count = vlc_array_count(hls->segments);
  
-@@ -2384,6 +2399,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2385,6 +2400,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
              vlc_mutex_unlock(&hls->lock);
              return VLC_EGENERIC;
          }
@@ -168,7 +168,7 @@ index 433dca0..be691ef 100644
      }
  
      /* */
-@@ -2396,6 +2413,9 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2397,6 +2414,9 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
      /* */
      if (b_found)
      {
@@ -179,5 +179,5 @@ index 433dca0..be691ef 100644
          segment_t *segment = segment_GetSegment(hls, p_sys->playback.segment);
          if (segment == NULL)
 -- 
-1.7.9.4
+1.7.10.2
 

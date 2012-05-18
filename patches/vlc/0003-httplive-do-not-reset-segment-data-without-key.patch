@@ -1,0 +1,26 @@
+From 6d0fcdd41b0c4c5ec375cf1ff2c02ab9b81481f0 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Fri, 18 May 2012 21:17:32 +0800
+Subject: [PATCH 3/7] httplive: do not reset segment data without key
+
+---
+ modules/stream_filter/httplive.c |    3 ++-
+ 1 个文件被修改，插入 2 行(+)，删除 1 行(-)
+
+diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
+index 433dca0..86f97b6 100644
+--- a/modules/stream_filter/httplive.c
++++ b/modules/stream_filter/httplive.c
+@@ -1317,7 +1317,8 @@ static int hls_UpdatePlaylist(stream_t *s, hls_stream_t *hls_new, hls_stream_t *
+                     continue;
+                 }
+                 /* We must free the content, because if the key was not downloaded, content can't be decrypted */
+-                if (segment->data)
++                if ((p->psz_key_path || p->b_key_loaded) &&
++                    segment->data)
+                 {
+                     block_Release(segment->data);
+                     segment->data = NULL;
+-- 
+1.7.10.2
+

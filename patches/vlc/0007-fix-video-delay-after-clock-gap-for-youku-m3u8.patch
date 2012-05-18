@@ -1,11 +1,11 @@
-From 5970471eeb357501b2a601296c04a6f4aa2b8f10 Mon Sep 17 00:00:00 2001
+From 41f5b43e98c860e5612402af7d3c53680188564b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 15:20:54 +0800
 Subject: [PATCH 7/7] fix video delay after clock gap for youku m3u8
 
 ---
  src/audio_output/input.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ 1 个文件被修改，插入 2 行(+)，删除 2 行(-)
 
 diff --git a/src/audio_output/input.c b/src/audio_output/input.c
 index 228132b..efc4e9e 100644
@@ -30,5 +30,5 @@ index 228132b..efc4e9e 100644
          msg_Warn( p_aout, "buffer way too late (%"PRId64"), dropping buffer",
                    drift );
 -- 
-1.7.9.4
+1.7.10.2
 

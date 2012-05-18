@@ -1,4 +1,4 @@
-From a9b04813919d7a55386c937498c1025b647ed47e Mon Sep 17 00:00:00 2001
+From b136cd80fe00334c6fd32bb1938794e32f0516f3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 7 May 2012 23:55:29 +0800
 Subject: [PATCH 6/7] fix play time after clock gap for mpegts
@@ -7,7 +7,7 @@ Subject: [PATCH 6/7] fix play time after clock gap for mpegts
  include/vlc_stream.h             |    3 ++
  modules/demux/ts.c               |   28 ++++++++++++++--
  modules/stream_filter/httplive.c |   68 ++++++++++++++++++++++++++++++++------
- 3 files changed, 86 insertions(+), 13 deletions(-)
+ 3 个文件被修改，插入 86 行(+)，删除 13 行(-)
 
 diff --git a/include/vlc_stream.h b/include/vlc_stream.h
 index c929836..3f4a1b2 100644
@@ -73,7 +73,7 @@ index 0cf0630..ce19257 100644
          }
  
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index be691ef..646c78f 100644
+index fb916b2..6df1535 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -64,6 +64,7 @@ vlc_module_end()
@@ -161,7 +161,7 @@ index be691ef..646c78f 100644
          }
  
          free(line);
-@@ -2454,6 +2454,41 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2455,6 +2455,41 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
      return b_found ? VLC_SUCCESS : VLC_EGENERIC;
  }
  
@@ -203,7 +203,7 @@ index be691ef..646c78f 100644
  static int Control(stream_t *s, int i_query, va_list args)
  {
      stream_sys_t *p_sys = s->p_sys;
-@@ -2480,6 +2515,17 @@ static int Control(stream_t *s, int i_query, va_list args)
+@@ -2481,6 +2516,17 @@ static int Control(stream_t *s, int i_query, va_list args)
          case STREAM_GET_SIZE:
              *(va_arg (args, uint64_t *)) = GetStreamSize(s);
              break;
@@ -222,5 +222,5 @@ index be691ef..646c78f 100644
              return VLC_EGENERIC;
      }
 -- 
-1.7.9.4
+1.7.10.2
 

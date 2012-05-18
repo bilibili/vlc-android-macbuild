@@ -1,11 +1,11 @@
-From 9b73a241cca11ae27100868622c4ebad1436be91 Mon Sep 17 00:00:00 2001
+From cea0c4ae7748c0d3bb0fd6ca6c05c5b4e168fb11 Mon Sep 17 00:00:00 2001
 From: tewilove <tewilove@gmail.com>
 Date: Wed, 15 Feb 2012 20:45:29 -0800
 Subject: [PATCH 1/7] android: try skipping frames automatically
 
 ---
  modules/codec/avcodec/video.c |   55 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 55 insertions(+)
+ 1 个文件被修改，插入 55 行(+)
 
 diff --git a/modules/codec/avcodec/video.c b/modules/codec/avcodec/video.c
 index 2ea9b2d..0245620 100644
@@ -116,5 +116,5 @@ index 2ea9b2d..0245620 100644
          {
              p_sys->i_late_frames++;
 -- 
-1.7.9.4
+1.7.10.2
 

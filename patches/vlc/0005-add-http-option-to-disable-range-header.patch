@@ -1,11 +1,11 @@
-From 1aa0e95491b2549253b7f790317e26fa984986bc Mon Sep 17 00:00:00 2001
+From a573808863bd8a221228809845472311aa4a8a8d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
 Subject: [PATCH 5/7] add http option to disable range header
 
 ---
  modules/access/http.c |   43 +++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 41 insertions(+), 2 deletions(-)
+ 1 个文件被修改，插入 41 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
 index 9817bca..808073e 100644
@@ -90,5 +90,5 @@ index 9817bca..808073e 100644
      }
  
 -- 
-1.7.9.4
+1.7.10.2
 

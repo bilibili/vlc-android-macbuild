@@ -1,7 +1,7 @@
-From c77202536fa76f9f9510f8b39b7c35f3b5b5745c Mon Sep 17 00:00:00 2001
+From e42f5e77b5a0228d35e9e0cbe175da25befc26cb Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 17 May 2012 16:37:14 +0800
-Subject: [PATCH] fix zlib build on android
+Subject: [PATCH 2/7] fix zlib build on android
 
 ---
  contrib/src/zlib/rules.mak          |    2 +-
@@ -24,7 +24,7 @@ index 210da1e..cd86013 100644
  .zlib: zlib
 diff --git a/contrib/src/zlib/zlib-android.patch b/contrib/src/zlib/zlib-android.patch
 new file mode 100644
-index 0000000..8ae4fcf
+index 0000000..a315212
 --- /dev/null
 +++ b/contrib/src/zlib/zlib-android.patch
 @@ -0,0 +1,13 @@
