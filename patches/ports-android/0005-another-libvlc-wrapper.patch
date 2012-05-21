@@ -1,7 +1,7 @@
-From f6da56ad6775ccf4d04ef806b26e896ec0d9cc46 Mon Sep 17 00:00:00 2001
+From 956b5f7d112580c043f781bcfaa3b71f5d352d25 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
-Subject: [PATCH 5/6] another libvlc wrapper
+Subject: [PATCH 5/5] another libvlc wrapper
 
 ---
  Makefile                                |    7 +-
@@ -15,7 +15,7 @@ Subject: [PATCH 5/6] another libvlc wrapper
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
 diff --git a/Makefile b/Makefile
-index b9eb5f4..eac12e0 100644
+index ee57356..b8d7edc 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,12 @@
@@ -41,7 +41,7 @@ index b9eb5f4..eac12e0 100644
  	$(SRC)/obj/local/$(ARCH)/libiomx-hc.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
 diff --git a/compile.sh b/compile.sh
-index 20987e7..0927297 100755
+index 513448e..004da4d 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -30,7 +30,7 @@ fi
