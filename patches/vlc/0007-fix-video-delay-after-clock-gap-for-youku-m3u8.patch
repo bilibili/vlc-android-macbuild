@@ -1,4 +1,4 @@
-From 41f5b43e98c860e5612402af7d3c53680188564b Mon Sep 17 00:00:00 2001
+From 01f522d7d84f4df1d8124ca61b14b3e6c7f3f50d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 15:20:54 +0800
 Subject: [PATCH 7/7] fix video delay after clock gap for youku m3u8
@@ -8,7 +8,7 @@ Subject: [PATCH 7/7] fix video delay after clock gap for youku m3u8
  1 个文件被修改，插入 2 行(+)，删除 2 行(-)
 
 diff --git a/src/audio_output/input.c b/src/audio_output/input.c
-index 228132b..efc4e9e 100644
+index 228132b..15b3b16 100644
 --- a/src/audio_output/input.c
 +++ b/src/audio_output/input.c
 @@ -423,7 +423,7 @@ block_t *aout_InputPlay(audio_output_t *p_aout, aout_input_t *p_input,
@@ -16,7 +16,7 @@ index 228132b..efc4e9e 100644
      mtime_t drift = start_date - p_buffer->i_pts;
  
 -    if( drift < -i_input_rate * 3 * AOUT_MAX_PTS_ADVANCE / INPUT_RATE_DEFAULT )
-+    if( drift < -i_input_rate * 3 * AOUT_MAX_PTS_ADVANCE * 10 / INPUT_RATE_DEFAULT )
++    if( drift < -i_input_rate * 3 * AOUT_MAX_PTS_ADVANCE * 30 / INPUT_RATE_DEFAULT )
      {
          msg_Warn( p_aout, "buffer way too early (%"PRId64"), clearing queue",
                    drift );
@@ -25,7 +25,7 @@ index 228132b..efc4e9e 100644
      }
      else
 -    if( drift > +i_input_rate * 3 * AOUT_MAX_PTS_DELAY / INPUT_RATE_DEFAULT )
-+    if( drift > +i_input_rate * 3 * AOUT_MAX_PTS_DELAY * 10 / INPUT_RATE_DEFAULT )
++    if( drift > +i_input_rate * 3 * AOUT_MAX_PTS_DELAY * 30 / INPUT_RATE_DEFAULT )
      {
          msg_Warn( p_aout, "buffer way too late (%"PRId64"), dropping buffer",
                    drift );

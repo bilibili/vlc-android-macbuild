@@ -1,4 +1,4 @@
-From 956b5f7d112580c043f781bcfaa3b71f5d352d25 Mon Sep 17 00:00:00 2001
+From 0422a470eb6edbfdb29671c9dd0330e177b1f908 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
 Subject: [PATCH 5/5] another libvlc wrapper
@@ -8,9 +8,9 @@ Subject: [PATCH 5/5] another libvlc wrapper
  compile.sh                              |    2 +-
  vlc-android/jni/Android.mk              |   15 +-
  vlc-android/jni/Application.mk          |    2 +
- vlc-android/jni/libvlcjni_danmaku.c     |  916 +++++++++++++++++++++++++++++++
- vlc-android/jni/libvlcjni_danmaku.inc.c |   79 +++
- 6 个文件被修改，插入 1013 行(+)，删除 8 行(-)
+ vlc-android/jni/libvlcjni_danmaku.c     |  976 +++++++++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.inc.c |   63 ++
+ 6 个文件被修改，插入 1057 行(+)，删除 8 行(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
@@ -41,10 +41,10 @@ index ee57356..b8d7edc 100644
  	$(SRC)/obj/local/$(ARCH)/libiomx-hc.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
 diff --git a/compile.sh b/compile.sh
-index 513448e..004da4d 100755
+index 3c17e31..046b6f7 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -30,7 +30,7 @@ fi
+@@ -36,7 +36,7 @@ fi
  if [ -z "$NO_NDK_V7" ]; then
      # try to detect NDK version
      REL=$(grep -o '^r[0-9]*' $ANDROID_NDK/RELEASE.TXT 2>/dev/null|cut -b2-)
@@ -54,7 +54,7 @@ index 513448e..004da4d 100755
      fi
  fi
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 06480cb..84701bc 100644
+index fc807ac..2a68f4b 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -1,18 +1,21 @@
@@ -63,7 +63,7 @@ index 06480cb..84701bc 100644
  
 -LOCAL_MODULE    := libvlcjni
 -
--LOCAL_SRC_FILES := libvlcjni.c aout.c thumbnailer.c pthread-condattr.c pthread-rwlocks.c eventfd.c
+-LOCAL_SRC_FILES := libvlcjni.c aout.c thumbnailer.c pthread-condattr.c pthread-rwlocks.c eventfd.c sem.c
 -
 -LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
 -
@@ -78,7 +78,7 @@ index 06480cb..84701bc 100644
 +LOCAL_MODULE    := libvlcjni
  endif
  
-+LOCAL_SRC_FILES := libvlcjni_danmaku.c aout.c pthread-condattr.c pthread-rwlocks.c eventfd.c
++LOCAL_SRC_FILES := libvlcjni_danmaku.c aout.c pthread-condattr.c pthread-rwlocks.c eventfd.c sem.c
 +
 +LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
 +
@@ -100,10 +100,10 @@ index 9507cee..3e5f176 100644
  endif
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..7977a97
+index 0000000..1f49cb0
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,916 @@
+@@ -0,0 +1,976 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -142,6 +142,9 @@ index 0000000..7977a97
 +#define LOG_TAG "VLC/JNI/main"
 +#include "log.h"
 +
++#define AOUT_AUDIOTRACK      0
++#define AOUT_AUDIOTRACK_JAVA 1
++#define AOUT_OPENSLES        2
 +#include "libvlcjni_danmaku.inc.c"
 +
 +libvlc_media_t *new_media(jint instance, JNIEnv *env, jobject thiz, jstring fileLocation, bool noOmx)
@@ -365,10 +368,38 @@ index 0000000..7977a97
 +    pthread_mutex_unlock(&vout_android_lock);
 +}
 +
++static void debug_log(void *data, int level, const char *fmt, va_list ap)
++{
++    (void)data;
++
++    static const uint8_t priority[5] = {
++        [LIBVLC_DEBUG]   = ANDROID_LOG_DEBUG,
++        [1 /* ??? */]    = ANDROID_LOG_DEBUG,
++        [LIBVLC_NOTICE]  = ANDROID_LOG_INFO,
++        [LIBVLC_WARNING] = ANDROID_LOG_WARN,
++        [LIBVLC_ERROR]   = ANDROID_LOG_ERROR,
++    };
++
++    int prio = ANDROID_LOG_DEBUG;
++    if (level >= LIBVLC_DEBUG && level <= LIBVLC_ERROR)
++        prio = priority[level];
++
++    __android_log_vprint(prio, "VLC", fmt, ap);
++}
++
++static libvlc_log_subscriber_t debug_subscriber;
++
 +void Java_org_videolan_vlc_LibVLC_nativeInit(JNIEnv *env, jobject thiz)
 +{
++    //only use OpenSLES if java side says we can
++    jclass cls = (*env)->GetObjectClass(env, thiz);
++    jmethodID methodId = (*env)->GetMethodID(env, cls, "getAout", "()I");
++    bool use_opensles = (*env)->CallIntMethod(env, thiz, methodId) == AOUT_OPENSLES;
++
++    libvlc_log_subscribe(&debug_subscriber, debug_log, NULL);
++
 +    /* Don't add any invalid options, otherwise it causes LibVLC to crash */
-+    static const char *argv[] = {
++    const char *argv[] = {
 +        "-I", "dummy",
 +        "-vv",
 +        "--no-osd",
@@ -376,9 +407,8 @@ index 0000000..7977a97
 +        "--no-stats",
 +        "--no-plugins-cache",
 +        "--no-drop-late-frames",
-+        "--control", "logger",
-+        "--logmode", "android",
-+        "--ffmpeg-fast",
++        "--avcodec-fast",
++        use_opensles ? "--aout=opensles" : "--aout=android_audiotrack"
 +    };
 +    libvlc_instance_t *instance = libvlc_new(sizeof(argv) / sizeof(*argv), argv);
 +
@@ -459,6 +489,7 @@ index 0000000..7977a97
 +
 +    libvlc_instance_t *instance = (libvlc_instance_t*) libVlcInstance;
 +    libvlc_release(instance);
++    libvlc_log_unsubscribe(&debug_subscriber);
 +
 +    (*env)->SetIntField(env, thiz, field, 0);
 +}
@@ -468,7 +499,7 @@ index 0000000..7977a97
 +    jclass  cls = (*p_env)->FindClass( p_env, "org/videolan/vlc/Util" );
 +    if ( !cls )
 +    {
-+        LOGE( "Failed to load util class (org/videolan/vlc/Util)" );
++        LOGE("Failed to load util class (org/videolan/vlc/Util)" );
 +        return 0;
 +    }
 +    jmethodID methodSdkVersion = (*p_env)->GetStaticMethodID( p_env, cls,
@@ -479,7 +510,7 @@ index 0000000..7977a97
 +        return 0;
 +    }
 +    int version = (*p_env)->CallStaticIntMethod( p_env, cls, methodSdkVersion );
-+    LOGI("Got version: %d\n", version );
++    LOGI("Phone running on API level %d\n", version );
 +    return version;
 +}
 +
@@ -529,6 +560,22 @@ index 0000000..7977a97
 +    (*env)->SetIntField(env, item, fieldId, value);
 +}
 +
++void setLong(JNIEnv *env, jobject item, const char* field, long value)
++{
++    jclass cls;
++    jfieldID fieldId;
++
++    /* Get a reference to item's class */
++    cls = (*env)->GetObjectClass(env, item);
++
++    /* Look for the instance field s in cls */
++    fieldId = (*env)->GetFieldID(env, cls, field, "J");
++    if (fieldId == NULL)
++        return;
++
++    (*env)->SetLongField(env, item, fieldId, value);
++}
++
 +void SetFloat(JNIEnv *env, jobject item, const char* field, float value)
 +{
 +    jclass cls;
@@ -576,7 +623,7 @@ index 0000000..7977a97
 +    libvlc_media_t *m = new_media(instance, env, thiz, mrl, false);
 +    if (!m)
 +    {
-+        LOGE("readMediaMeta: Couldn't create the media!");
++        LOGE("readMedia: Could not create the media!");
 +        return array;
 +    }
 +
@@ -618,7 +665,7 @@ index 0000000..7977a97
 +    libvlc_media_t *m = new_media(instance, env, thiz, mrl, false);
 +    if (!m)
 +    {
-+        LOGE("readMedia: Couldn't create the media!");
++        LOGE("readMediaMeta: Could not create the media!");
 +        return;
 +    }
 +
@@ -691,7 +738,7 @@ index 0000000..7977a97
 +    libvlc_media_t *p_m = new_media(i_instance, env, thiz, fileLocation, false);
 +    if (p_m == NULL)
 +    {
-+        LOGE("Couldn't create the media!");
++        LOGE("Could not create the media!");
 +        return JNI_FALSE;
 +    }
 +
@@ -722,7 +769,7 @@ index 0000000..7977a97
 +    jclass cls = (*env)->FindClass( env, "org/videolan/vlc/TrackInfo" );
 +    if ( !cls )
 +    {
-+        LOGE( "Failed to load class (org/videolan/vlc/TrackInfo)" );
++        LOGE("Failed to load class (org/videolan/vlc/TrackInfo)" );
 +        return NULL;
 +    }
 +
@@ -738,7 +785,7 @@ index 0000000..7977a97
 +    libvlc_media_t *p_m = new_media(instance, env, thiz, mrl, false);
 +    if (p_m == NULL)
 +    {
-+        LOGE("Couldn't create the media!");
++        LOGE("Could not create the media!");
 +        return NULL;
 +    }
 +
@@ -747,17 +794,30 @@ index 0000000..7977a97
 +    libvlc_media_parse(p_m);
 +
 +    int i_nbTracks = libvlc_media_get_tracks_info(p_m, &p_tracks);
-+    jobjectArray array = (*env)->NewObjectArray(env, i_nbTracks, cls, NULL);
++    jobjectArray array = (*env)->NewObjectArray(env, i_nbTracks + 1, cls, NULL);
 +
 +    unsigned i;
 +    if (array != NULL)
 +    {
-+        for (i = 0; i < i_nbTracks; ++i)
++        for (i = 0; i <= i_nbTracks; ++i)
 +        {
 +            jobject item = (*env)->NewObject(env, cls, clsCtor);
 +            if (item == NULL)
 +                continue;
 +            (*env)->SetObjectArrayElement(env, array, i, item);
++
++            // use last track for metadata
++            if (i == i_nbTracks)
++            {
++                setInt(env, item, "Type", 3 /* TYPE_META */);
++                setLong(env, item, "Length", libvlc_media_get_duration(p_m));
++                setString(env, item, "Title", libvlc_media_get_meta(p_m, libvlc_meta_Title));
++                setString(env, item, "Artist", libvlc_media_get_meta(p_m, libvlc_meta_Artist));
++                setString(env, item, "Album", libvlc_media_get_meta(p_m, libvlc_meta_Album));
++                setString(env, item, "Genre", libvlc_media_get_meta(p_m, libvlc_meta_Genre));
++                continue;
++            }
++
 +            setInt(env, item, "Id", p_tracks[i].i_id);
 +            setInt(env, item, "Type", p_tracks[i].i_type);
 +            setString(env, item, "Codec", (const char*)vlc_fourcc_GetDescription(0,p_tracks[i].i_codec));
@@ -815,7 +875,7 @@ index 0000000..7977a97
 +    libvlc_media_t *m = new_media(i_instance, env, thiz, fileLocation, false);
 +    if (m == NULL)
 +    {
-+        LOGE("Couldn't create the media to play!");
++        LOGE("Could not create the media to play!");
 +        goto end;
 +    }
 +
@@ -1022,10 +1082,10 @@ index 0000000..7977a97
 +}
 diff --git a/vlc-android/jni/libvlcjni_danmaku.inc.c b/vlc-android/jni/libvlcjni_danmaku.inc.c
 new file mode 100644
-index 0000000..be6314d
+index 0000000..dce2a3c
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.inc.c
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,63 @@
 +#ifndef LIBVLCJNI_DANMAKU_INC_C
 +#define LIBVLCJNI_DANMAKU_INC_C
 +
@@ -1067,32 +1127,16 @@ index 0000000..be6314d
 +};
 +
 +void setInt(JNIEnv *env, jobject item, const char* field, int value);
-+void setLong(JNIEnv *env, jobject item, const char* field, int64_t value);
++void setLong(JNIEnv *env, jobject item, const char* field, long value);
 +void SetFloat(JNIEnv *env, jobject item, const char* field, float value);
 +void setString(JNIEnv *env, jobject item, const char* field, const char* value);
 +static void vlc_event_callback(const libvlc_event_t *ev, void *data);
-+
-+void setLong(JNIEnv *env, jobject item, const char* field, int64_t value)
-+{
-+    jclass cls;
-+    jfieldID fieldId;
-+
-+    /* Get a reference to item's class */
-+    cls = (*env)->GetObjectClass(env, item);
-+
-+    /* Look for the instance field s in cls */
-+    fieldId = (*env)->GetFieldID(env, cls, field, "J");
-+    if (fieldId == NULL)
-+        return;
-+
-+    (*env)->SetLongField(env, item, fieldId, value);
-+}
 +
 +static void vlc_event_set_int(JNIEnv *env, jobject item, int value) {
 +    setInt(env, item, "mIntValue", value);
 +}
 +
-+static void vlc_event_set_long(JNIEnv *env, jobject item, int64_t value) {
++static void vlc_event_set_long(JNIEnv *env, jobject item, long value) {
 +    setLong(env, item, "mLongValue", value);
 +}
 +

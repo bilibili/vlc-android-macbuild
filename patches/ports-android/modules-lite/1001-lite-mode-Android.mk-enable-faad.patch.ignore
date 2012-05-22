@@ -1,0 +1,37 @@
+From 8bde7fd76dbc342c62d485ec0756db3f4017f14e Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 22 May 2012 14:50:16 +0800
+Subject: [PATCH] lite-mode: Android.mk: enable faad
+
+---
+ compile.sh                 |    1 +
+ vlc-android/jni/Android.mk |    1 +
+ 2 个文件被修改，插入 2 行(+)
+
+diff --git a/compile.sh b/compile.sh
+index 5121ade..a7ca8cf 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -143,6 +143,7 @@ cd contrib/android
+     --disable-live555 \
+     --disable-schroedinger \
+     --disable-matroska \
++    --enable-faad2 \
+     --disable-samplerate
+ 
+ # TODO: mpeg2, theora
+diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
+index a15b94c..6730113 100644
+--- a/vlc-android/jni/Android.mk
++++ b/vlc-android/jni/Android.mk
+@@ -34,6 +34,7 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+ 	-lmpeg2 -ldca -la52 \
+ 	-lavformat -lavcodec -lswscale -lavutil -lpostproc -lopenjpeg \
+ 	-lpng -lgnutls -lgcrypt -lgpg-error \
++	-lfaad \
+ 	$(CPP_STATIC)
+ 
+ include $(BUILD_SHARED_LIBRARY)
+-- 
+1.7.10.2
+

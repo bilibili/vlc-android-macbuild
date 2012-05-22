@@ -1,18 +1,18 @@
-From 8f441e259c5ce8549adbdf63d7d0585da35ed6b4 Mon Sep 17 00:00:00 2001
+From 05abc744b163cd405b828e1d32d30468dc8c1254 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
-Subject: [PATCH 1/5] modify compile.sh for MacOS build
+Subject: [PATCH] modify compile.sh for MacOS build
 
 ---
- compile.sh |   49 ++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 个文件被修改，插入 48 行(+)，删除 1 行(-)
+ compile.sh |   36 +++++++++++++++++++++++++++++++++++-
+ 1 个文件被修改，插入 35 行(+)，删除 1 行(-)
  create mode 100644 patches-extra/.gitignore
 
 diff --git a/compile.sh b/compile.sh
-index 5e2be69..513448e 100755
+index 19ecd7e..c8582dc 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -37,7 +37,18 @@ fi
+@@ -43,7 +43,18 @@ fi
  
  # Add the NDK toolchain to the PATH, needed both for contribs and for building
  # stub libraries
@@ -32,7 +32,7 @@ index 5e2be69..513448e 100755
  
  # 1/ libvlc, libvlccore and its plugins
  TESTED_HASH=0ef62578e5b6
-@@ -48,6 +59,30 @@ if [ ! -d "vlc" ]; then
+@@ -54,6 +65,17 @@ if [ ! -d "vlc" ]; then
      git checkout -B android ${TESTED_HASH}
      echo "Applying the patches"
      git am ../patches/*.patch
@@ -47,23 +47,10 @@ index 5e2be69..513448e 100755
 +elif [ '$1' != '-f' ]; then
 +    echo "VLC source found, build without hash check"
 +    cd vlc
-+    echo "======================================="
-+    echo "Applying the patches"
-+    git am ../patches/*.patch || git am --abort
-+    echo "======================================="
-+    echo "Applying the patches for libvlc_danmaku"
-+    if [ ${BUILD_PLATFORM} == 'darwin' ]; then
-+        git am ../../patches/vlc-on-macosx/*.patch || git am --abort
-+    fi
-+    git am ../../patches/vlc/*.patch || git am --abort
-+    if [ -f "../patch-extra/*.patch" ]; then
-+        git am ../patches-extra/*.patch || git am --abort
-+    fi
-+    echo "======================================="
  else
      echo "VLC source found"
      cd vlc
-@@ -64,6 +99,11 @@ git reset --hard origin
+@@ -70,6 +92,11 @@ git reset --hard origin
  git pull origin master
  git checkout -B android ${TESTED_HASH}
  git am ../patches/*
@@ -75,7 +62,7 @@ index 5e2be69..513448e 100755
  
  *** : This will delete any changes you made to the current branch ***
  
-@@ -72,6 +112,7 @@ EOF
+@@ -78,6 +105,7 @@ EOF
      fi
  fi
  
@@ -83,7 +70,7 @@ index 5e2be69..513448e 100755
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
-@@ -102,6 +143,12 @@ if test -z "${NO_NEON}" -o -n "${TEGRA2}"; then
+@@ -108,6 +136,12 @@ if test -z "${NO_NEON}" -o -n "${TEGRA2}"; then
      echo "NOTHUMB := -marm" >> config.mak
  fi
  

@@ -1,22 +1,22 @@
-From dc2b0e65e4b2a6f53aae56e364cf2a8e585c2475 Mon Sep 17 00:00:00 2001
+From 62a380b418d8c008d54199a909787cbd9392f7be Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 29 Mar 2012 16:55:54 +0800
 Subject: [PATCH] build for tegra2
 
 ---
  compile.sh |    6 ++++++
- 1 file changed, 6 insertions(+)
+ 1 个文件被修改，插入 6 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index d172500..66fdb4f 100755
+index 5e2be69..69ebe37 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -19,6 +19,12 @@ export NO_NDK_V7=0
+@@ -21,6 +21,12 @@ export NO_NDK_V7=0
  
  EOF
  
 +
-+# patched for armv6j
++# patched for tegra2
 +export NO_NEON=1
 +export TEGRA2=1
 +
@@ -25,5 +25,5 @@ index d172500..66fdb4f 100755
     echo "You must define ANDROID_NDK and ANDROID_SDK before starting."
     echo "They must point to your NDK and SDK directories."
 -- 
-1.7.9.4
+1.7.10.2
 
