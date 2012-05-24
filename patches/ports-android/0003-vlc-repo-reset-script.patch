@@ -1,7 +1,7 @@
-From d199088c17feb0dc18082261f7383d37dfb9fb31 Mon Sep 17 00:00:00 2001
+From f61946655b28e688fc82fe9f8f48d20c46cce493 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 12:32:02 +0800
-Subject: [PATCH 3/3] vlc repo reset script
+Subject: [PATCH 3/5] vlc repo reset script
 
 ---
  _reset_vlc.sh |   31 +++++++++++++++++++++++++++++++
@@ -10,7 +10,7 @@ Subject: [PATCH 3/3] vlc repo reset script
 
 diff --git a/_reset_vlc.sh b/_reset_vlc.sh
 new file mode 100644
-index 0000000..69d9f41
+index 0000000..3132bde
 --- /dev/null
 +++ b/_reset_vlc.sh
 @@ -0,0 +1,31 @@
@@ -39,8 +39,8 @@ index 0000000..69d9f41
 +
 +echo "======================================="
 +echo "Applying the patches for libvlc_danmaku"
-+git am ../../patches/vlc/*.patch || git am --abort
 +git am ../patches-extra/*.patch || git am --abort
++git am ../../patches/vlc/*.patch || git am --abort
 +
 +echo "======================================="
 +

@@ -1,4 +1,4 @@
-From 0422a470eb6edbfdb29671c9dd0330e177b1f908 Mon Sep 17 00:00:00 2001
+From bf7d656ce6299572ea2725539249d7ef96016258 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
 Subject: [PATCH 5/5] another libvlc wrapper
@@ -41,7 +41,7 @@ index ee57356..b8d7edc 100644
  	$(SRC)/obj/local/$(ARCH)/libiomx-hc.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
 diff --git a/compile.sh b/compile.sh
-index 3c17e31..046b6f7 100755
+index 8f305c2..0a186fc 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -36,7 +36,7 @@ fi

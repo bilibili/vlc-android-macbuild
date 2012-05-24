@@ -1,7 +1,7 @@
-From 224f4382992994214e592991f768c75adcb02e14 Mon Sep 17 00:00:00 2001
+From 650d653815b5cf2910c9fbea98a94d4225859da5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 11:30:23 +0800
-Subject: [PATCH 2/3] do not build apk
+Subject: [PATCH 2/5] do not build apk
 
 ---
  Makefile |    2 +-
