@@ -1,7 +1,7 @@
-From 7a5f3cc0cc5331119e067150a4b540338adcd643 Mon Sep 17 00:00:00 2001
+From 720eee2f41081b8d265b4cc6ec12115a097d84a4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 17 May 2012 16:37:14 +0800
-Subject: [PATCH 2/8] fix zlib build on android
+Subject: [PATCH 2/9] fix zlib build on android
 
 ---
  contrib/src/zlib/rules.mak          |    2 +-

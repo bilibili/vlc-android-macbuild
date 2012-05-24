@@ -1,14 +1,14 @@
-From 0fb5e2d39eede0c73788fa3cf9e6fb5b7fb3c78c Mon Sep 17 00:00:00 2001
+From a2903f7b78619a50444b90826386692a5954c43b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 24 May 2012 16:39:56 +0800
-Subject: [PATCH] http: stripe scheme in access_t.psz_location
+Subject: [PATCH 8/9] http: stripe scheme in access_t.psz_location
 
 ---
  modules/access/http.c |   13 +++++++++++--
  1 个文件被修改，插入 11 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index 808073e..8256c33 100644
+index 10ae971..5746b7e 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
 @@ -588,7 +588,7 @@ connect:

@@ -1,7 +1,7 @@
-From f4fb068853def02ddb9360b2894f5603eb3110dd Mon Sep 17 00:00:00 2001
+From d199088c17feb0dc18082261f7383d37dfb9fb31 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 12:32:02 +0800
-Subject: [PATCH 3/5] vlc repo reset script
+Subject: [PATCH 3/3] vlc repo reset script
 
 ---
  _reset_vlc.sh |   31 +++++++++++++++++++++++++++++++
@@ -10,14 +10,14 @@ Subject: [PATCH 3/5] vlc repo reset script
 
 diff --git a/_reset_vlc.sh b/_reset_vlc.sh
 new file mode 100644
-index 0000000..9d16b20
+index 0000000..69d9f41
 --- /dev/null
 +++ b/_reset_vlc.sh
 @@ -0,0 +1,31 @@
 +#! /bin/sh
 +
 +# 1/ libvlc, libvlccore and its plugins
-+TESTED_HASH=0ef62578e5b6
++TESTED_HASH=6fdb0bea19
 +if [ ! -d "vlc" ]; then
 +    echo "VLC source not found, cloning"
 +    git clone git://git.videolan.org/vlc.git vlc

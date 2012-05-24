@@ -1,7 +1,7 @@
-From 0edaab7368a072267bfd36c0ba4a78f6b8a2cc3f Mon Sep 17 00:00:00 2001
+From 8cf25997ec742fde2649ed46a578636f92745344 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 7 May 2012 23:55:29 +0800
-Subject: [PATCH 6/6] fix play time after clock gap for mpegts
+Subject: [PATCH 5/9] fix play time after clock gap for mpegts
 
 ---
  include/vlc_stream.h             |    3 +++
@@ -24,7 +24,7 @@ index c929836..3f4a1b2 100644
  
  VLC_API int stream_Read( stream_t *s, void *p_read, int i_read );
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index 0cf0630..ce19257 100644
+index 254ad10..fd55692 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
 @@ -1981,6 +1981,8 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
@@ -73,7 +73,7 @@ index 0cf0630..ce19257 100644
          }
  
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index fb916b2..79165de 100644
+index 2c3e00e..9ae741b 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -64,6 +64,7 @@ vlc_module_end()

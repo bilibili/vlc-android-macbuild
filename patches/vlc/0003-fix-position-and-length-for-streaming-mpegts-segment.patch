@@ -1,7 +1,7 @@
-From 2b788ad7f3a3b8a5741d62ca8df6de0467663ee7 Mon Sep 17 00:00:00 2001
+From 40ba5b45825d2ced69002a39cf16bbb0633fa9d4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH 4/8] fix position and length for streaming mpegts segments
+Subject: [PATCH 3/9] fix position and length for streaming mpegts segments
  hls
 
 ---
@@ -10,7 +10,7 @@ Subject: [PATCH 4/8] fix position and length for streaming mpegts segments
  2 个文件被修改，插入 74 行(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index f9c2f4d..0cf0630 100644
+index d5583d8..254ad10 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
 @@ -328,6 +328,14 @@ struct demux_sys_t
@@ -112,7 +112,7 @@ index f9c2f4d..0cf0630 100644
              if( pid->es->p_pes && pid->es->fmt.i_cat != VIDEO_ES )
              {
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 86f97b6..fb916b2 100644
+index 413247a..2c3e00e 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1047,6 +1047,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const

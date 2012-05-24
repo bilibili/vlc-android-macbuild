@@ -1,14 +1,14 @@
-From ca3f1ba6cbe3fa2159799a9ccc896b98d21359f0 Mon Sep 17 00:00:00 2001
+From 075e7a25042126179a7a45930c8277d5e7e49a85 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
-Subject: [PATCH 5/8] add http option to disable range header
+Subject: [PATCH 4/9] add http option to disable range header
 
 ---
  modules/access/http.c |   43 +++++++++++++++++++++++++++++++++++++++++--
  1 个文件被修改，插入 41 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index 9817bca..808073e 100644
+index f7a1e85..10ae971 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
 @@ -99,6 +99,10 @@ static void Close( vlc_object_t * );
