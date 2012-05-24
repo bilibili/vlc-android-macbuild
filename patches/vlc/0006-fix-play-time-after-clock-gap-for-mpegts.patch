@@ -1,13 +1,13 @@
-From b136cd80fe00334c6fd32bb1938794e32f0516f3 Mon Sep 17 00:00:00 2001
+From 0edaab7368a072267bfd36c0ba4a78f6b8a2cc3f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 7 May 2012 23:55:29 +0800
-Subject: [PATCH 6/7] fix play time after clock gap for mpegts
+Subject: [PATCH 6/6] fix play time after clock gap for mpegts
 
 ---
- include/vlc_stream.h             |    3 ++
- modules/demux/ts.c               |   28 ++++++++++++++--
- modules/stream_filter/httplive.c |   68 ++++++++++++++++++++++++++++++++------
- 3 个文件被修改，插入 86 行(+)，删除 13 行(-)
+ include/vlc_stream.h             |    3 +++
+ modules/demux/ts.c               |   28 +++++++++++++++++++--
+ modules/stream_filter/httplive.c |   50 +++++++++++++++++++++++++++++---------
+ 3 个文件被修改，插入 68 行(+)，删除 13 行(-)
 
 diff --git a/include/vlc_stream.h b/include/vlc_stream.h
 index c929836..3f4a1b2 100644
@@ -73,7 +73,7 @@ index 0cf0630..ce19257 100644
          }
  
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index fb916b2..6df1535 100644
+index fb916b2..79165de 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -64,6 +64,7 @@ vlc_module_end()
@@ -84,7 +84,15 @@ index fb916b2..6df1535 100644
      int         duration;   /* segment duration (seconds) */
      uint64_t    size;       /* segment size in bytes */
      uint64_t    bandwidth;  /* bandwidth usage of segments (bits per second)*/
-@@ -360,12 +361,13 @@ static uint64_t hls_GetStreamSize(hls_stream_t *hls)
+@@ -125,6 +126,7 @@ struct stream_sys_t
+         uint64_t    offset;     /* current offset in media */
+         int         stream;     /* current hls_stream  */
+         int         segment;    /* current segment for playback */
++        int         current_segment_start_time; /* (seconds) */
+     } playback;
+ 
+     /* Playlist */
+@@ -360,12 +362,13 @@ static uint64_t hls_GetStreamSize(hls_stream_t *hls)
  }
  
  /* Segment */
@@ -99,7 +107,7 @@ index fb916b2..6df1535 100644
      segment->duration = duration; /* seconds */
      segment->size = 0; /* bytes */
      segment->sequence = 0;
-@@ -607,7 +609,7 @@ static int parse_SegmentInformation(hls_stream_t *hls, char *p_read, int *durati
+@@ -607,7 +610,7 @@ static int parse_SegmentInformation(hls_stream_t *hls, char *p_read, int *durati
      return VLC_SUCCESS;
  }
  
@@ -108,7 +116,7 @@ index fb916b2..6df1535 100644
  {
      assert(hls);
      assert(uri);
-@@ -617,7 +619,7 @@ static int parse_AddSegment(hls_stream_t *hls, const int duration, const char *u
+@@ -617,7 +620,7 @@ static int parse_AddSegment(hls_stream_t *hls, const int duration, const char *u
  
      char *psz_uri = relative_URI(hls->url, uri);
  
@@ -117,7 +125,7 @@ index fb916b2..6df1535 100644
      if (segment)
          segment->sequence = hls->sequence + vlc_array_count(hls->segments) - 1;
      free(psz_uri);
-@@ -1047,7 +1049,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1047,7 +1050,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
  
          /* */
          int segment_duration = -1;
@@ -126,7 +134,7 @@ index fb916b2..6df1535 100644
          do
          {
              /* Next line */
-@@ -1060,10 +1062,6 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1060,10 +1063,6 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
              {
                  segment_duration = 0;
                  err = parse_SegmentInformation(hls, line, &segment_duration);
@@ -137,7 +145,7 @@ index fb916b2..6df1535 100644
              }
              else if (strncmp(line, "#EXT-X-TARGETDURATION", 21) == 0)
                  err = parse_TargetDuration(s, hls, line);
-@@ -1083,7 +1081,9 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1083,7 +1082,9 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
                  err = parse_EndList(s, hls);
              else if ((strncmp(line, "#", 1) != 0) && (*line != '\0') )
              {
@@ -148,7 +156,7 @@ index fb916b2..6df1535 100644
                  segment_duration = -1; /* reset duration */
              }
  
-@@ -1095,10 +1095,10 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1095,10 +1096,10 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
  
          } while (err == VLC_SUCCESS);
  
@@ -161,7 +169,31 @@ index fb916b2..6df1535 100644
          }
  
          free(line);
-@@ -2455,6 +2455,41 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -1929,6 +1930,7 @@ static int Open(vlc_object_t *p_this)
+     /* Choose first HLS stream to start with */
+     int current = p_sys->playback.stream = 0;
+     p_sys->playback.segment = p_sys->download.segment = ChooseSegment(s, current);
++    p_sys->playback.current_segment_start_time = 0;
+ 
+     /* manage encryption key if needed */
+     hls_ManageSegmentKeys(s, hls_Get(p_sys->hls_stream, current));
+@@ -2161,6 +2163,7 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
+                 segment_RestorePos(segment);
+ 
+             p_sys->playback.segment++;
++            p_sys->playback.current_segment_start_time = segment->start_time;
+             vlc_mutex_unlock(&segment->lock);
+ 
+             /* signal download thread */
+@@ -2427,6 +2430,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+ 
+         vlc_mutex_lock(&segment->lock);
+         segment_RestorePos(segment);
++        p_sys->playback.current_segment_start_time = segment->start_time;
+         vlc_mutex_unlock(&segment->lock);
+ 
+         /* start download at current playback segment */
+@@ -2455,6 +2459,19 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
      return b_found ? VLC_SUCCESS : VLC_EGENERIC;
  }
  
@@ -169,33 +201,11 @@ index fb916b2..6df1535 100644
 +{
 +    stream_sys_t *p_sys = s->p_sys;
 +
-+    hls_stream_t *hls = hls_Get(p_sys->hls_stream, p_sys->playback.stream);
-+    if (hls == NULL)
-+    {
-+        msg_Err (s, "failed to hls_Get");
-+        return VLC_EGENERIC;
-+    }
-+
-+    vlc_mutex_lock(&hls->lock);
-+
-+
-+    segment_t *segment = segment_GetSegment(hls, p_sys->playback.segment);
-+    if (segment == NULL)
-+    {
-+        msg_Err (s, "failed to segment_GetSegment");
-+        vlc_mutex_unlock(&hls->lock);
-+        return VLC_EGENERIC;
-+    }
-+
-+    vlc_mutex_lock(&segment->lock);
-+    *p_segment_start_time = ((int64_t)segment->start_time) * 1000 * 1000;
++    *p_segment_start_time = ((int64_t)p_sys->playback.current_segment_start_time) * 1000 * 1000;
 +    if (*p_segment_start_time < 0)
 +    {
 +        msg_Err (s, "*p_segment_start_time < 0");
 +    }
-+    vlc_mutex_unlock(&segment->lock);
-+
-+    vlc_mutex_unlock(&hls->lock);
 +
 +    return VLC_SUCCESS;
 +}
@@ -203,7 +213,7 @@ index fb916b2..6df1535 100644
  static int Control(stream_t *s, int i_query, va_list args)
  {
      stream_sys_t *p_sys = s->p_sys;
-@@ -2481,6 +2516,17 @@ static int Control(stream_t *s, int i_query, va_list args)
+@@ -2481,6 +2498,17 @@ static int Control(stream_t *s, int i_query, va_list args)
          case STREAM_GET_SIZE:
              *(va_arg (args, uint64_t *)) = GetStreamSize(s);
              break;

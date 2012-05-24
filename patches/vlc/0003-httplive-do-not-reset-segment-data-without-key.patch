@@ -1,7 +1,7 @@
-From 6d0fcdd41b0c4c5ec375cf1ff2c02ab9b81481f0 Mon Sep 17 00:00:00 2001
+From 498dcde7d273ead642e757d3e88c8c3236dcd1d3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 18 May 2012 21:17:32 +0800
-Subject: [PATCH 3/7] httplive: do not reset segment data without key
+Subject: [PATCH 3/8] httplive: do not reset segment data without key
 
 ---
  modules/stream_filter/httplive.c |    3 ++-

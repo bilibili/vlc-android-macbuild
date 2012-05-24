@@ -1,7 +1,7 @@
-From 0864574bf1a2ec9288596bc086900950c36885a5 Mon Sep 17 00:00:00 2001
+From 7ab09cebe4e3bb6b008fba8029104e9d91a6de1c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 19 May 2012 20:59:28 +0800
-Subject: [PATCH 9/9] avcodec: disable delayed opening for packetized AAC data
+Subject: [PATCH 8/8] avcodec: disable delayed opening for packetized AAC data
 
 ---
  modules/codec/avcodec/avcodec.c |    3 ++-
