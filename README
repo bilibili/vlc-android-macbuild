@@ -3,12 +3,31 @@
   * MacOS or CentOS
   * ADK
   * NDK-r7c
-  * upgrade config.sub of automake (for Linux if necessary)
-  * git 1.7.9.4 (or above)
-  * cmake 2.8.7 (not tested with lower version)
-  * automake 1.11.3 (do not use 1.12 or above)
 
- 1. Install necessary tools.
+  * MacPorts >= 2.0.1 (for MacOS to upgrade tools)
+   * sudo port -vd install wget
+   * sudo port -vd install xz
+   * sudo port -vd install git-core
+   * sudo port -vd install cmake
+   * sudo port -vd install grep
+   * sudo port -vd install autoconf
+   * sudo port -vd install libtool
+   * sudo port -vd install pkgconfig
+
+  * Install automake 1.11.x (for MacOS)
+   # contrib can not be built with automake 1.10 or 1.12
+   * cd /tmp
+   * # @89623 for automake 1.11.3
+   * # @91506 for automake 1.11.4
+   * # @91935 for automake 1.11.5
+   * svn co -r 89623 http://svn.macports.org/repository/macports/trunk/dports/devel/automake
+   * cd automake
+   * sudo port -vd install
+
+  * Upgrade config.sub (for Linux)
+   * upgrade config.sub of automake (to recognize `arm-linux-androideabi`)
+
+ 1. If you meet any trouble, this article may help you.
     Read this article http://www.doitscared.com/?p=649
 
  2. Fetch build scripts for mac
