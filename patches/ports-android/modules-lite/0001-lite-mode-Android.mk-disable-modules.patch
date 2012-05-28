@@ -1,7 +1,7 @@
-From 175f95f3b5ca0b362cbf0b8ffad5b7267015f025 Mon Sep 17 00:00:00 2001
+From 9cd0aa984795d4aec5dd42e53cb7be776d740e1b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
-Subject: [PATCH 1/6] lite-mode: Android.mk: disable modules
+Subject: [PATCH 1/5] lite-mode: Android.mk: disable modules
 
 ---
  vlc-android/jni/Android.mk |   11 ++++-------
