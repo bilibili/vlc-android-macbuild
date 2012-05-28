@@ -1,0 +1,45 @@
+From 681d5a211aa522a39431f509d6f62e7d193a4cae Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 28 May 2012 11:45:12 +0800
+Subject: [PATCH 2/6] lite-mode: compile.sh: disable contrib
+
+---
+ compile.sh |   21 ++++++++++++++++++++-
+ 1 个文件被修改，插入 20 行(+)，删除 1 行(-)
+
+diff --git a/compile.sh b/compile.sh
+index c9ca5bd..e1e50e2 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -121,8 +121,27 @@ cd contrib/android
+     --disable-tremor \
+     --disable-vorbis \
+     --disable-sidplay2 \
++    --disable-taglib \
++    --disable-live555 \
++    --disable-schroedinger \
++    --disable-matroska \
++    --disable-goom \
++    --disable-gsm \
++    --disable-speex \
++    --disable-speexdsp \
++    --disable-freetype2 \
++    --disable-lua \
++    --disable-libxml2 \
++    --disable-flac \
++    --disable-ogg \
++    --disable-dca \
++    --disable-theora \
++    --disable-modplug \
++    --disable-png \
++    --disable-openjpg \
++    --disable-xml2 \
+     --disable-samplerate \
+-    --enable-iconv
++    --disable-iconv
+ 
+ # TODO: mpeg2, theora
+ 
+-- 
+1.7.10.2
+

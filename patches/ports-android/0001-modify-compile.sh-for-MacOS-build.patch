@@ -1,15 +1,14 @@
-From d3b3c23487bfa0b4201b4fa7e054b6cf05d3e294 Mon Sep 17 00:00:00 2001
+From 240a1a93f57ecd66486ef3a743f45be127b66201 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH 1/5] modify compile.sh for MacOS build
 
 ---
- compile.sh |   34 ++++++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 34 行(+)
- create mode 100644 patches-extra/.gitignore
+ compile.sh |   30 ++++++++++++++++++++++++++++++
+ 1 个文件被修改，插入 30 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index 34e3b2b..8f305c2 100755
+index a971ac6..9330aa2 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -43,6 +43,17 @@ fi
@@ -30,16 +29,13 @@ index 34e3b2b..8f305c2 100755
  export PATH=${ANDROID_NDK}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin:${PATH}
  
  # 1/ libvlc, libvlccore and its plugins
-@@ -54,6 +65,17 @@ if [ ! -d "vlc" ]; then
+@@ -54,6 +65,14 @@ if [ ! -d "vlc" ]; then
      git checkout -B android ${TESTED_HASH}
      echo "Applying the patches"
      git am ../patches/*.patch
 +
 +    if [ ${BUILD_PLATFORM} == 'darwin' ]; then
 +        git am ../../patches/vlc-on-macosx/*.patch
-+    fi
-+    if [ -f "../patches-extra/*.patch" ]; then
-+        git am ../patches-extra/*.patch
 +    fi
 +    git am ../../patches/vlc/*.patch
 +elif [ '$1' != '-f' ]; then
@@ -48,7 +44,7 @@ index 34e3b2b..8f305c2 100755
  else
      echo "VLC source found"
      cd vlc
-@@ -70,6 +92,11 @@ git reset --hard origin
+@@ -70,6 +89,10 @@ git reset --hard origin
  git pull origin master
  git checkout -B android ${TESTED_HASH}
  git am ../patches/*
@@ -56,11 +52,10 @@ index 34e3b2b..8f305c2 100755
 +    git am ../../patches/vlc-on-macosx/*.patch
 +fi
 +git am ../../patches/vlc/*.patch
-+git am ../patches-extra/*.patch
  
  *** : This will delete any changes you made to the current branch ***
  
-@@ -78,6 +105,7 @@ EOF
+@@ -78,6 +101,7 @@ EOF
      fi
  fi
  
@@ -68,7 +63,7 @@ index 34e3b2b..8f305c2 100755
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
-@@ -108,6 +136,12 @@ if test -z "${NO_NEON}" -o -n "${TEGRA2}"; then
+@@ -108,6 +132,12 @@ if test -z "${NO_NEON}" -o -n "${TEGRA2}"; then
      echo "NOTHUMB := -marm" >> config.mak
  fi
  
@@ -81,9 +76,6 @@ index 34e3b2b..8f305c2 100755
  make fetch
  make
  
-diff --git a/patches-extra/.gitignore b/patches-extra/.gitignore
-new file mode 100644
-index 0000000..e69de29
 -- 
 1.7.10.2
 

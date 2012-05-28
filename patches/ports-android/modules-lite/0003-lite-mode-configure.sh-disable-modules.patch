@@ -1,14 +1,14 @@
-From 27d95ebbbf26d2b4a5eb8591ddae6882ca564307 Mon Sep 17 00:00:00 2001
+From 7a8bc225479adbd889dd94272288debc78a4fc67 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
+Subject: [PATCH 3/6] lite-mode: configure.sh: disable modules
 
 ---
- configure.sh |    6 +++---
- 1 个文件被修改，插入 3 行(+)，删除 3 行(-)
+ configure.sh |    7 ++++---
+ 1 个文件被修改，插入 4 行(+)，删除 3 行(-)
 
 diff --git a/configure.sh b/configure.sh
-index fd313f9..ab51923 100755
+index cd280a7..db4b973 100755
 --- a/configure.sh
 +++ b/configure.sh
 @@ -46,7 +46,7 @@ STRIP="${CROSS_COMPILE}strip" \
@@ -20,7 +20,7 @@ index fd313f9..ab51923 100755
                  --enable-avformat \
                  --enable-swscale \
                  --enable-avcodec \
-@@ -54,8 +54,8 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+@@ -54,8 +54,9 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
                  --enable-audiotrack \
                  --enable-android-surface \
                  --enable-debug \
@@ -28,6 +28,7 @@ index fd313f9..ab51923 100755
 -                --enable-taglib \
 +                --disable-mkv \
 +                --disable-taglib \
++                --disable-freetype \
                  --enable-iomx \
                  --disable-vlc --disable-shared \
                  --disable-vlm \

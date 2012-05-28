@@ -1,47 +1,31 @@
-From 948e12c60c2cc2550641cc41793425f0fffe7f3e Mon Sep 17 00:00:00 2001
+From 175f95f3b5ca0b362cbf0b8ffad5b7267015f025 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
-Subject: [PATCH 1/4] lite-mode: Android.mk: disable modules
+Subject: [PATCH 1/6] lite-mode: Android.mk: disable modules
 
 ---
- compile.sh                 |    4 ++++
- vlc-android/jni/Android.mk |   10 ++++------
- 2 个文件被修改，插入 8 行(+)，删除 6 行(-)
+ vlc-android/jni/Android.mk |   11 ++++-------
+ 1 个文件被修改，插入 4 行(+)，删除 7 行(-)
 
-diff --git a/compile.sh b/compile.sh
-index 0927297..64e3053 100755
---- a/compile.sh
-+++ b/compile.sh
-@@ -127,6 +127,10 @@ cd contrib/android
-     --disable-tremor \
-     --disable-vorbis \
-     --disable-sidplay2 \
-+    --disable-taglib \
-+    --disable-live555 \
-+    --disable-schroedinger \
-+    --disable-matroska \
-     --disable-samplerate
- 
- # TODO: mpeg2, theora
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 84701bc..a15b94c 100644
+index adfc13e..bd4ee35 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
-@@ -29,13 +29,11 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+@@ -29,13 +29,10 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
  	$(VLC_BUILD_DIR)/src/.libs/libvlccore.a \
  	$(VLC_BUILD_DIR)/compat/.libs/libcompat.a \
  	-ldl -lz -lm -llog \
 -	-ldvbpsi -lebml -lmatroska -ltag \
 -	-logg -lFLAC -ltheora \
-+	-ldvbpsi \
-+	-ltheora \
- 	-lmpeg2 -ldca -la52 \
+-	-lmpeg2 -ldca -la52 \
 -	-lavformat -lavcodec -lswscale -lavutil -lpostproc -lgsm -lopenjpeg \
 -	-lliveMedia -lUsageEnvironment -lBasicUsageEnvironment -lgroupsock \
 -	-lspeex -lspeexdsp \
--	-lxml2 -lpng -lgnutls -lgcrypt -lgpg-error \
-+	-lavformat -lavcodec -lswscale -lavutil -lpostproc -lopenjpeg \
-+	-lpng -lgnutls -lgcrypt -lgpg-error \
+-	-lxml2 -lpng -lgnutls -lgcrypt -lgpg-error -lfreetype -liconv \
++	-ldvbpsi \
++	-lmpeg2 -la52 \
++	-lavformat -lavcodec -lswscale -lavutil -lpostproc \
++	-lgnutls -lgcrypt -lgpg-error \
  	$(CPP_STATIC)
  
  include $(BUILD_SHARED_LIBRARY)

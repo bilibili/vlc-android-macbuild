@@ -1,4 +1,4 @@
-From bf7d656ce6299572ea2725539249d7ef96016258 Mon Sep 17 00:00:00 2001
+From 91746683f95fb96752a7648fe576a2c89192309f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
 Subject: [PATCH 5/5] another libvlc wrapper
@@ -8,14 +8,14 @@ Subject: [PATCH 5/5] another libvlc wrapper
  compile.sh                              |    2 +-
  vlc-android/jni/Android.mk              |   15 +-
  vlc-android/jni/Application.mk          |    2 +
- vlc-android/jni/libvlcjni_danmaku.c     |  976 +++++++++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c     |  978 +++++++++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku.inc.c |   63 ++
- 6 个文件被修改，插入 1057 行(+)，删除 8 行(-)
+ 6 个文件被修改，插入 1059 行(+)，删除 8 行(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
 diff --git a/Makefile b/Makefile
-index ee57356..b8d7edc 100644
+index 349a42c..7126e42 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,12 @@
@@ -41,7 +41,7 @@ index ee57356..b8d7edc 100644
  	$(SRC)/obj/local/$(ARCH)/libiomx-hc.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
 diff --git a/compile.sh b/compile.sh
-index 8f305c2..0a186fc 100755
+index 9330aa2..c9ca5bd 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -36,7 +36,7 @@ fi
@@ -54,7 +54,7 @@ index 8f305c2..0a186fc 100755
      fi
  fi
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index fc807ac..2a68f4b 100644
+index 92a14d1..adfc13e 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -1,18 +1,21 @@
@@ -100,10 +100,10 @@ index 9507cee..3e5f176 100644
  endif
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..1f49cb0
+index 0000000..75f1311
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,976 @@
+@@ -0,0 +1,978 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -147,7 +147,7 @@ index 0000000..1f49cb0
 +#define AOUT_OPENSLES        2
 +#include "libvlcjni_danmaku.inc.c"
 +
-+libvlc_media_t *new_media(jint instance, JNIEnv *env, jobject thiz, jstring fileLocation, bool noOmx)
++libvlc_media_t *new_media(jint instance, JNIEnv *env, jobject thiz, jstring fileLocation, bool noOmx, bool noVideo)
 +{
 +    libvlc_instance_t *libvlc = (libvlc_instance_t*)instance;
 +    jboolean isCopy;
@@ -174,6 +174,8 @@ index 0000000..1f49cb0
 +            libvlc_media_add_option(p_md, ":network-caching=1500");
 +            libvlc_media_add_option(p_md, ":codec=iomx,all");
 +        }
++        if (noVideo)
++            libvlc_media_add_option(p_md, ":no-video");
 +    }
 +    return p_md;
 +}
@@ -620,10 +622,10 @@ index 0000000..1f49cb0
 +            (*env)->FindClass(env, "java/lang/String"),
 +            (*env)->NewStringUTF(env, ""));
 +
-+    libvlc_media_t *m = new_media(instance, env, thiz, mrl, false);
++    libvlc_media_t *m = new_media(instance, env, thiz, mrl, false, false);
 +    if (!m)
 +    {
-+        LOGE("readMedia: Could not create the media!");
++        LOGE("readMediaMeta: Could not create the media!");
 +        return array;
 +    }
 +
@@ -662,10 +664,10 @@ index 0000000..1f49cb0
 +    releaseMediaPlayer(env, thiz);
 +
 +    /* Create a new item */
-+    libvlc_media_t *m = new_media(instance, env, thiz, mrl, false);
++    libvlc_media_t *m = new_media(instance, env, thiz, mrl, false, false);
 +    if (!m)
 +    {
-+        LOGE("readMediaMeta: Could not create the media!");
++        LOGE("readMedia: Could not create the media!");
 +        return;
 +    }
 +
@@ -735,7 +737,7 @@ index 0000000..1f49cb0
 +                                                    jint i_instance, jstring fileLocation)
 +{
 +    /* Create a new item and assign it to the media player. */
-+    libvlc_media_t *p_m = new_media(i_instance, env, thiz, fileLocation, false);
++    libvlc_media_t *p_m = new_media(i_instance, env, thiz, fileLocation, false, false);
 +    if (p_m == NULL)
 +    {
 +        LOGE("Could not create the media!");
@@ -782,7 +784,7 @@ index 0000000..1f49cb0
 +    }
 +
 +    /* Create a new item and assign it to the media player. */
-+    libvlc_media_t *p_m = new_media(instance, env, thiz, mrl, false);
++    libvlc_media_t *p_m = new_media(instance, env, thiz, mrl, false, false);
 +    if (p_m == NULL)
 +    {
 +        LOGE("Could not create the media!");
@@ -872,7 +874,7 @@ index 0000000..1f49cb0
 +    monitor->length_changed = false;
 +
 +    /* Create a new item and assign it to the media player. */
-+    libvlc_media_t *m = new_media(i_instance, env, thiz, fileLocation, false);
++    libvlc_media_t *m = new_media(i_instance, env, thiz, fileLocation, false, false);
 +    if (m == NULL)
 +    {
 +        LOGE("Could not create the media to play!");
