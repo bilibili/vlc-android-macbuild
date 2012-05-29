@@ -1,7 +1,7 @@
-From eba3947da276dd004526d35b1f0b37990409c1c1 Mon Sep 17 00:00:00 2001
+From 635acbc55c3902dc66129b665d595ea657851263 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH 7/9] hls: fix position and length for streaming mpegts
+Subject: [PATCH 08/10] hls: fix position and length for streaming mpegts
  segments hls
 
 ---
@@ -112,18 +112,18 @@ index d5583d8..254ad10 100644
              if( pid->es->p_pes && pid->es->fmt.i_cat != VIDEO_ES )
              {
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 45a5670..3ac4515 100644
+index 61cac29..6bf4cbb 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
-@@ -1070,6 +1070,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
- 
+@@ -1071,6 +1071,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
          /* */
+         bool media_sequence_loaded = false;
          int segment_duration = -1;
 +        int total_duration_secs = 0;
          do
          {
              /* Next line */
-@@ -1079,7 +1080,14 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1080,7 +1081,14 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
              p_begin = p_read;
  
              if (strncmp(line, "#EXTINF", 7) == 0)
@@ -138,7 +138,7 @@ index 45a5670..3ac4515 100644
              else if (strncmp(line, "#EXT-X-TARGETDURATION", 21) == 0)
                  err = parse_TargetDuration(s, hls, line);
              else if (strncmp(line, "#EXT-X-MEDIA-SEQUENCE", 21) == 0)
-@@ -1110,6 +1118,12 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1119,6 +1127,12 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
  
          } while (err == VLC_SUCCESS);
  
@@ -151,7 +151,7 @@ index 45a5670..3ac4515 100644
          free(line);
      }
  
-@@ -2408,6 +2422,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2417,6 +2431,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
  
      bool b_found = false;
      uint64_t length = 0;
@@ -159,7 +159,7 @@ index 45a5670..3ac4515 100644
      uint64_t size = hls->size;
      int count = vlc_array_count(hls->segments);
  
-@@ -2447,6 +2462,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2456,6 +2471,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
              vlc_mutex_unlock(&hls->lock);
              return VLC_EGENERIC;
          }
@@ -168,7 +168,7 @@ index 45a5670..3ac4515 100644
      }
  
      /* */
-@@ -2459,6 +2476,9 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2468,6 +2485,9 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
      /* */
      if (b_found)
      {
