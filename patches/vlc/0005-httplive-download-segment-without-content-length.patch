@@ -1,17 +1,17 @@
-From 2f625b5cc05c8e305dac9bec76dc1570294f1749 Mon Sep 17 00:00:00 2001
+From 99480cccc461e0d759957b900ce68fa2cff1e136 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 29 May 2012 15:05:09 +0800
-Subject: [PATCH 04/10] httplive: download segment without content-length
+Subject: [PATCH 05/11] httplive: download segment without content-length
 
 ---
  modules/stream_filter/httplive.c |   55 ++++++++++++++++++++++++++++++++------
  1 个文件被修改，插入 47 行(+)，删除 8 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 413247a..0af5ac7 100644
+index 68c1892..a9de3e6 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
-@@ -1689,6 +1689,10 @@ static int Prefetch(stream_t *s, int *current)
+@@ -1712,6 +1712,10 @@ static int Prefetch(stream_t *s, int *current)
  /****************************************************************************
   *
   ****************************************************************************/
@@ -22,7 +22,7 @@ index 413247a..0af5ac7 100644
  static int hls_Download(stream_t *s, segment_t *segment)
  {
      assert(segment);
-@@ -1697,17 +1701,21 @@ static int hls_Download(stream_t *s, segment_t *segment)
+@@ -1720,17 +1724,21 @@ static int hls_Download(stream_t *s, segment_t *segment)
      if (p_ts == NULL)
          return VLC_EGENERIC;
  
@@ -48,7 +48,7 @@ index 413247a..0af5ac7 100644
  
      ssize_t length = 0, curlen = 0;
      uint64_t size;
-@@ -1718,9 +1726,9 @@ static int hls_Download(stream_t *s, segment_t *segment)
+@@ -1741,9 +1749,9 @@ static int hls_Download(stream_t *s, segment_t *segment)
           * and enlarge the segment data block if necessary.
           */
          size = stream_Size(p_ts);
@@ -60,7 +60,7 @@ index 413247a..0af5ac7 100644
              block_t *p_block = block_Realloc(segment->data, 0, size);
              if (p_block == NULL)
              {
-@@ -1731,15 +1739,46 @@ static int hls_Download(stream_t *s, segment_t *segment)
+@@ -1754,15 +1762,46 @@ static int hls_Download(stream_t *s, segment_t *segment)
              }
              segment->data = p_block;
              segment->size = size;

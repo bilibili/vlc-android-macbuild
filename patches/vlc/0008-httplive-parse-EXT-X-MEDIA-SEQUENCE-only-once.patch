@@ -1,17 +1,17 @@
-From 28533f33f8be818e9f151fa8c3091c8820cf092d Mon Sep 17 00:00:00 2001
+From 03c4c828523be1de8a670f29695aba4a5470679b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 29 May 2012 20:42:41 +0800
-Subject: [PATCH 07/10] httplive: parse EXT-X-MEDIA-SEQUENCE only once
+Subject: [PATCH 08/11] httplive: parse EXT-X-MEDIA-SEQUENCE only once
 
 ---
  modules/stream_filter/httplive.c |   11 ++++++++++-
  1 个文件被修改，插入 10 行(+)，删除 1 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 45a5670..61cac29 100644
+index b6bddae..108f066 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
-@@ -1069,6 +1069,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1092,6 +1092,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
          assert(hls);
  
          /* */
@@ -19,7 +19,7 @@ index 45a5670..61cac29 100644
          int segment_duration = -1;
          do
          {
-@@ -1083,7 +1084,15 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1106,7 +1107,15 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
              else if (strncmp(line, "#EXT-X-TARGETDURATION", 21) == 0)
                  err = parse_TargetDuration(s, hls, line);
              else if (strncmp(line, "#EXT-X-MEDIA-SEQUENCE", 21) == 0)
