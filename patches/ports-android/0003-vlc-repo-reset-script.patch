@@ -1,20 +1,27 @@
-From 29ba1b5b23bf49f8ec060a9dffa60558665d442b Mon Sep 17 00:00:00 2001
+From 2f85509091e4158bba6eb01fbd71f546b76986c7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 12:32:02 +0800
 Subject: [PATCH 3/5] vlc repo reset script
 
 ---
- _reset_vlc.sh |   30 ++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 30 行(+)
+ _reset_vlc.sh |   43 +++++++++++++++++++++++++++++++++++++++++++
+ 1 个文件被修改，插入 43 行(+)
  create mode 100644 _reset_vlc.sh
 
 diff --git a/_reset_vlc.sh b/_reset_vlc.sh
 new file mode 100644
-index 0000000..7a20f5b
+index 0000000..5ef9d27
 --- /dev/null
 +++ b/_reset_vlc.sh
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,43 @@
 +#! /bin/sh
++
++BUILD_PLATFORM='unknown'
++if [ "$(uname)" == 'Linux' ]; then
++   BUILD_PLATFORM='linux'
++elif [ "$(uname)" == 'Darwin' ]; then
++   BUILD_PLATFORM='darwin'
++fi
 +
 +# 1/ libvlc, libvlccore and its plugins
 +TESTED_HASH=0792f8eb22
@@ -36,6 +43,12 @@ index 0000000..7a20f5b
 +echo "======================================="
 +echo "Applying the patches"
 +git am ../patches/*.patch || git am --abort
++
++if [ ${BUILD_PLATFORM} == 'darwin' ]; then
++    echo "======================================="
++    echo "Applying the patches for build on darwin"
++    git am ../../patches/vlc-on-macosx/*.patch || git am --abort
++fi
 +
 +echo "======================================="
 +echo "Applying the patches for libvlc_danmaku"

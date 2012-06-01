@@ -1,14 +1,14 @@
-From 2570205aee35313669fda4d4c6138defd1fd2164 Mon Sep 17 00:00:00 2001
+From 491b6ccce908494b8e9c3037d831983e704f2925 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
 Subject: [PATCH 3/5] lite-mode: configure.sh: disable modules
 
 ---
- configure.sh |    7 ++++---
- 1 个文件被修改，插入 4 行(+)，删除 3 行(-)
+ configure.sh |    8 ++++----
+ 1 个文件被修改，插入 4 行(+)，删除 4 行(-)
 
 diff --git a/configure.sh b/configure.sh
-index cd280a7..db4b973 100755
+index cd280a7..546a1aa 100755
 --- a/configure.sh
 +++ b/configure.sh
 @@ -46,7 +46,7 @@ STRIP="${CROSS_COMPILE}strip" \
@@ -32,6 +32,14 @@ index cd280a7..db4b973 100755
                  --enable-iomx \
                  --disable-vlc --disable-shared \
                  --disable-vlm \
+@@ -95,7 +96,6 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+                 --disable-svg \
+                 --disable-sqlite \
+                 --disable-udev \
+-                --disable-libxml2 \
+                 --disable-caca \
+                 --disable-glx \
+                 --disable-egl \
 -- 
 1.7.10.2
 

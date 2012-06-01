@@ -1,4 +1,4 @@
-From e7ff0142e1d9eb479566be4be1350696c15b5f4c Mon Sep 17 00:00:00 2001
+From 00a970f569a35a108e8a68cb752109e63dd3e42c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 12:04:30 +0800
 Subject: [PATCH 4/5] lite-mode: find_modules.sh: blacklist modules

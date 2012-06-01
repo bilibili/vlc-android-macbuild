@@ -1,7 +1,7 @@
-From 7b2e7dfbafae5ec981dac0ce76e52d35ca0d1a60 Mon Sep 17 00:00:00 2001
+From 7102350852b7b1adc95d1d54c65544f65045ca30 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 24 May 2012 16:35:29 +0800
-Subject: [PATCH 06/11] httplive: work with absolute path in play list
+Subject: [PATCH 06/12] httplive: work with absolute path in play list
 
 ---
  modules/stream_filter/httplive.c |   23 +++++++++++++++++++++++
