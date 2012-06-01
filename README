@@ -33,7 +33,14 @@
  2. Fetch build scripts for mac
     git clone git@github.com:bbcallen/vlc-android-macbuild.git vlc-android-macbuild
 
- 3. Start build
+ 3. Build VLC app
+    cd vlc-android-macbuild
+    sh _pull-app.sh
+    cd vlc-app/vlc-app-armv7a-neon
+    sh _reset_vlc.sh
+    sh compile.sh
+ 
+ 4. Build customized VlcDemo (FOR MY OWN TEST ONLY)
     cd vlc-android-macbuild
     sh _pull-full-armv7a-neon.sh
     cd vlc-fule-armv7a-neon
