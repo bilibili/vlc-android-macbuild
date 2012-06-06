@@ -1,0 +1,919 @@
+From b8b68f088f2168e473f4fc2df83109e259c36ea6 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 31 May 2012 19:23:41 +0800
+Subject: [PATCH 12/12] access_sina: support sina segments xml
+
+---
+ modules/access/Modules.am |    5 +
+ modules/access/sina.c     |  882 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 个文件被修改，插入 887 行(+)
+ create mode 100644 modules/access/sina.c
+
+diff --git a/modules/access/Modules.am b/modules/access/Modules.am
+index b2b7503..61c3e18 100644
+--- a/modules/access/Modules.am
++++ b/modules/access/Modules.am
+@@ -182,6 +182,11 @@ if HAVE_XCB
+ libvlc_LTLIBRARIES += libxcb_screen_plugin.la
+ endif
+ 
++libaccess_sina_plugin_la_SOURCES = sina.c
++libaccess_sina_plugin_la_CFLAGS = $(AM_CFLAGS) $(LIBXML2_CFLAGS)
++libaccess_sina_plugin_la_LIBADD = $(AM_LIBADD) $(LIBXML2_LIBS)
++libaccess_sina_plugin_la_DEPENDENCIES =
++libvlc_LTLIBRARIES += libaccess_sina_plugin.la
+ 
+ ### Digital TV ###
+ 
+diff --git a/modules/access/sina.c b/modules/access/sina.c
+new file mode 100644
+index 0000000..70331f5
+--- /dev/null
++++ b/modules/access/sina.c
+@@ -0,0 +1,882 @@
++/*****************************************************************************
++ * sina.c: Sina Video support (uncrypted)
++ *****************************************************************************
++ *
++ * Authors: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++/*****************************************************************************
++ * Preamble
++ *****************************************************************************/
++
++#ifdef HAVE_CONFIG_H
++# include "config.h"
++#endif
++
++#include <vlc_common.h>
++#include <vlc_plugin.h>
++#include <vlc_threads.h>
++#include <vlc_demux.h>
++#include <vlc_block.h>
++#include <vlc_input.h>
++#include <assert.h>
++
++#include <libxml/parser.h>
++#include <libxml/tree.h>
++#include <libxml/xpath.h>
++#include <libxml/xpathInternals.h>
++
++/* FIXME */
++#include "../../src/input/demux.h"
++
++/*****************************************************************************
++ * Module descriptor
++ *****************************************************************************/
++static int  Open ( vlc_object_t * );
++static void Close( vlc_object_t * );
++
++vlc_module_begin ()
++    set_shortname( N_("sina") )
++    set_description( N_("sina v_play parser") )
++    set_category( CAT_INPUT )
++    set_subcategory( SUBCAT_INPUT_ACCESS )
++    set_capability( "access_demux", 100 )
++    add_shortcut( "http" )
++    set_callbacks( Open, Close )
++vlc_module_end ()
++
++/*****************************************************************************
++ * Documentation
++ *  example: http://v.iask.com/v_play.php?vid=71442057
++ *****************************************************************************/
++
++/*****************************************************************************
++ * Local prototypes
++ *****************************************************************************/
++typedef struct
++{
++    /* will no modify after parsed */
++    int             i_order;
++    int             i_duration;     /* (millisecond) */
++    int             i_start_time;   /* (millisecond) */
++    char            *p_url;
++
++    /* segment data */
++    vlc_mutex_t     lock;
++    uint64_t        i_size; /* segment size */
++    block_fifo_t    *p_data_fifo;   /* downloaded fifo */
++    uint64_t        i_play_offset;  /* play offset in segment */
++
++    stream_t        *p_parser;      /* demux for this segment, create on use */
++    
++    stream_t        *p_stream;      /* segment stream */
++    demux_t         *p_demux;       /* segment demux */
++} sina_segment_t;
++
++typedef struct
++{
++    vlc_array_t *p_segment_array;   /* list of segments */
++
++    int         i_total_duration;   /* (millisecond) */
++} sina_playlist_t;
++
++struct demux_sys_t
++{
++    /* */
++    char                *p_playlist_url;
++    
++    /* */
++    vlc_mutex_t         lock;
++    sina_playlist_t     *p_playlist;
++    int                 i_playing_segment;
++    int                 i_playing_time;     /* millisecond */
++    
++    int                 i_segment_start_time;   /* current segment start time */
++    demux_t             *p_segment_demux;       /* current segment demux, weak reference */
++    
++    /* */
++    vlc_thread_t        sina_download_thread;
++    
++    /* */
++    es_out_t            *p_out;
++    bool                b_es_loaded;
++    vlc_array_t         *p_es_fmt_cache;    /* weak reference */
++};
++
++static int Control( demux_t *p_demux, int i_query, va_list args );
++static int Demux( demux_t *p_demux );
++
++static demux_sys_t *sina_Alloc( void );
++static void         sina_Free( demux_sys_t* p_sys);
++
++static void sina_FreeEsFormatCache( vlc_array_t* p_es_fmt_cache );
++
++static sina_playlist_t *sina_OpenPlayList( demux_t* p_demux, const char *p_playlist_url );
++
++static int sina_AssureOpenSegmentDemux( demux_t *p_demux, sina_segment_t* p_segment );
++
++/****************************************************************************
++ * Module Open/Close
++ ****************************************************************************/
++static int Open( vlc_object_t *p_this )
++{
++    demux_t     *p_demux = (demux_t*) p_this;
++    demux_sys_t *p_sys = NULL;
++
++    int         rc = VLC_SUCCESS;
++    sina_segment_t  *p_head_segment = NULL; /* weak reference */
++
++    msg_Dbg( p_demux, "check access: %s", p_demux->psz_access );
++    if( !p_demux->psz_access || 0 != strcmp( p_demux->psz_access, "http" ) )
++        goto EXIT_ERROR;
++
++    msg_Dbg( p_demux, "check location: %s", p_demux->psz_location );
++    const char* p_location_prefix = "v.iask.com/v_play.php?vid=";
++    if( !p_demux->psz_location || 0 != strncmp( p_demux->psz_location, p_location_prefix, strlen(p_location_prefix) ) )
++        goto EXIT_ERROR;
++
++    /* Init p_demux */
++    p_sys = sina_Alloc();
++    if( !p_sys )
++        goto EXIT_ERROR;
++
++    p_sys->p_playlist_url = malloc(strlen( p_demux->psz_access ) +
++                                   strlen( "://" ) +
++                                   strlen( p_demux->psz_location ) +
++                                   1);
++    sprintf( p_sys->p_playlist_url, "%s://%s", p_demux->psz_access, p_demux->psz_location );
++
++    /* Open play list */
++    p_sys->p_playlist = sina_OpenPlayList( p_demux, p_sys->p_playlist_url );
++    if( !p_sys->p_playlist )
++    {
++        msg_Err( p_demux, "access_sina failed to open play list" );
++        goto EXIT_ERROR;
++    }
++
++    assert( p_sys->p_playlist );
++    assert( p_sys->p_playlist->p_segment_array );
++    assert( vlc_array_count( p_sys->p_playlist->p_segment_array ) > 0 );
++
++    p_head_segment = (sina_segment_t *) vlc_array_item_at_index( p_sys->p_playlist->p_segment_array, 0 );
++    assert( p_head_segment );
++    
++    p_demux->p_sys = p_sys;
++    if( VLC_SUCCESS != sina_AssureOpenSegmentDemux( p_demux, p_head_segment ) )
++    {
++        msg_Err( p_demux, "failed to open demux for 1st segment" );
++        goto EXIT_ERROR;
++    }
++
++    p_demux->pf_control = Control;
++    p_demux->pf_demux = Demux;
++
++    return VLC_SUCCESS;
++
++EXIT_ERROR:
++    sina_Free(p_sys);
++
++    p_demux->p_sys = NULL;
++
++    return VLC_EGENERIC;
++}
++
++static void Close(vlc_object_t *p_this)
++{    
++    demux_t *p_demux = (demux_t *) p_this;
++    demux_sys_t *p_sys = p_demux->p_sys;
++
++    sina_Free(p_sys);
++}
++
++/****************************************************************************
++ * Open/Close
++ ****************************************************************************/
++static sina_segment_t *sina_AllocSegment()
++{
++    sina_segment_t *p_segment = (sina_segment_t *)malloc( sizeof(sina_segment_t) );
++    if( !p_segment )
++        return NULL;
++    memset( p_segment, 0, sizeof(sina_segment_t) );
++
++    p_segment->p_data_fifo = block_FifoNew();
++    vlc_mutex_init( &p_segment->lock );
++
++    return p_segment;
++}
++
++static void sina_FreeSegment( sina_segment_t *p_segment )
++{
++    if( !p_segment )
++        return;
++
++    if( p_segment->p_demux )
++        demux_Delete( p_segment->p_demux );
++
++    if( p_segment->p_stream )
++        stream_Delete( p_segment->p_stream );
++
++    if( p_segment->p_parser )
++        stream_Delete( p_segment->p_parser );
++
++    if( p_segment->p_url )
++        free( p_segment->p_url );
++
++    if( p_segment->p_data_fifo )
++        block_FifoRelease( p_segment->p_data_fifo );
++
++    vlc_mutex_destroy(&p_segment->lock);    
++    free( p_segment );
++}
++
++static void sina_FreeSegmentArray( vlc_array_t *p_segment_array )
++{
++    if( !p_segment_array )
++        return;
++    
++    int count = vlc_array_count( p_segment_array );
++    for(int i = 0; i < count; ++i )
++    {
++        sina_segment_t *p_segment = (sina_segment_t *) vlc_array_item_at_index( p_segment_array, i );
++        if( p_segment )
++        {
++            sina_FreeSegment( p_segment );
++        }
++    }
++    
++    vlc_array_destroy( p_segment_array );
++}
++
++static sina_playlist_t *sina_AllocPlayList()
++{
++    sina_playlist_t *p_playlist = (sina_playlist_t *) malloc( sizeof( sina_playlist_t ) );
++    if( !p_playlist )
++        return NULL;
++    
++    memset( p_playlist, 0, sizeof( sina_playlist_t ) );
++    return p_playlist;
++}
++
++static void sina_FreePlayList( sina_playlist_t *p_playlist )
++{
++    if( !p_playlist )
++        return;
++    
++    vlc_array_t *p_segment_array = p_playlist->p_segment_array;
++    if( p_segment_array )
++        sina_FreeSegmentArray( p_segment_array );
++    
++    free( p_playlist );
++}
++
++static demux_sys_t *sina_Alloc()
++{
++    demux_sys_t *p_sys = (demux_sys_t *) malloc( sizeof( demux_sys_t ) );
++    if (!p_sys)
++        return NULL;
++    memset( p_sys, 0, sizeof( demux_sys_t ) );
++
++    vlc_mutex_init( &p_sys->lock );
++    p_sys->p_es_fmt_cache = vlc_array_new();
++
++    return p_sys;
++}
++
++static void sina_Free( demux_sys_t* p_sys )
++{
++    if( !p_sys )
++        return;
++
++    if( p_sys->p_es_fmt_cache )
++        sina_FreeEsFormatCache( p_sys->p_es_fmt_cache );
++    
++    if( p_sys->p_playlist)
++        sina_FreePlayList( p_sys->p_playlist );
++    if( p_sys->p_playlist_url )
++        free( p_sys->p_playlist_url );
++    free( p_sys );
++}
++
++/****************************************************************************
++ * Parse
++ ****************************************************************************/
++static int sina_SegmentOrderCompare( const void *lhs, const void *rhs )
++{
++    const sina_segment_t *seg_lhs = *(const sina_segment_t **) lhs;
++    const sina_segment_t *seg_rhs = *(const sina_segment_t **) rhs;
++    return (seg_lhs->i_order - seg_rhs->i_order);
++}
++
++static vlc_array_t *sina_XPathParseSegmentArray( demux_t *p_demux, xmlXPathContextPtr xp_context, const char* p_xpath )
++{
++    xmlXPathObjectPtr   xp_object = NULL;
++    xmlNodeSetPtr       xp_node_set = NULL;
++    xmlNodePtr          xp_node = NULL;
++    xmlChar             *xp_string = NULL;
++    vlc_array_t         *p_segment_array = vlc_array_new();
++
++    xp_object = xmlXPathEvalExpression( (const xmlChar *) p_xpath, xp_context );
++    if( !xp_object )
++    {
++        msg_Err( p_demux, "failed to call xmlXPathEvalExpression( %s )", p_xpath );
++        goto EXIT_ERROR;        
++    }
++
++    xp_node_set = xp_object->nodesetval;
++    if( !xp_node_set || xp_node_set->nodeNr < 1)
++    {
++        msg_Err( p_demux, "empty node set for %s", p_xpath );
++        goto EXIT_ERROR;  
++    }
++
++    for( int i = 0; i < xp_node_set->nodeNr; ++i )
++    {
++        sina_segment_t  *p_segment = NULL;
++        xmlNodePtr      child = NULL;
++
++        xp_node = xp_node_set->nodeTab[i];
++        if( !xp_node || xp_node->type != XML_ELEMENT_NODE )
++        {
++            msg_Err( p_demux, "invalid node for %s[%d]", p_xpath, i );
++            goto EXIT_ERROR;
++        }
++
++        p_segment = sina_AllocSegment();
++        if( !p_segment_array )
++            goto EXIT_ERROR;
++
++        child = xp_node->children;
++        while( child->next )
++        {
++            xp_string = xmlNodeGetContent( child );
++            if( 0 == strcmp( (const char *) child->name, "order" ) )
++            {
++                if( !xp_string )
++                    goto EXIT_ERROR;
++                
++                p_segment->i_order = atoi( (const char *) xp_string );
++            }
++            else if( 0 == strcmp( (const char *) child->name, "length" ) )
++            {
++                if( !xp_string )
++                    goto EXIT_ERROR;
++                
++                p_segment->i_duration = atoi( (const char *) xp_string );
++            }
++            else if( 0 == strcmp( (const char *) child->name, "url" ) )
++            {
++                if( !xp_string )
++                    goto EXIT_ERROR;
++                
++                p_segment->p_url = strdup( (const char *) xp_string );
++            }
++            child = child->next;
++        }
++
++        if( !p_segment )
++            goto EXIT_ERROR;
++
++        msg_Info( p_demux, "add segment %d: (%d) %s",
++                      p_segment->i_order,
++                      p_segment->i_duration,
++                      p_segment->p_url);
++
++        vlc_array_append( p_segment_array, p_segment );
++    }
++
++    if( 0 == vlc_array_count( p_segment_array ) )
++        goto EXIT_ERROR;
++
++    qsort( p_segment_array->pp_elems,
++          vlc_array_count( p_segment_array ),
++          sizeof( sina_segment_t * ),
++          sina_SegmentOrderCompare );
++
++    if( !xp_object )
++        xmlXPathFreeObject( xp_object );
++
++    return p_segment_array;
++EXIT_ERROR:
++
++    if( !xp_object )
++        xmlXPathFreeObject( xp_object );
++
++    if( p_segment_array)
++        sina_FreeSegmentArray( p_segment_array );
++
++    return NULL;
++}
++
++static sina_playlist_t *sina_ParsePlayList(demux_t *p_demux, const uint8_t *p_playlist_data, size_t data_length)
++{
++    sina_playlist_t     *play_list = NULL;
++    vlc_array_t         *p_segment_array = NULL;
++
++    int                 count = 0;
++    xmlDocPtr           x_doc = NULL;
++    xmlXPathContextPtr  xp_context = NULL;
++
++    x_doc = xmlReadMemory( (const char*) p_playlist_data, data_length, NULL, NULL, 0 );
++    if( !x_doc )
++    {
++        msg_Err( p_demux, "failed to call xmlReadMemory" );
++        goto EXIT_ERROR;
++    }
++
++    xp_context = xmlXPathNewContext( x_doc );
++    if( !xp_context )
++    {
++        msg_Err( p_demux, "failed to call xmlXPathNewContext" );
++        goto EXIT_ERROR; 
++    }
++
++    p_segment_array = sina_XPathParseSegmentArray( p_demux, xp_context, "/video/durl" );
++    if( !p_segment_array )
++        goto EXIT_ERROR;
++
++    play_list = sina_AllocPlayList();
++    if( !play_list )
++        goto EXIT_ERROR;
++
++    play_list->i_total_duration = 0;
++    count = vlc_array_count( p_segment_array );
++    for( int i = 0; i < count; ++i )
++    {
++        sina_segment_t *p_segment = (sina_segment_t *)vlc_array_item_at_index( p_segment_array, i );
++        assert( p_segment );
++        msg_Info( p_demux, "%d, total duration %d += %d",
++                      (int) p_segment,
++                      play_list->i_total_duration,
++                      p_segment->i_duration );
++        
++        p_segment->i_start_time += play_list->i_total_duration;
++        if( p_segment->i_duration > 0 )
++            play_list->i_total_duration += p_segment->i_duration;
++    }
++
++    play_list->p_segment_array = p_segment_array;
++    
++    p_segment_array = NULL;
++
++EXIT_ERROR:
++
++    if( p_segment_array )
++        sina_FreeSegmentArray( p_segment_array );
++    if( xp_context )
++        xmlXPathFreeContext( xp_context );
++    if( x_doc )
++        xmlFreeDoc( x_doc );
++    xmlCleanupParser();
++
++    return play_list;
++}
++
++static sina_playlist_t *sina_OpenPlayList(demux_t *p_demux, const char *p_playlist_url)
++{
++    sina_playlist_t *p_playlist = NULL;
++    stream_t        *p_meta_stream = NULL;
++    const uint8_t   *p_meta_data = NULL;
++    int64_t         i_peek_size = 0;
++
++    p_meta_stream = stream_UrlNew( p_demux, p_playlist_url );
++    if( !p_meta_stream )
++    {
++        msg_Err( p_demux, "Failed to open %s", p_playlist_url );
++        goto EXIT_ERROR;
++    }
++
++    i_peek_size = stream_Peek( p_meta_stream, &p_meta_data, 65536 );
++    if( i_peek_size <= 0 || i_peek_size > 65536 )
++        goto EXIT_ERROR;
++
++    msg_Dbg( p_demux, "sina_ParsePlayList:sina_ParsePlayList:\n %*s", (int)i_peek_size, p_meta_data );
++    p_playlist = sina_ParsePlayList( p_demux, p_meta_data, i_peek_size );
++    if( !p_playlist )
++        goto EXIT_ERROR;
++
++    stream_Delete( p_meta_stream );
++    return p_playlist;
++
++EXIT_ERROR:
++    if( p_playlist )
++        sina_FreePlayList( p_playlist );
++    if( p_meta_stream )
++        stream_Delete( p_meta_stream );
++
++    return NULL;
++}
++
++/****************************************************************************
++ * ES_OUT hook
++ *
++ * Share a single es_out for multiple demut, at least working for demux/avformat
++ ****************************************************************************/
++struct es_out_sys_t
++{
++    demux_t *p_demux;
++    bool b_es_loaded;   /* do not load ES when switch segment */
++};
++
++typedef struct
++{
++    es_out_id_t *p_es_id;   /* weak reference */
++    es_format_t fmt;     /* need free */
++} sina_es_fmt_entry;
++
++static void sina_FreeEsFormatCache( vlc_array_t* p_es_fmt_cache )
++{
++    if( !p_es_fmt_cache )
++        return;
++    
++    int count = vlc_array_count( p_es_fmt_cache );
++    for( int i = 0; i < count; ++i )
++    {
++        sina_es_fmt_entry* p_entry = (sina_es_fmt_entry *) vlc_array_item_at_index( p_es_fmt_cache, i );
++        if( !p_entry )
++            continue;
++        
++        es_format_Clean( &p_entry->fmt );
++        free( p_entry );
++    }
++    
++    vlc_array_destroy( p_es_fmt_cache );
++}
++
++static es_out_id_t *EsFmtCacheFind( es_out_t *p_out, const es_format_t *p_fmt )
++{
++    demux_t *p_demux = p_out->p_sys->p_demux;
++    demux_sys_t *p_sys = p_demux->p_sys;
++
++    vlc_array_t *p_es_fmt_cache = p_sys->p_es_fmt_cache;
++    for( int i = 0; i < vlc_array_count( p_sys->p_es_fmt_cache ); ++i )
++    {
++        sina_es_fmt_entry *entry = (sina_es_fmt_entry *) vlc_array_item_at_index( p_es_fmt_cache, i );
++        if( es_format_IsSimilar( &entry->fmt, p_fmt ) )
++            return entry->p_es_id;
++    }
++
++    return NULL;
++}
++
++static void EsFmtCacheAdd( es_out_t *p_out, es_out_id_t* p_es_id, const es_format_t *p_fmt )
++{
++    demux_t *p_demux = p_out->p_sys->p_demux;
++    demux_sys_t *p_sys = p_demux->p_sys;
++    
++    assert( !EsFmtCacheFind( p_out, p_fmt ) );
++
++    sina_es_fmt_entry *entry = (sina_es_fmt_entry *) malloc( sizeof(sina_es_fmt_entry) );
++    if( entry == NULL )
++        return;
++    memset( entry, 0, sizeof(sina_es_fmt_entry) );
++
++    entry->p_es_id = p_es_id;
++    es_format_Copy(&entry->fmt, p_fmt);
++
++    vlc_array_append( p_sys->p_es_fmt_cache , entry );
++}
++
++static es_out_id_t *EsOutAdd( es_out_t *p_out, const es_format_t *p_fmt )
++{
++    if( p_out->p_sys->b_es_loaded )
++    {
++        es_out_id_t *p_es_id = EsFmtCacheFind( p_out, p_fmt );
++        if( p_es_id )
++        {
++            msg_Info( p_out->p_sys->p_demux, "EsOutAdd reuse" );
++            return p_es_id;
++        }
++        else
++        {
++            msg_Info( p_out->p_sys->p_demux, "EsOutAdd reuse not found in cache" );
++        }
++    }
++    else
++    {
++        msg_Info( p_out->p_sys->p_demux, "EsOutAdd for the 1st time" );
++    }
++
++    es_out_id_t *p_es_id = es_out_Add( p_out->p_sys->p_demux->out, p_fmt );
++    if( p_es_id )
++        EsFmtCacheAdd( p_out, p_es_id, p_fmt );
++    
++    return p_es_id;
++}
++static int EsOutSend( es_out_t *p_out, es_out_id_t *p_es, block_t *p_block )
++{
++    return es_out_Send( p_out->p_sys->p_demux->out, p_es, p_block );
++}
++static void EsOutDel( es_out_t *p_out, es_out_id_t *p_es )
++{
++    es_out_Del( p_out->p_sys->p_demux->out, p_es );
++}
++static int EsOutControl( es_out_t *p_out, int i_query, va_list args )
++{
++    return es_out_vaControl( p_out->p_sys->p_demux->out, i_query, args );
++}
++static void EsOutDestroy( es_out_t *p_out )
++{
++    es_out_Delete( p_out->p_sys->p_demux->out );
++    free( p_out->p_sys );
++    free( p_out );
++}
++
++static es_out_t *EsOutNew( demux_t *p_demux, bool b_es_loaded )
++{
++    es_out_t *p_out = malloc( sizeof(*p_out) );
++    memset( p_out, 0, sizeof(*p_out) );
++
++    es_out_sys_t *p_sys;
++    
++    if( !p_out )
++        return NULL;
++    
++    p_out->pf_add     = EsOutAdd;
++    p_out->pf_send    = EsOutSend;
++    p_out->pf_del     = EsOutDel;
++    p_out->pf_control = EsOutControl;
++    p_out->pf_destroy = EsOutDestroy;
++    
++    p_out->p_sys = p_sys = malloc( sizeof(*p_sys) );
++    if( !p_sys )
++    {
++        free( p_out );
++        return NULL;
++    }
++    memset( p_sys, 0, sizeof(*p_sys) );
++    p_sys->p_demux = p_demux;
++    p_sys->b_es_loaded = b_es_loaded;
++    
++    return p_out;
++}
++
++/****************************************************************************
++ * Demux
++ ****************************************************************************/
++static int sina_AssureOpenSegmentDemux( demux_t *p_demux, sina_segment_t* p_segment )
++{
++    demux_sys_t *p_sys = p_demux->p_sys;
++    input_thread_t *p_parent_input = demux_GetParentInput( p_demux );
++
++    if( !p_segment->p_stream )
++    {
++        msg_Err( p_demux, "sina_AssureOpenSegmentDemux::stream_UrlNew %d", p_segment->i_order );
++        p_segment->p_stream = stream_UrlNew( p_parent_input, p_segment->p_url );
++        if( !p_segment->p_stream )
++            return VLC_EGENERIC;
++    }
++
++    if( !p_segment->p_demux )
++    {
++        msg_Err( p_demux, "sina_AssureOpenSegmentDemux::demux_Mew %d", p_segment->i_order );
++        p_segment->p_demux = demux_New( p_segment->p_stream,
++                                       p_segment->p_stream->p_input,
++                                       "", "any", "",
++                                       p_segment->p_stream,
++                                       //p_demux->out,
++                                       EsOutNew( p_demux, p_sys->b_es_loaded ),
++                                       false);
++        if( !p_segment->p_demux )
++            return VLC_EGENERIC;
++
++        /* reset pcr as demux and stream is changed */
++        es_out_Control( p_demux->out, ES_OUT_RESET_PCR );
++
++        p_sys->b_es_loaded = true;
++        p_sys->p_segment_demux = p_segment->p_demux;
++        p_sys->i_segment_start_time = p_segment->i_start_time;
++    }
++
++    return VLC_SUCCESS;
++}
++
++static int Demux( demux_t *p_demux )
++{
++    demux_sys_t *p_sys = p_demux->p_sys;
++    
++    sina_playlist_t *p_playlist = p_sys->p_playlist;
++    assert( p_playlist );
++    assert( p_playlist->p_segment_array );
++    
++    int rc = 0;
++    vlc_array_t *p_segment_array = p_playlist->p_segment_array;
++    for( int i = p_sys->i_playing_segment; i < vlc_array_count( p_segment_array ); ++i )
++    {
++        rc = 0;
++        sina_segment_t *p_segment = (sina_segment_t *) vlc_array_item_at_index( p_segment_array, i );
++        assert( p_segment );
++        assert( p_segment->p_data_fifo );  
++
++        if( VLC_SUCCESS != sina_AssureOpenSegmentDemux( p_demux, p_segment ) )
++            return -1;
++        
++        rc = demux_Demux( p_segment->p_demux );
++        if( rc != 0 )
++            return rc;  /* success or fail */
++
++        /* segment EOF */
++        msg_Err( p_demux, "sina segment EOF, try next segment" );
++
++        /* stream EOF */
++        if( i + 1 >= vlc_array_count( p_segment_array ) )
++            break;
++
++        if( p_segment->p_demux )
++        {
++            demux_Delete( p_segment->p_demux );
++            p_segment->p_demux = NULL;
++        }
++        if( p_segment->p_stream )
++        {
++            stream_Delete( p_segment->p_stream );
++            p_segment->p_stream = NULL;
++        }
++
++        sina_segment_t *p_next_segment = (sina_segment_t *) vlc_array_item_at_index( p_segment_array, i + 1);
++        assert( p_next_segment );
++        assert( p_next_segment->p_data_fifo );
++
++        msg_Err( p_demux, "open next segment %d", p_next_segment->i_order );
++        if( VLC_SUCCESS != sina_AssureOpenSegmentDemux( p_demux, p_next_segment ) )
++            return -1;
++        
++        es_out_t *p_out = p_next_segment->p_demux->out;
++        if( p_out )
++        {
++            es_out_sys_t *p_sys = p_out->p_sys;
++            if( p_sys )
++            {   /* do not load more es when switch segment */
++                msg_Err( p_demux, "p_sys->b_es_loaded = true" );
++                p_sys->b_es_loaded = true;
++            }            
++        }
++        
++        p_sys->i_playing_segment += 1;
++    }
++
++    return rc;
++}
++
++/****************************************************************************
++ * Control
++ ****************************************************************************/
++#if 0
++static void sina_DebugControlCode( demux_t *p_demux, int i_query )
++{
++    const char* p_debug_msg = "unknown";
++    switch( i_query )
++    {
++        case DEMUX_GET_POSITION:            p_debug_msg = "DEMUX_GET_POSITION"; break;
++        case DEMUX_SET_POSITION:            p_debug_msg = "DEMUX_SET_POSITION"; break;
++        case DEMUX_GET_LENGTH:              p_debug_msg = "DEMUX_GET_LENGTH"; break;
++        case DEMUX_GET_TIME:                p_debug_msg = "DEMUX_GET_TIME"; break;
++        case DEMUX_SET_TIME:                p_debug_msg = "DEMUX_SET_TIME"; break;
++        case DEMUX_GET_TITLE_INFO:          p_debug_msg = "DEMUX_GET_TITLE_INFO"; break;
++        case DEMUX_SET_TITLE:               p_debug_msg = "DEMUX_SET_TITLE"; break;
++        case DEMUX_SET_SEEKPOINT:           p_debug_msg = "DEMUX_SET_SEEKPOINT"; break;
++        case DEMUX_SET_GROUP:               p_debug_msg = "DEMUX_SET_GROUP"; break;
++        case DEMUX_SET_NEXT_DEMUX_TIME:     p_debug_msg = "DEMUX_SET_NEXT_DEMUX_TIME"; break;
++        case DEMUX_GET_FPS:                 p_debug_msg = "DEMUX_GET_FPS"; break;
++        case DEMUX_GET_META:                p_debug_msg = "DEMUX_GET_META"; break;
++        case DEMUX_HAS_UNSUPPORTED_META:    p_debug_msg = "DEMUX_HAS_UNSUPPORTED_META"; break;
++        case DEMUX_GET_ATTACHMENTS:         p_debug_msg = "DEMUX_GET_ATTACHMENTS"; break;
++        case DEMUX_CAN_RECORD:              p_debug_msg = "DEMUX_CAN_RECORD"; break;
++        case DEMUX_SET_RECORD_STATE:        p_debug_msg = "DEMUX_SET_RECORD_STATE"; break;
++        case DEMUX_CAN_PAUSE:               p_debug_msg = "DEMUX_CAN_PAUSE"; break;
++        case DEMUX_SET_PAUSE_STATE:         p_debug_msg = "DEMUX_SET_PAUSE_STATE"; break;
++        case DEMUX_GET_PTS_DELAY:           p_debug_msg = "DEMUX_GET_PTS_DELAY"; break;
++        case DEMUX_CAN_CONTROL_PACE:        p_debug_msg = "DEMUX_CAN_CONTROL_PACE"; break;
++        case DEMUX_CAN_CONTROL_RATE:        p_debug_msg = "DEMUX_CAN_CONTROL_RATE"; break;
++        case DEMUX_SET_RATE:                p_debug_msg = "DEMUX_SET_RATE"; break;
++        case DEMUX_CAN_SEEK:                p_debug_msg = "DEMUX_CAN_SEEK"; break;
++        case DEMUX_GET_SIGNAL:              p_debug_msg = "DEMUX_GET_SIGNAL"; break;
++    }
++    
++    msg_SinaDebug( p_demux, "sina:Control:%s", p_debug_msg );
++}
++#endif
++
++static int Control( demux_t *p_demux, int i_query, va_list args )
++{
++    demux_sys_t *p_sys = p_demux->p_sys;
++    
++    switch( i_query )
++    {
++        case DEMUX_GET_POSITION:
++        {            
++            double *p_position = (double*) va_arg( args, double * );
++
++            int64_t i_segment_playing_time = 0;
++            int rc = demux_Control( p_sys->p_segment_demux, DEMUX_GET_TIME, &i_segment_playing_time );
++            if( VLC_SUCCESS != rc )
++                return rc;
++
++            int64_t i_playing_time = i_segment_playing_time + p_sys->i_segment_start_time * 1000;
++            int64_t i_total_duration = (int64_t) p_sys->p_playlist->i_total_duration * 1000;
++
++            *p_position = 0.0;
++            if( i_total_duration > 0 )
++                *p_position = (double) i_playing_time / i_total_duration;
++
++            return rc;
++        }
++        case DEMUX_GET_TIME:
++        {
++            int64_t *p_time = (int64_t*) va_arg( args, int64_t * );
++
++            int rc = demux_Control( p_sys->p_segment_demux, DEMUX_GET_TIME, p_time );
++            *p_time += p_sys->i_segment_start_time * 1000;
++
++            return rc;           
++        }
++        case DEMUX_GET_LENGTH:
++        {
++            int64_t *p_duration = (int64_t*) va_arg( args, int64_t * );
++            
++            /* The length is useless here. We just check if segment demux is ready */
++            int rc = demux_Control( p_sys->p_segment_demux, DEMUX_GET_LENGTH, p_duration );
++            if( rc == VLC_SUCCESS )
++                *p_duration = (int64_t) p_sys->p_playlist->i_total_duration * 1000;                
++
++            return rc;
++        }
++        case DEMUX_CAN_PAUSE:
++        case DEMUX_CAN_SEEK:
++        case DEMUX_CAN_CONTROL_PACE:
++        case DEMUX_CAN_CONTROL_RATE:
++        {
++            *va_arg( args, bool * ) = true;
++            return VLC_SUCCESS;
++        }
++        case DEMUX_GET_PTS_DELAY:
++        {
++            int64_t *p_pts_delay = va_arg( args, int64_t * );
++            *p_pts_delay = INT64_C(1000) * var_InheritInteger( p_sys->p_segment_demux, "network-caching" );
++
++            return VLC_SUCCESS;
++        }
++        default:
++        {
++            if( p_sys->p_segment_demux )
++                return demux_vaControl( p_sys->p_segment_demux, i_query, args );
++
++            return VLC_EGENERIC;
++        }
++    }
++    
++    return VLC_EGENERIC;
++}
+\ No newline at end of file
+-- 
+1.7.10.2
+
