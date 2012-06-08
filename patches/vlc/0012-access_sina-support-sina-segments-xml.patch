@@ -1,12 +1,12 @@
-From b8b68f088f2168e473f4fc2df83109e259c36ea6 Mon Sep 17 00:00:00 2001
+From 7020f1e6f35f05458ddf90c99f48d338166daf46 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 31 May 2012 19:23:41 +0800
 Subject: [PATCH 12/12] access_sina: support sina segments xml
 
 ---
  modules/access/Modules.am |    5 +
- modules/access/sina.c     |  882 +++++++++++++++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 887 行(+)
+ modules/access/sina.c     | 1018 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 个文件被修改，插入 1023 行(+)
  create mode 100644 modules/access/sina.c
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
@@ -27,10 +27,10 @@ index b2b7503..61c3e18 100644
  
 diff --git a/modules/access/sina.c b/modules/access/sina.c
 new file mode 100644
-index 0000000..70331f5
+index 0000000..23eb7c1
 --- /dev/null
 +++ b/modules/access/sina.c
-@@ -0,0 +1,882 @@
+@@ -0,0 +1,1018 @@
 +/*****************************************************************************
 + * sina.c: Sina Video support (uncrypted)
 + *****************************************************************************
@@ -104,17 +104,12 @@ index 0000000..70331f5
 +{
 +    /* will no modify after parsed */
 +    int             i_order;
-+    int             i_duration;     /* (millisecond) */
-+    int             i_start_time;   /* (millisecond) */
++    int64_t         i_duration;         /* (microsecond) */
++    int64_t         i_start_time;       /* (microsecond) */
 +    char            *p_url;
 +
 +    /* segment data */
 +    vlc_mutex_t     lock;
-+    uint64_t        i_size; /* segment size */
-+    block_fifo_t    *p_data_fifo;   /* downloaded fifo */
-+    uint64_t        i_play_offset;  /* play offset in segment */
-+
-+    stream_t        *p_parser;      /* demux for this segment, create on use */
 +    
 +    stream_t        *p_stream;      /* segment stream */
 +    demux_t         *p_demux;       /* segment demux */
@@ -123,31 +118,24 @@ index 0000000..70331f5
 +typedef struct
 +{
 +    vlc_array_t *p_segment_array;   /* list of segments */
-+
-+    int         i_total_duration;   /* (millisecond) */
++    int64_t      i_total_duration;  /* (microsecond) */
 +} sina_playlist_t;
 +
 +struct demux_sys_t
 +{
 +    /* */
 +    char                *p_playlist_url;
-+    
++
 +    /* */
 +    vlc_mutex_t         lock;
 +    sina_playlist_t     *p_playlist;
-+    int                 i_playing_segment;
-+    int                 i_playing_time;     /* millisecond */
-+    
-+    int                 i_segment_start_time;   /* current segment start time */
-+    demux_t             *p_segment_demux;       /* current segment demux, weak reference */
-+    
-+    /* */
-+    vlc_thread_t        sina_download_thread;
-+    
++
++    sina_segment_t      *p_segment;     /* current playing segment, weak reference */
++
 +    /* */
 +    es_out_t            *p_out;
 +    bool                b_es_loaded;
-+    vlc_array_t         *p_es_fmt_cache;    /* weak reference */
++    vlc_array_t         *p_es_fmt_cache;        /* weak reference */
 +};
 +
 +static int Control( demux_t *p_demux, int i_query, va_list args );
@@ -160,7 +148,7 @@ index 0000000..70331f5
 +
 +static sina_playlist_t *sina_OpenPlayList( demux_t* p_demux, const char *p_playlist_url );
 +
-+static int sina_AssureOpenSegmentDemux( demux_t *p_demux, sina_segment_t* p_segment );
++static int sina_AssureOpenSegment( demux_t *p_demux, int i_demux );
 +
 +/****************************************************************************
 + * Module Open/Close
@@ -169,9 +157,6 @@ index 0000000..70331f5
 +{
 +    demux_t     *p_demux = (demux_t*) p_this;
 +    demux_sys_t *p_sys = NULL;
-+
-+    int         rc = VLC_SUCCESS;
-+    sina_segment_t  *p_head_segment = NULL; /* weak reference */
 +
 +    msg_Dbg( p_demux, "check access: %s", p_demux->psz_access );
 +    if( !p_demux->psz_access || 0 != strcmp( p_demux->psz_access, "http" ) )
@@ -204,12 +189,9 @@ index 0000000..70331f5
 +    assert( p_sys->p_playlist );
 +    assert( p_sys->p_playlist->p_segment_array );
 +    assert( vlc_array_count( p_sys->p_playlist->p_segment_array ) > 0 );
-+
-+    p_head_segment = (sina_segment_t *) vlc_array_item_at_index( p_sys->p_playlist->p_segment_array, 0 );
-+    assert( p_head_segment );
 +    
 +    p_demux->p_sys = p_sys;
-+    if( VLC_SUCCESS != sina_AssureOpenSegmentDemux( p_demux, p_head_segment ) )
++    if( VLC_SUCCESS != sina_AssureOpenSegment( p_demux, 0 ) )
 +    {
 +        msg_Err( p_demux, "failed to open demux for 1st segment" );
 +        goto EXIT_ERROR;
@@ -246,7 +228,6 @@ index 0000000..70331f5
 +        return NULL;
 +    memset( p_segment, 0, sizeof(sina_segment_t) );
 +
-+    p_segment->p_data_fifo = block_FifoNew();
 +    vlc_mutex_init( &p_segment->lock );
 +
 +    return p_segment;
@@ -263,14 +244,8 @@ index 0000000..70331f5
 +    if( p_segment->p_stream )
 +        stream_Delete( p_segment->p_stream );
 +
-+    if( p_segment->p_parser )
-+        stream_Delete( p_segment->p_parser );
-+
 +    if( p_segment->p_url )
 +        free( p_segment->p_url );
-+
-+    if( p_segment->p_data_fifo )
-+        block_FifoRelease( p_segment->p_data_fifo );
 +
 +    vlc_mutex_destroy(&p_segment->lock);    
 +    free( p_segment );
@@ -408,7 +383,7 @@ index 0000000..70331f5
 +                if( !xp_string )
 +                    goto EXIT_ERROR;
 +                
-+                p_segment->i_duration = atoi( (const char *) xp_string );
++                p_segment->i_duration = atoi( (const char *) xp_string ) * 1000;
 +            }
 +            else if( 0 == strcmp( (const char *) child->name, "url" ) )
 +            {
@@ -423,7 +398,7 @@ index 0000000..70331f5
 +        if( !p_segment )
 +            goto EXIT_ERROR;
 +
-+        msg_Info( p_demux, "add segment %d: (%d) %s",
++        msg_Info( p_demux, "add segment %d: (%"PRId64") %s",
 +                      p_segment->i_order,
 +                      p_segment->i_duration,
 +                      p_segment->p_url);
@@ -439,13 +414,13 @@ index 0000000..70331f5
 +          sizeof( sina_segment_t * ),
 +          sina_SegmentOrderCompare );
 +
-+    if( !xp_object )
++    if( xp_object )
 +        xmlXPathFreeObject( xp_object );
 +
 +    return p_segment_array;
 +EXIT_ERROR:
 +
-+    if( !xp_object )
++    if( xp_object )
 +        xmlXPathFreeObject( xp_object );
 +
 +    if( p_segment_array)
@@ -491,11 +466,13 @@ index 0000000..70331f5
 +    {
 +        sina_segment_t *p_segment = (sina_segment_t *)vlc_array_item_at_index( p_segment_array, i );
 +        assert( p_segment );
-+        msg_Info( p_demux, "%d, total duration %d += %d",
++        msg_Info( p_demux, "%d, total duration %"PRId64" += %"PRId64,
 +                      (int) p_segment,
 +                      play_list->i_total_duration,
 +                      p_segment->i_duration );
-+        
++
++        /* force i_order zero-based */
++        p_segment->i_order = i;
 +        p_segment->i_start_time += play_list->i_total_duration;
 +        if( p_segment->i_duration > 0 )
 +            play_list->i_total_duration += p_segment->i_duration;
@@ -556,7 +533,7 @@ index 0000000..70331f5
 +/****************************************************************************
 + * ES_OUT hook
 + *
-+ * Share a single es_out for multiple demut, at least working for demux/avformat
++ * Share a single es_out for multiple demux, at least working for demux/avformat
 + ****************************************************************************/
 +struct es_out_sys_t
 +{
@@ -674,16 +651,16 @@ index 0000000..70331f5
 +    memset( p_out, 0, sizeof(*p_out) );
 +
 +    es_out_sys_t *p_sys;
-+    
++
 +    if( !p_out )
 +        return NULL;
-+    
++
 +    p_out->pf_add     = EsOutAdd;
 +    p_out->pf_send    = EsOutSend;
 +    p_out->pf_del     = EsOutDel;
 +    p_out->pf_control = EsOutControl;
 +    p_out->pf_destroy = EsOutDestroy;
-+    
++
 +    p_out->p_sys = p_sys = malloc( sizeof(*p_sys) );
 +    if( !p_sys )
 +    {
@@ -693,47 +670,108 @@ index 0000000..70331f5
 +    memset( p_sys, 0, sizeof(*p_sys) );
 +    p_sys->p_demux = p_demux;
 +    p_sys->b_es_loaded = b_es_loaded;
-+    
++
 +    return p_out;
 +}
 +
 +/****************************************************************************
 + * Demux
 + ****************************************************************************/
-+static int sina_AssureOpenSegmentDemux( demux_t *p_demux, sina_segment_t* p_segment )
++static int sina_AssureOpenSegment( demux_t *p_demux, int i_segment )
 +{
 +    demux_sys_t *p_sys = p_demux->p_sys;
-+    input_thread_t *p_parent_input = demux_GetParentInput( p_demux );
++    assert( p_sys );
 +
-+    if( !p_segment->p_stream )
++    /* Close old segment */
++    int i_playing_segment = 0;
++    if( p_sys->p_segment )
++        i_playing_segment = p_sys->p_segment->i_order;
++    
++    assert( p_sys->p_playlist );    
++    vlc_array_t *p_segment_array = p_sys->p_playlist->p_segment_array;
++    assert( p_segment_array );
++
++    if( p_sys->p_segment )
 +    {
-+        msg_Err( p_demux, "sina_AssureOpenSegmentDemux::stream_UrlNew %d", p_segment->i_order );
-+        p_segment->p_stream = stream_UrlNew( p_parent_input, p_segment->p_url );
-+        if( !p_segment->p_stream )
-+            return VLC_EGENERIC;
++        if( i_playing_segment == i_segment )
++        {   /* Same segment, just return */
++            return VLC_SUCCESS;
++        }
++        else
++        {   /* Different segment, close current */
++            if( p_sys->p_segment->p_demux )
++            {
++                demux_Delete( p_sys->p_segment->p_demux );
++                p_sys->p_segment->p_demux = NULL;
++
++                /* Reset PCR before use next demux */
++                es_out_Control( p_demux->out, ES_OUT_RESET_PCR );
++            }
++            if( p_sys->p_segment->p_stream )
++            {
++                stream_Delete( p_sys->p_segment->p_stream );
++                p_sys->p_segment->p_stream = NULL;
++            }
++        }
 +    }
 +
-+    if( !p_segment->p_demux )
++    // TODO: reload xml, retry for 6x-min-debuff
++
++    /* Open new segment */    
++    input_thread_t *p_parent_input = demux_GetParentInput( p_demux );
++    assert( p_parent_input );
++
++    int i_segment_count = vlc_array_count( p_segment_array );
++    if( i_segment < 0 || i_segment > i_segment_count )
++        return VLC_EGENERIC;
++
++    sina_segment_t *p_new_segment = (sina_segment_t *) vlc_array_item_at_index( p_segment_array, i_segment );
++    assert( p_new_segment );
++
++    if( !p_new_segment->p_stream )
 +    {
-+        msg_Err( p_demux, "sina_AssureOpenSegmentDemux::demux_Mew %d", p_segment->i_order );
-+        p_segment->p_demux = demux_New( p_segment->p_stream,
-+                                       p_segment->p_stream->p_input,
++        msg_Info( p_demux, "sina open segment stream %d", p_new_segment->i_order );
++        p_new_segment->p_stream = stream_UrlNew( p_parent_input, p_new_segment->p_url );
++        if( !p_new_segment->p_stream )
++        {
++            msg_Err( p_demux, "failed to open stream %s", p_new_segment->p_url );
++            return VLC_EGENERIC;
++        }
++
++        int64_t segment_size = stream_Size( p_new_segment->p_stream );
++        msg_Info( p_demux, "sina segment size %"PRId64, segment_size );
++        // TODO: try peek data
++    }
++
++    if( !p_new_segment->p_demux )
++    {
++        msg_Info( p_demux, "sina open segment demux %d", p_new_segment->i_order );
++        p_new_segment->p_demux = demux_New( p_new_segment->p_stream,
++                                       p_new_segment->p_stream->p_input,
 +                                       "", "any", "",
-+                                       p_segment->p_stream,
++                                       p_new_segment->p_stream,
 +                                       //p_demux->out,
 +                                       EsOutNew( p_demux, p_sys->b_es_loaded ),
 +                                       false);
-+        if( !p_segment->p_demux )
++        if( !p_new_segment->p_demux )
++        {
++            msg_Err( p_demux, "failed to open demux %s", p_new_segment->p_url );
 +            return VLC_EGENERIC;
-+
-+        /* reset pcr as demux and stream is changed */
-+        es_out_Control( p_demux->out, ES_OUT_RESET_PCR );
++        }
 +
 +        p_sys->b_es_loaded = true;
-+        p_sys->p_segment_demux = p_segment->p_demux;
-+        p_sys->i_segment_start_time = p_segment->i_start_time;
++
++        /* Set current segment */
++        p_sys->p_segment = p_new_segment;
++
++        /* try to demux some date */
++        /* TODO: retry ? */
++        int i_demux_ret = demux_Demux( p_sys->p_segment->p_demux );
++        if( i_demux_ret <= 0 )
++            return VLC_EGENERIC;  
 +    }
 +
++    assert( p_sys->p_segment );
 +    return VLC_SUCCESS;
 +}
 +
@@ -744,64 +782,34 @@ index 0000000..70331f5
 +    sina_playlist_t *p_playlist = p_sys->p_playlist;
 +    assert( p_playlist );
 +    assert( p_playlist->p_segment_array );
-+    
-+    int rc = 0;
-+    vlc_array_t *p_segment_array = p_playlist->p_segment_array;
-+    for( int i = p_sys->i_playing_segment; i < vlc_array_count( p_segment_array ); ++i )
-+    {
-+        rc = 0;
-+        sina_segment_t *p_segment = (sina_segment_t *) vlc_array_item_at_index( p_segment_array, i );
-+        assert( p_segment );
-+        assert( p_segment->p_data_fifo );  
 +
-+        if( VLC_SUCCESS != sina_AssureOpenSegmentDemux( p_demux, p_segment ) )
++    while( p_sys->p_segment )
++    {
++        assert( p_sys->p_segment->p_demux );
++        if( !p_sys->p_segment || !p_sys->p_segment->p_demux )
 +            return -1;
 +        
-+        rc = demux_Demux( p_segment->p_demux );
-+        if( rc != 0 )
-+            return rc;  /* success or fail */
++        int i_demux_ret = demux_Demux( p_sys->p_segment->p_demux );
++        if( i_demux_ret != 0 )
++            return i_demux_ret;  /* success or fail */
 +
 +        /* segment EOF */
-+        msg_Err( p_demux, "sina segment EOF, try next segment" );
++        assert( p_sys->p_playlist );
++        vlc_array_t *p_segment_array = p_sys->p_playlist->p_segment_array;
++        assert( p_segment_array );
 +
-+        /* stream EOF */
-+        if( i + 1 >= vlc_array_count( p_segment_array ) )
++        /* test if whole stream EOF */
++        if( p_sys->p_segment->i_order >= vlc_array_count( p_sys->p_playlist->p_segment_array ) )
 +            break;
 +
-+        if( p_segment->p_demux )
-+        {
-+            demux_Delete( p_segment->p_demux );
-+            p_segment->p_demux = NULL;
-+        }
-+        if( p_segment->p_stream )
-+        {
-+            stream_Delete( p_segment->p_stream );
-+            p_segment->p_stream = NULL;
-+        }
-+
-+        sina_segment_t *p_next_segment = (sina_segment_t *) vlc_array_item_at_index( p_segment_array, i + 1);
-+        assert( p_next_segment );
-+        assert( p_next_segment->p_data_fifo );
-+
-+        msg_Err( p_demux, "open next segment %d", p_next_segment->i_order );
-+        if( VLC_SUCCESS != sina_AssureOpenSegmentDemux( p_demux, p_next_segment ) )
++        msg_Info( p_demux, "sina segment EOF, try next segment %d", p_sys->p_segment->i_order + 1 );
++        int i_ret = sina_AssureOpenSegment( p_demux, p_sys->p_segment->i_order + 1 );
++        if( VLC_SUCCESS != i_ret )
 +            return -1;
-+        
-+        es_out_t *p_out = p_next_segment->p_demux->out;
-+        if( p_out )
-+        {
-+            es_out_sys_t *p_sys = p_out->p_sys;
-+            if( p_sys )
-+            {   /* do not load more es when switch segment */
-+                msg_Err( p_demux, "p_sys->b_es_loaded = true" );
-+                p_sys->b_es_loaded = true;
-+            }            
-+        }
-+        
-+        p_sys->i_playing_segment += 1;
 +    }
 +
-+    return rc;
++    /* whole stream EOF */
++    return 0;
 +}
 +
 +/****************************************************************************
@@ -843,49 +851,177 @@ index 0000000..70331f5
 +}
 +#endif
 +
++static int sina_FindSegmentByTime( demux_t *p_demux, int64_t i_time )
++{
++    if( i_time <= 0 )
++        return 0;
++
++    demux_sys_t *p_sys = p_demux->p_sys;
++    assert( p_sys );
++
++    sina_playlist_t *p_playlist = p_sys->p_playlist;
++    assert( p_playlist );
++
++    vlc_array_t *p_segment_array = p_playlist->p_segment_array;
++    assert( p_segment_array );
++
++    int count = vlc_array_count( p_segment_array );
++    if( 0 == count )
++        return 0;
++
++    for( int i = 0; i < count; ++i )
++    {
++        sina_segment_t *p_segment = vlc_array_item_at_index( p_segment_array, i );
++        assert( p_segment );
++
++        if( i_time < p_segment->i_start_time + p_segment->i_duration )
++            return i;
++    }
++
++    /* not found, return last segment */
++    return count - 1;
++}
++
++static int sina_ControlGetDuration( demux_t *p_demux, int64_t *p_duration )
++{
++    demux_sys_t *p_sys = p_demux->p_sys;
++    assert( p_sys);
++
++    sina_segment_t *p_segment = p_sys->p_segment;
++    if( !p_segment || !p_segment->p_demux )
++        return VLC_EGENERIC;
++    
++    /* The length from sub-demux is useless. We just check if segment demux is ready */
++    int64_t i_segment_duration;
++    int rc = demux_Control( p_segment->p_demux, DEMUX_GET_LENGTH, &i_segment_duration );
++    if( rc != VLC_SUCCESS )
++        return rc;
++
++    *p_duration = (int64_t) p_sys->p_playlist->i_total_duration;                    
++    return rc;
++}
++
++static int sina_ControlGetTime( demux_t *p_demux, int64_t *p_time )
++{
++    demux_sys_t *p_sys = p_demux->p_sys;
++    assert( p_sys);
++    
++    sina_segment_t *p_segment = p_sys->p_segment;
++    if( !p_segment || !p_segment->p_demux )
++        return VLC_EGENERIC;
++
++    int rc = demux_Control( p_segment->p_demux, DEMUX_GET_TIME, p_time );
++    if( rc != VLC_SUCCESS )
++        return rc;
++
++    *p_time += p_segment->i_start_time;
++    return rc;   
++}
++
++static int sina_ControlSetTime( demux_t *p_demux, int64_t i_time )
++{
++    demux_sys_t *p_sys = p_demux->p_sys;
++    assert( p_sys);
++    msg_Info( p_demux, "sina seek %"PRId64, i_time );
++    
++    int i_seek_to_segment = sina_FindSegmentByTime( p_demux, i_time );
++    msg_Info( p_demux, "sina seek to segment %d", i_seek_to_segment );
++
++    int i_ret = sina_AssureOpenSegment( p_demux, i_seek_to_segment );
++    if( i_ret != VLC_SUCCESS )
++        return i_ret;
++
++    sina_segment_t *p_segment = p_sys->p_segment;
++    if( !p_segment || !p_segment->p_demux )
++        return VLC_EGENERIC;
++
++    assert( i_time >= p_sys->p_segment->i_start_time );
++    if( i_time < p_sys->p_segment->i_start_time )
++    {
++        msg_Warn( p_demux, "sina seek time: %"PRId64" less than segment start time: %"PRId64,
++                 i_time,
++                 p_sys->p_segment->i_start_time );
++        i_time = p_sys->p_segment->i_start_time;
++    }
++
++    msg_Info( p_demux, "sina segment seek %"PRId64, i_time - p_sys->p_segment->i_start_time );
++    int rc = demux_Control( p_segment->p_demux, DEMUX_SET_TIME, i_time - p_sys->p_segment->i_start_time);
++    if( rc != VLC_SUCCESS )
++        return rc;
++
++    return rc;
++}
++
++static int sina_ControlGetPosition( demux_t *p_demux, double *p_position )
++{
++    demux_sys_t *p_sys = p_demux->p_sys;
++    assert( p_sys);
++
++    int64_t i_total_duration = 0;
++    int rc = sina_ControlGetDuration( p_demux, &i_total_duration );
++    if( rc != VLC_SUCCESS )
++        return rc;
++
++    if( i_total_duration <= 0 )
++        return VLC_EGENERIC;
++
++    int64_t i_playing_time = 0;
++    rc = sina_ControlGetTime( p_demux, &i_playing_time );
++    if( rc != VLC_SUCCESS )
++        return rc;
++
++    *p_position = (double) i_playing_time / i_total_duration;
++    return rc;
++}
++
++static int sina_ControlSetPosition( demux_t *p_demux, double d_position )
++{
++    demux_sys_t *p_sys = p_demux->p_sys;
++    assert( p_sys);
++
++    int64_t i_total_duration = 0;
++    int rc = sina_ControlGetDuration( p_demux, &i_total_duration );
++    if( rc != VLC_SUCCESS )
++        return rc;
++
++    if( i_total_duration <= 0 )
++        return VLC_EGENERIC;
++
++    int64_t i_segment_playing_time = i_total_duration * d_position;
++    return sina_ControlSetTime( p_demux, i_segment_playing_time );
++}
++
 +static int Control( demux_t *p_demux, int i_query, va_list args )
 +{
 +    demux_sys_t *p_sys = p_demux->p_sys;
-+    
++    assert( p_sys);
++
 +    switch( i_query )
 +    {
 +        case DEMUX_GET_POSITION:
-+        {            
-+            double *p_position = (double*) va_arg( args, double * );
-+
-+            int64_t i_segment_playing_time = 0;
-+            int rc = demux_Control( p_sys->p_segment_demux, DEMUX_GET_TIME, &i_segment_playing_time );
-+            if( VLC_SUCCESS != rc )
-+                return rc;
-+
-+            int64_t i_playing_time = i_segment_playing_time + p_sys->i_segment_start_time * 1000;
-+            int64_t i_total_duration = (int64_t) p_sys->p_playlist->i_total_duration * 1000;
-+
-+            *p_position = 0.0;
-+            if( i_total_duration > 0 )
-+                *p_position = (double) i_playing_time / i_total_duration;
-+
-+            return rc;
++        {
++            double *p_position = (double *) va_arg( args, double * );
++            return sina_ControlGetPosition( p_demux, p_position );  
++        }
++        case DEMUX_SET_POSITION:
++        {
++            double d_position = (double) va_arg( args, double );
++            return sina_ControlSetPosition( p_demux, d_position );  
 +        }
 +        case DEMUX_GET_TIME:
 +        {
-+            int64_t *p_time = (int64_t*) va_arg( args, int64_t * );
-+
-+            int rc = demux_Control( p_sys->p_segment_demux, DEMUX_GET_TIME, p_time );
-+            *p_time += p_sys->i_segment_start_time * 1000;
-+
-+            return rc;           
++            int64_t *p_time = (int64_t *) va_arg( args, int64_t * );
++            return sina_ControlGetTime( p_demux, p_time );           
++        }
++        case DEMUX_SET_TIME:
++        {
++            int64_t i_time = (int64_t) va_arg( args, int64_t );
++            return sina_ControlSetTime( p_demux, i_time );           
 +        }
 +        case DEMUX_GET_LENGTH:
 +        {
-+            int64_t *p_duration = (int64_t*) va_arg( args, int64_t * );
-+            
-+            /* The length is useless here. We just check if segment demux is ready */
-+            int rc = demux_Control( p_sys->p_segment_demux, DEMUX_GET_LENGTH, p_duration );
-+            if( rc == VLC_SUCCESS )
-+                *p_duration = (int64_t) p_sys->p_playlist->i_total_duration * 1000;                
-+
-+            return rc;
++            int64_t *p_duration = (int64_t *) va_arg( args, int64_t * );
++            return sina_ControlGetDuration( p_demux, p_duration ); 
 +        }
 +        case DEMUX_CAN_PAUSE:
 +        case DEMUX_CAN_SEEK:
@@ -898,14 +1034,14 @@ index 0000000..70331f5
 +        case DEMUX_GET_PTS_DELAY:
 +        {
 +            int64_t *p_pts_delay = va_arg( args, int64_t * );
-+            *p_pts_delay = INT64_C(1000) * var_InheritInteger( p_sys->p_segment_demux, "network-caching" );
++            *p_pts_delay = INT64_C(1000) * var_InheritInteger( p_demux, "network-caching" );
 +
 +            return VLC_SUCCESS;
 +        }
 +        default:
 +        {
-+            if( p_sys->p_segment_demux )
-+                return demux_vaControl( p_sys->p_segment_demux, i_query, args );
++            if( p_sys->p_segment && p_sys->p_segment->p_demux )
++                return demux_vaControl( p_sys->p_segment->p_demux, i_query, args );
 +
 +            return VLC_EGENERIC;
 +        }
