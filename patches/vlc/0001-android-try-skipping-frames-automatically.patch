@@ -1,7 +1,7 @@
 From 464d325d01fbafab7a217443bde63d11dfb23b04 Mon Sep 17 00:00:00 2001
 From: tewilove <tewilove@gmail.com>
 Date: Wed, 15 Feb 2012 20:45:29 -0800
-Subject: [PATCH 01/12] android: try skipping frames automatically
+Subject: [PATCH 01/13] android: try skipping frames automatically
 
 ---
  modules/codec/avcodec/video.c |   55 +++++++++++++++++++++++++++++++++++++++++
