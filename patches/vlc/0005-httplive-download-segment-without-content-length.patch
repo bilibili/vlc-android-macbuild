@@ -1,4 +1,4 @@
-From 6230f02970084bafd9ebd4ac1e72a6ea173b959c Mon Sep 17 00:00:00 2001
+From bd5f8d1f791d483b197f81deb56873759c44b204 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 29 May 2012 15:05:09 +0800
 Subject: [PATCH 05/12] httplive: download segment without content-length

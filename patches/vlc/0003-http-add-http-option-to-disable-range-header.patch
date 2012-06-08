@@ -1,4 +1,4 @@
-From 1f9d379d033ed267bc1bc4a467360180fa8f2d11 Mon Sep 17 00:00:00 2001
+From 5852ad5158aedd32393d46e1eeb0cd8c5327a580 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
 Subject: [PATCH 03/12] http: add http option to disable range header

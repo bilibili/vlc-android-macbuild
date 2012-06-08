@@ -1,4 +1,4 @@
-From c069f1c0a1419e832b20c96500398585da2b7f05 Mon Sep 17 00:00:00 2001
+From 464d325d01fbafab7a217443bde63d11dfb23b04 Mon Sep 17 00:00:00 2001
 From: tewilove <tewilove@gmail.com>
 Date: Wed, 15 Feb 2012 20:45:29 -0800
 Subject: [PATCH 01/12] android: try skipping frames automatically
