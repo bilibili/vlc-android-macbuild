@@ -1,12 +1,12 @@
-From e69afeb17e0dcc92ae07c39b7ce1ec7b16cd589d Mon Sep 17 00:00:00 2001
+From c92c905a771cfa78c8492cda496fb94e4b2bcd33 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 31 May 2012 19:23:41 +0800
 Subject: [PATCH 13/13] access_sina: support sina segments xml
 
 ---
  modules/access/Modules.am |    5 +
- modules/access/sina.c     | 1084 +++++++++++++++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 1089 行(+)
+ modules/access/sina.c     | 1103 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 个文件被修改，插入 1108 行(+)
  create mode 100644 modules/access/sina.c
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
@@ -27,10 +27,10 @@ index b2b7503..61c3e18 100644
  
 diff --git a/modules/access/sina.c b/modules/access/sina.c
 new file mode 100644
-index 0000000..7d4089d
+index 0000000..b071bfa
 --- /dev/null
 +++ b/modules/access/sina.c
-@@ -0,0 +1,1084 @@
+@@ -0,0 +1,1103 @@
 +/*****************************************************************************
 + * sina.c: Sina Video support (uncrypted)
 + *****************************************************************************
@@ -63,6 +63,7 @@ index 0000000..7d4089d
 +#include <vlc_common.h>
 +#include <vlc_plugin.h>
 +#include <vlc_threads.h>
++#include <vlc_access.h>
 +#include <vlc_demux.h>
 +#include <vlc_block.h>
 +#include <vlc_input.h>
@@ -1062,8 +1063,26 @@ index 0000000..7d4089d
 +        return VLC_EGENERIC;
 +    }
 +
++    /* Transform ACCESS_xxx to DEMUX_xxx */
++    /*
 +    switch( i_query )
 +    {
++        case ACCESS_GET_PTS_DELAY: i_query = DEMUX_GET_PTS_DELAY; break;
++        case ACCESS_GET_TITLE_INFO: i_query = DEMUX_GET_TITLE_INFO; break;
++        case ACCESS_GET_META: i_query = DEMUX_GET_META; break;
++        case ACCESS_GET_SIGNAL: i_query = DEMUX_GET_SIGNAL; break;
++        case ACCESS_SET_PAUSE_STATE: i_query = DEMUX_SET_PAUSE_STATE; break;
++        case ACCESS_SET_TITLE: i_query = DEMUX_SET_TITLE; break;
++        case ACCESS_SET_SEEKPOINT: i_query = DEMUX_SET_SEEKPOINT; break;
++    }
++    */
++
++    switch( i_query )
++    {
++        case DEMUX_SET_PAUSE_STATE:
++        {
++            return VLC_SUCCESS;
++        }
 +        case DEMUX_GET_POSITION:
 +        {
 +            double *p_position = (double *) va_arg( args, double * );
