@@ -54,6 +54,14 @@
 
  2. This build is used in my own app. Some jni interfaces have been modified. You should modify or ignore patches under /patches/ports-android and /patches/vlc. Mail me if you have any problem about these patches.
 
-#TROUBLESHOOT
+# TROUBLESHOOT
  * Invalid configuration `arm-linux-androideabi'
    upgrade config.sub of automake, see _install_libs_on_centos.sh for more information
+
+# Extra, not necessary
+ * for git send-email
+  * sudo port -vd install msmtp
+  * pear-Net_SMTP
+  * sudo port -vd install p5-net-ssh-perl
+  * sudo wget -O /certificates/EquifaxSecureCertificateAuthority.crt http://msmtp.sourceforge.net/
+
