@@ -1,14 +1,14 @@
-From a30483d267f8aa363ac91c09b9f1e73f67d8e834 Mon Sep 17 00:00:00 2001
+From 4d0fc1e4192166c550c33e66d1dd5e0383b97ccb Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 24 May 2012 16:35:29 +0800
-Subject: [PATCH 07/13] httplive: work with absolute path in play list
+Subject: [PATCH 06/12] httplive: work with absolute path in play list
 
 ---
  modules/stream_filter/httplive.c |   23 +++++++++++++++++++++++
  1 个文件被修改，插入 23 行(+)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 6d913b4..1f795f9 100644
+index f17c0d2..93eca0e 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -547,6 +547,29 @@ static char *relative_URI(const char *psz_url, const char *psz_path)

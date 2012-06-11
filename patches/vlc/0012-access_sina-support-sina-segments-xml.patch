@@ -1,7 +1,7 @@
-From c92c905a771cfa78c8492cda496fb94e4b2bcd33 Mon Sep 17 00:00:00 2001
+From 61f8c04093fdde019f26beb0dbc05117783619d9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 31 May 2012 19:23:41 +0800
-Subject: [PATCH 13/13] access_sina: support sina segments xml
+Subject: [PATCH 12/12] access_sina: support sina segments xml
 
 ---
  modules/access/Modules.am |    5 +

@@ -1,4 +1,4 @@
-From c66d43fdabfca0b6aed88023c0555e77f52938df Mon Sep 17 00:00:00 2001
+From eafa7731853149a56e3274bda764c761fd29e900 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
 Subject: [PATCH 5/5] another libvlc wrapper
@@ -41,7 +41,7 @@ index 349a42c..7126e42 100644
  	$(SRC)/obj/local/$(ARCH)/libiomx-hc.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
 diff --git a/compile.sh b/compile.sh
-index 9330aa2..c9ca5bd 100755
+index 9f7b0a4..a4d98b2 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -36,7 +36,7 @@ fi
@@ -54,7 +54,7 @@ index 9330aa2..c9ca5bd 100755
      fi
  fi
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 92a14d1..adfc13e 100644
+index 3169ee0..4e1045e 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -1,18 +1,21 @@

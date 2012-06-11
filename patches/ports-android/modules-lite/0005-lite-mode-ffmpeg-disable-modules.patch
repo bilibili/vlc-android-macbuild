@@ -1,4 +1,4 @@
-From cd984329ea13a14f6751e20b8057e40c6f3ee12c Mon Sep 17 00:00:00 2001
+From 6467dbb517c59ad1e28bcae9f5d74bcdad940457 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 18:20:37 +0800
 Subject: [PATCH 5/5] lite-mode: ffmpeg: disable modules

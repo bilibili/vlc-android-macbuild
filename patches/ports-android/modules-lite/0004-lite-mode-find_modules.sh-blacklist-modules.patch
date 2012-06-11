@@ -1,4 +1,4 @@
-From 00a970f569a35a108e8a68cb752109e63dd3e42c Mon Sep 17 00:00:00 2001
+From 08baf9da94e11c5f73ca3115ec2c509546103c8e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 12:04:30 +0800
 Subject: [PATCH 4/5] lite-mode: find_modules.sh: blacklist modules
@@ -8,10 +8,10 @@ Subject: [PATCH 4/5] lite-mode: find_modules.sh: blacklist modules
  1 个文件被修改，插入 35 行(+)，删除 1 行(-)
 
 diff --git a/find_modules.sh b/find_modules.sh
-index fb1bc9d..2c2eb30 100755
+index 322033a..7b2eab4 100755
 --- a/find_modules.sh
 +++ b/find_modules.sh
-@@ -51,13 +51,47 @@ magnify
+@@ -51,12 +51,46 @@ magnify
  gradient
  .*tospdif
  dtstofloat32
@@ -20,7 +20,6 @@ index fb1bc9d..2c2eb30 100755
  fb
 +aiff
  aout_file
- vmem
  yuv
  .dummy
 +access_(attachment|mms|rar|udp|vrd)

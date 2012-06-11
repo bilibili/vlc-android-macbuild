@@ -1,4 +1,4 @@
-From 271648180e883f0c8d1efde632e945fd84677a36 Mon Sep 17 00:00:00 2001
+From cd0e6001678f6240e69b6eb9489f40a9814a3e6a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH 1/5] modify compile.sh for MacOS build
@@ -8,7 +8,7 @@ Subject: [PATCH 1/5] modify compile.sh for MacOS build
  1 个文件被修改，插入 30 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index a971ac6..9330aa2 100755
+index 6900466..9f7b0a4 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -43,6 +43,17 @@ fi
@@ -63,7 +63,7 @@ index a971ac6..9330aa2 100755
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
-@@ -108,6 +132,12 @@ if test -z "${NO_NEON}" -o -n "${TEGRA2}"; then
+@@ -106,6 +130,12 @@ if test -z "${NO_NEON}" -o -n "${TEGRA2}"; then
      echo "NOTHUMB := -marm" >> config.mak
  fi
  

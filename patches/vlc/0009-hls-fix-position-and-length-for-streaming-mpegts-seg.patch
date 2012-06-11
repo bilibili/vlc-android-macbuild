@@ -1,13 +1,13 @@
-From 333970612441afdab323e8b6310a5e46bc0a6c78 Mon Sep 17 00:00:00 2001
+From b3dab1d4af28c74330cae73f85031aeb889edd88 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH 10/13] hls: fix position and length for streaming mpegts
+Subject: [PATCH 09/12] hls: fix position and length for streaming mpegts
  segments hls
 
 ---
  modules/demux/ts.c               |   54 ++++++++++++++++++++++++++++++++++++++
- modules/stream_filter/httplive.c |   20 ++++++++++++++
- 2 个文件被修改，插入 74 行(+)
+ modules/stream_filter/httplive.c |   19 ++++++++++++++
+ 2 个文件被修改，插入 73 行(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
 index d5583d8..254ad10 100644
@@ -112,7 +112,7 @@ index d5583d8..254ad10 100644
              if( pid->es->p_pes && pid->es->fmt.i_cat != VIDEO_ES )
              {
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 25191ef..21340c9 100644
+index e4929b9..870380c 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1094,6 +1094,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
@@ -151,7 +151,7 @@ index 25191ef..21340c9 100644
          free(line);
      }
  
-@@ -2444,6 +2458,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2445,6 +2459,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
  
      bool b_found = false;
      uint64_t length = 0;
@@ -159,7 +159,7 @@ index 25191ef..21340c9 100644
      uint64_t size = hls->size;
      int count = vlc_array_count(hls->segments);
  
-@@ -2483,6 +2498,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2480,6 +2495,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
              vlc_mutex_unlock(&hls->lock);
              return VLC_EGENERIC;
          }
@@ -168,16 +168,15 @@ index 25191ef..21340c9 100644
      }
  
      /* */
-@@ -2495,6 +2512,9 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2492,6 +2509,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
      /* */
      if (b_found)
      {
 +        var_Create(s, "httplive-segment-start-time", VLC_VAR_INTEGER);
 +        var_SetInteger(s, "httplive-segment-start-time", segment_start_secs * 1000 * 1000);
-+
-         /* restore segment to start position */
-         segment_t *segment = segment_GetSegment(hls, p_sys->playback.segment);
-         if (segment == NULL)
+ 
+         /* restore current segment to start position */
+         vlc_mutex_lock(&currentSegment->lock);
 -- 
 1.7.10.2
 

@@ -1,17 +1,26 @@
-From f13fb01b5d8d756a4e9139191e0a5a31aabe13f2 Mon Sep 17 00:00:00 2001
+From ce2af77c0591b352c96b3266ce962f76888f2971 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
 Subject: [PATCH 2/5] lite-mode: compile.sh: disable contrib
 
 ---
- compile.sh |   19 ++++++++++++++++++-
- 1 个文件被修改，插入 18 行(+)，删除 1 行(-)
+ compile.sh |   21 ++++++++++++++++++++-
+ 1 个文件被修改，插入 20 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index c9ca5bd..f1189d5 100755
+index a4d98b2..e582529 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -121,8 +121,25 @@ cd contrib/android
+@@ -109,6 +109,8 @@ cd contrib/android
+     --disable-sdl \
+     --disable-SDL_image \
+     --disable-fontconfig \
++    --disable-ass \
++    --disable-fribidi \
+     --disable-zvbi \
+     --disable-kate \
+     --disable-caca \
+@@ -119,8 +121,25 @@ cd contrib/android
      --disable-tremor \
      --disable-vorbis \
      --disable-sidplay2 \
