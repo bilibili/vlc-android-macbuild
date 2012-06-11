@@ -1,6 +1,6 @@
 # HOWTO
  0. Requirements (AFAIK)
-  * MacOS or CentOS
+  * MacOS or Linux (tested on CentOS)
   * ADK
   * NDK-r7c
 
