@@ -1,4 +1,4 @@
-From eafa7731853149a56e3274bda764c761fd29e900 Mon Sep 17 00:00:00 2001
+From 2343bb11788f9c8bf55136bf95b4065eea10aaec Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 22:41:14 +0800
 Subject: [PATCH 5/5] another libvlc wrapper
@@ -8,9 +8,9 @@ Subject: [PATCH 5/5] another libvlc wrapper
  compile.sh                              |    2 +-
  vlc-android/jni/Android.mk              |   15 +-
  vlc-android/jni/Application.mk          |    2 +
- vlc-android/jni/libvlcjni_danmaku.c     |  978 +++++++++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c     | 1018 +++++++++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku.inc.c |   63 ++
- 6 个文件被修改，插入 1059 行(+)，删除 8 行(-)
+ 6 个文件被修改，插入 1099 行(+)，删除 8 行(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
@@ -100,10 +100,10 @@ index 9507cee..3e5f176 100644
  endif
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..75f1311
+index 0000000..82da507
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,978 @@
+@@ -0,0 +1,1018 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -1075,11 +1075,51 @@ index 0000000..75f1311
 +    return -1;
 +}
 +
++jobjectArray Java_org_videolan_vlc_LibVLC_getSpuTrackDescription(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (!mp)
++        return NULL;
++
++    int i_nbTracks = libvlc_video_get_spu_count(mp);
++    jobjectArray array = (*env)->NewObjectArray(env, i_nbTracks,
++            (*env)->FindClass(env, "java/lang/String"),
++            NULL);
++
++    libvlc_track_description_t *first = libvlc_video_get_spu_description(mp);
++    libvlc_track_description_t *desc = first;
++    unsigned i;
++    for (i = 0; i < i_nbTracks; ++i)
++    {
++        jstring name = (*env)->NewStringUTF(env, desc->psz_name);
++        (*env)->SetObjectArrayElement(env, array, i, name);
++        desc = desc->p_next;
++    }
++    libvlc_track_description_list_release(first);
++    return array;
++}
++
 +jint Java_org_videolan_vlc_LibVLC_getSpuTracksCount(JNIEnv *env, jobject thiz)
 +{
 +    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
 +    if (mp)
 +        return (jint) libvlc_video_get_spu_count(mp);
++    return -1;
++}
++
++jint Java_org_videolan_vlc_LibVLC_getSpuTrack(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return libvlc_video_get_spu(mp);
++    return -1;
++}
++
++jint Java_org_videolan_vlc_LibVLC_setSpuTrack(JNIEnv *env, jobject thiz, jint index)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return libvlc_video_set_spu(mp, index);
 +    return -1;
 +}
 diff --git a/vlc-android/jni/libvlcjni_danmaku.inc.c b/vlc-android/jni/libvlcjni_danmaku.inc.c
