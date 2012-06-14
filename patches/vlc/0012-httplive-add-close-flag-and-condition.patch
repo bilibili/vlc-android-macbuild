@@ -1,0 +1,108 @@
+From 72d41153b766daf897e9d870a9351be5c845ebbd Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Wed, 13 Jun 2012 18:07:26 +0800
+Subject: [PATCH 12/12] httplive: add close flag and condition
+
+hls_Reload() thread now wait for close condition instead of just sleeping,
+which make Close() return faster.
+---
+ modules/stream_filter/httplive.c |   27 ++++++++++++++++++++++-----
+ 1 个文件被修改，插入 22 行(+)，删除 5 行(-)
+
+diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
+index ae8bfae..12a9dc5 100644
+--- a/modules/stream_filter/httplive.c
++++ b/modules/stream_filter/httplive.c
+@@ -143,6 +143,10 @@ struct stream_sys_t
+     bool        b_live;     /* live stream? or vod? */
+     bool        b_error;    /* parsing error */
+     bool        b_aesmsg;   /* only print one time that the media is encrypted */
++
++    bool        b_close;    /* true if Close called */
++    vlc_mutex_t lock_close; /* for reload and download thread */
++    vlc_cond_t  cond_close; /* for reload and download thread */
+ };
+ 
+ /****************************************************************************
+@@ -1589,7 +1593,7 @@ static void* hls_Thread(void *p_this)
+ 
+     int canc = vlc_savecancel();
+ 
+-    while (vlc_object_alive(s))
++    while (vlc_object_alive(s) && !p_sys->b_close)
+     {
+         hls_stream_t *hls = hls_Get(p_sys->hls_stream, p_sys->download.stream);
+         assert(hls);
+@@ -1612,7 +1616,7 @@ static void* hls_Thread(void *p_this)
+                 vlc_cond_wait(&p_sys->download.wait, &p_sys->download.lock_wait);
+                 if (p_sys->b_live /*&& (mdate() >= p_sys->playlist.wakeup)*/)
+                     break;
+-                if (!vlc_object_alive(s))
++                if (!vlc_object_alive(s) || p_sys->b_close)
+                     break;
+             }
+             /* */
+@@ -1670,7 +1674,7 @@ static void* hls_Reload(void *p_this)
+     int canc = vlc_savecancel();
+ 
+     double wait = 0.5;
+-    while (vlc_object_alive(s))
++    while (vlc_object_alive(s) && !p_sys->b_close)
+     {
+         mtime_t now = mdate();
+         if (now >= p_sys->playlist.wakeup)
+@@ -1706,7 +1710,9 @@ static void* hls_Reload(void *p_this)
+                                                    * (mtime_t)1000000);
+         }
+ 
+-        mwait(p_sys->playlist.wakeup);
++        vlc_mutex_lock(&p_sys->lock_close);
++        vlc_cond_timedwait(&p_sys->cond_close, &p_sys->lock_close, p_sys->playlist.wakeup);
++        vlc_mutex_unlock(&p_sys->lock_close);
+     }
+ 
+     vlc_restorecancel(canc);
+@@ -2052,6 +2058,9 @@ static int Open(vlc_object_t *p_this)
+     vlc_mutex_init(&p_sys->download.lock_wait);
+     vlc_cond_init(&p_sys->download.wait);
+ 
++    vlc_mutex_init(&p_sys->lock_close);
++    vlc_cond_init(&p_sys->cond_close);
++
+     /* Initialize HLS live stream */
+     if (p_sys->b_live)
+     {
+@@ -2109,6 +2118,11 @@ static void Close(vlc_object_t *p_this)
+     vlc_cond_signal(&p_sys->download.wait);
+     vlc_mutex_unlock(&p_sys->download.lock_wait);
+ 
++    p_sys->b_close = true;
++    vlc_mutex_lock(&p_sys->lock_close);
++    vlc_cond_signal(&p_sys->cond_close);
++    vlc_mutex_unlock(&p_sys->lock_close);
++
+     /* */
+     if (p_sys->b_live)
+         vlc_join(p_sys->reload, NULL);
+@@ -2116,6 +2130,9 @@ static void Close(vlc_object_t *p_this)
+     vlc_mutex_destroy(&p_sys->download.lock_wait);
+     vlc_cond_destroy(&p_sys->download.wait);
+ 
++    vlc_mutex_destroy(&p_sys->lock_close);
++    vlc_cond_destroy(&p_sys->cond_close);
++
+     /* Free hls streams */
+     for (int i = 0; i < vlc_array_count(p_sys->hls_stream); i++)
+     {
+@@ -2305,7 +2322,7 @@ static int Read(stream_t *s, void *buffer, unsigned int i_read)
+ 
+     assert(p_sys->hls_stream);
+ 
+-    if (p_sys->b_error)
++    if (p_sys->b_error || p_sys->b_close)
+         return 0;
+ 
+     /* NOTE: buffer might be NULL if caller wants to skip data */
+-- 
+1.7.10.2
+
