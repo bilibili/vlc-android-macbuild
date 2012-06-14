@@ -1,0 +1,69 @@
+From 862cc1f6c582acca0cf5570e3511a140a84f3dbb Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Wed, 13 Jun 2012 18:07:26 +0800
+Subject: [PATCH 12/12] httplive: add close flag, better than nothing
+
+---
+ modules/stream_filter/httplive.c |   11 +++++++----
+ 1 个文件被修改，插入 7 行(+)，删除 4 行(-)
+
+diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
+index ae8bfae..0f7b2de 100644
+--- a/modules/stream_filter/httplive.c
++++ b/modules/stream_filter/httplive.c
+@@ -143,6 +143,8 @@ struct stream_sys_t
+     bool        b_live;     /* live stream? or vod? */
+     bool        b_error;    /* parsing error */
+     bool        b_aesmsg;   /* only print one time that the media is encrypted */
++
++    bool        b_close;    /* true if Close called */
+ };
+ 
+ /****************************************************************************
+@@ -1589,7 +1591,7 @@ static void* hls_Thread(void *p_this)
+ 
+     int canc = vlc_savecancel();
+ 
+-    while (vlc_object_alive(s))
++    while (vlc_object_alive(s) && !p_sys->b_close)
+     {
+         hls_stream_t *hls = hls_Get(p_sys->hls_stream, p_sys->download.stream);
+         assert(hls);
+@@ -1612,7 +1614,7 @@ static void* hls_Thread(void *p_this)
+                 vlc_cond_wait(&p_sys->download.wait, &p_sys->download.lock_wait);
+                 if (p_sys->b_live /*&& (mdate() >= p_sys->playlist.wakeup)*/)
+                     break;
+-                if (!vlc_object_alive(s))
++                if (!vlc_object_alive(s) || p_sys->b_close)
+                     break;
+             }
+             /* */
+@@ -1670,7 +1672,7 @@ static void* hls_Reload(void *p_this)
+     int canc = vlc_savecancel();
+ 
+     double wait = 0.5;
+-    while (vlc_object_alive(s))
++    while (vlc_object_alive(s) && !p_sys->b_close)
+     {
+         mtime_t now = mdate();
+         if (now >= p_sys->playlist.wakeup)
+@@ -2110,6 +2112,7 @@ static void Close(vlc_object_t *p_this)
+     vlc_mutex_unlock(&p_sys->download.lock_wait);
+ 
+     /* */
++    p_sys->b_close = true;
+     if (p_sys->b_live)
+         vlc_join(p_sys->reload, NULL);
+     vlc_join(p_sys->thread, NULL);
+@@ -2305,7 +2308,7 @@ static int Read(stream_t *s, void *buffer, unsigned int i_read)
+ 
+     assert(p_sys->hls_stream);
+ 
+-    if (p_sys->b_error)
++    if (p_sys->b_error || p_sys->b_close)
+         return 0;
+ 
+     /* NOTE: buffer might be NULL if caller wants to skip data */
+-- 
+1.7.10.2
+
