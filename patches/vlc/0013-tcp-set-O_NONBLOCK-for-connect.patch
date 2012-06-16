@@ -1,7 +1,7 @@
-From ea85c8f734efe6528262a8034ddef62c4e117923 Mon Sep 17 00:00:00 2001
+From b9982a7d9f1cd677e1dc732aca34a10a7ef0dde5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 14 Jun 2012 18:04:23 +0800
-Subject: [PATCH 14/14] tcp: set O_NONBLOCK for connect
+Subject: [PATCH 13/17] tcp: set O_NONBLOCK for connect
 
 ---
  src/network/tcp.c |   18 ++++++++++++++++++

@@ -1,7 +1,7 @@
-From aaee757c50617d138b23a098e3ed01d62c876ba1 Mon Sep 17 00:00:00 2001
+From e1511fb636e3fde76870a530b23fc68c5297bf2a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 14 Jun 2012 16:44:57 +0800
-Subject: [PATCH 13/14] httplive: skip failed segment for live stream
+Subject: [PATCH 12/17] httplive: skip failed segment for live stream
 
 ---
  modules/stream_filter/httplive.c |   85 +++++++++++++++++++++++++++++++++++++-
