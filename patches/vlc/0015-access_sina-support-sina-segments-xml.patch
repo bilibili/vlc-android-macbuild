@@ -1,12 +1,12 @@
-From 0202d79eeb62bb434ad9344e150b79adae72437b Mon Sep 17 00:00:00 2001
+From 5b8b8400ba1923d5afaa53e87a1e66b182cd1088 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 31 May 2012 19:23:41 +0800
 Subject: [PATCH 15/17] access_sina: support sina segments xml
 
 ---
  modules/access/Modules.am |    5 +
- modules/access/sina.c     |  962 +++++++++++++++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 967 行(+)
+ modules/access/sina.c     |  964 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 个文件被修改，插入 969 行(+)
  create mode 100644 modules/access/sina.c
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
@@ -27,10 +27,10 @@ index b2b7503..61c3e18 100644
  
 diff --git a/modules/access/sina.c b/modules/access/sina.c
 new file mode 100644
-index 0000000..2c6b781
+index 0000000..83953ac
 --- /dev/null
 +++ b/modules/access/sina.c
-@@ -0,0 +1,962 @@
+@@ -0,0 +1,964 @@
 +/*****************************************************************************
 + * sina.c: Sina Video support (uncrypted)
 + *****************************************************************************
@@ -205,10 +205,12 @@ index 0000000..2c6b781
 +    return VLC_SUCCESS;
 +
 +EXIT_ERROR:
-+    if( p_sys->p_out_managed )
-+        es_out_Delete( p_sys->p_out_managed );
-+    
-+    sina_Free(p_sys);
++    if( p_sys )
++    {
++        if( p_sys->p_out_managed )
++            es_out_Delete( p_sys->p_out_managed );
++        sina_Free(p_sys);
++    }
 +    p_demux->p_sys = NULL;
 +
 +    return VLC_EGENERIC;

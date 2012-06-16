@@ -1,4 +1,4 @@
-From e1511fb636e3fde76870a530b23fc68c5297bf2a Mon Sep 17 00:00:00 2001
+From fc3e6e72e0e5e0861adc522ccd822ca17fcc8dd5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 14 Jun 2012 16:44:57 +0800
 Subject: [PATCH 12/17] httplive: skip failed segment for live stream

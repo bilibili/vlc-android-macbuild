@@ -1,4 +1,4 @@
-From 11e1bc814d4f8b8bb5995a66ecde93a3e00b5d97 Mon Sep 17 00:00:00 2001
+From c5dc7c447fa943795784f2d6dee667a040eb7e52 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 15 Jun 2012 17:38:40 +0800
 Subject: [PATCH 14/17] core: implement es_out_managed
