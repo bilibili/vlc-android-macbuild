@@ -1,7 +1,7 @@
-From 5b8b8400ba1923d5afaa53e87a1e66b182cd1088 Mon Sep 17 00:00:00 2001
+From 0b79878b909434497b3033c43fbabf41d35c6b28 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 31 May 2012 19:23:41 +0800
-Subject: [PATCH 15/17] access_sina: support sina segments xml
+Subject: [PATCH 14/20] sina: support sina v_play
 
 ---
  modules/access/Modules.am |    5 +

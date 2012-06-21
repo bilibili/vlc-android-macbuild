@@ -1,7 +1,7 @@
 From 163507088657ec2e2a67c322733693541a134e87 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 7 May 2012 23:55:29 +0800
-Subject: [PATCH 09/17] hls: fix play time after clock gap for mpegts
+Subject: [PATCH 09/20] hls: fix play time after clock gap for mpegts
 
 ---
  include/vlc_stream.h             |    3 +++

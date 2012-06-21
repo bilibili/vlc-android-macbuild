@@ -1,7 +1,7 @@
 From 781972d9c2937e78191858682126defeb3da71a1 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
-Subject: [PATCH 02/17] http: add http option to disable range header
+Subject: [PATCH 02/20] http: add http option to disable range header
 
 ---
  modules/access/http.c |   43 +++++++++++++++++++++++++++++++++++++++++--
