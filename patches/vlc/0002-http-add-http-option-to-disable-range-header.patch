@@ -1,14 +1,14 @@
-From 781972d9c2937e78191858682126defeb3da71a1 Mon Sep 17 00:00:00 2001
+From a9262baf05566410c941ef50ce670c4ce00bc8c9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
-Subject: [PATCH 02/20] http: add http option to disable range header
+Subject: [PATCH 02/23] http: add http option to disable range header
 
 ---
  modules/access/http.c |   43 +++++++++++++++++++++++++++++++++++++++++--
  1 个文件被修改，插入 41 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index f7a1e85..10ae971 100644
+index f7a1e85765df60752365b344c4334e54ac1c07ec..2da07c2047d4173e594860618e917e547ef02da8 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
 @@ -99,6 +99,10 @@ static void Close( vlc_object_t * );
@@ -61,7 +61,7 @@ index f7a1e85..10ae971 100644
          p_sys->b_persist = true;
 -        net_Printf( p_access, p_sys->fd, pvs,
 -                    "Range: bytes=%"PRIu64"-\r\n", i_tell );
-+        
++
 +        if ( p_sys->url.psz_host && *p_sys->url.psz_host &&
 +             p_sys->psz_hosts_reject_range && *p_sys->psz_hosts_reject_range) {
 +            bool b_reject_range = false;
@@ -90,5 +90,5 @@ index f7a1e85..10ae971 100644
      }
  
 -- 
-1.7.10.2
+1.7.10.4
 

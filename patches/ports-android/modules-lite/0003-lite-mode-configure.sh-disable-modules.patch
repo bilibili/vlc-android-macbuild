@@ -1,4 +1,4 @@
-From 1c1e9e06e781b35355f50d75197534e59c0e2f30 Mon Sep 17 00:00:00 2001
+From 58fe4455a78c6d8a5cf7b57879396d3acf84c492 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
 Subject: [PATCH 3/5] lite-mode: configure.sh: disable modules
@@ -8,10 +8,10 @@ Subject: [PATCH 3/5] lite-mode: configure.sh: disable modules
  1 个文件被修改，插入 5 行(+)，删除 4 行(-)
 
 diff --git a/configure.sh b/configure.sh
-index e5a3c71..48c3e79 100755
+index 3ff6a69..8f77fc5 100755
 --- a/configure.sh
 +++ b/configure.sh
-@@ -46,7 +46,7 @@ STRIP="${CROSS_COMPILE}strip" \
+@@ -48,7 +48,7 @@ STRIP="${CROSS_COMPILE}strip" \
  RANLIB="${CROSS_COMPILE}ranlib" \
  AR="${CROSS_COMPILE}ar" \
  sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-linux $EXTRA_PARAMS \
@@ -20,7 +20,7 @@ index e5a3c71..48c3e79 100755
                  --enable-avformat \
                  --enable-swscale \
                  --enable-avcodec \
-@@ -54,8 +54,9 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+@@ -56,8 +56,9 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
                  --enable-audiotrack \
                  --enable-android-surface \
                  --enable-debug \
@@ -32,7 +32,7 @@ index e5a3c71..48c3e79 100755
                  --enable-iomx \
                  --disable-vlc --disable-shared \
                  --disable-vlm \
-@@ -91,7 +92,7 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+@@ -93,7 +94,7 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
                  --disable-skins2 \
                  --disable-mtp \
                  --disable-notify \

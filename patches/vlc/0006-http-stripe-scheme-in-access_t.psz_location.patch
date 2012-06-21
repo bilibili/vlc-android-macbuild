@@ -1,14 +1,14 @@
-From 02a3289e2c99c2e80ccf8e1c82e89da77a384724 Mon Sep 17 00:00:00 2001
+From 2df5b3f69ae2c852af8df0d4beee1dd3219ebfe3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 24 May 2012 16:39:56 +0800
-Subject: [PATCH 06/20] http: stripe scheme in access_t.psz_location
+Subject: [PATCH 06/23] http: stripe scheme in access_t.psz_location
 
 ---
  modules/access/http.c |   13 +++++++++++--
  1 个文件被修改，插入 11 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index 10ae971..5746b7e 100644
+index 2da07c2047d4173e594860618e917e547ef02da8..0184ce925ba87fcd1cdcf5d4fed71d5b1b87fcd9 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
 @@ -588,7 +588,7 @@ connect:
@@ -39,5 +39,5 @@ index 10ae971..5746b7e 100644
          vlc_UrlClean( &p_sys->url );
          http_auth_Reset( &p_sys->auth );
 -- 
-1.7.10.2
+1.7.10.4
 

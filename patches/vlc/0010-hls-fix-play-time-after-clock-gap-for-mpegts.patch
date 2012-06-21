@@ -1,30 +1,15 @@
-From 163507088657ec2e2a67c322733693541a134e87 Mon Sep 17 00:00:00 2001
+From 5cdcd371f353e3f079728012a4a21bf59825d4bc Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
-Date: Mon, 7 May 2012 23:55:29 +0800
-Subject: [PATCH 09/20] hls: fix play time after clock gap for mpegts
+Date: Thu, 21 Jun 2012 15:35:27 +0800
+Subject: [PATCH 10/23] hls: fix play time after clock gap for mpegts
 
 ---
- include/vlc_stream.h             |    3 +++
  modules/demux/ts.c               |   28 +++++++++++++++++++--
  modules/stream_filter/httplive.c |   50 +++++++++++++++++++++++++++++---------
- 3 个文件被修改，插入 68 行(+)，删除 13 行(-)
+ 2 个文件被修改，插入 65 行(+)，删除 13 行(-)
 
-diff --git a/include/vlc_stream.h b/include/vlc_stream.h
-index c929836..3f4a1b2 100644
---- a/include/vlc_stream.h
-+++ b/include/vlc_stream.h
-@@ -111,6 +111,9 @@ enum stream_query_e
- 
-     /* XXX only data read through stream_Read/Block will be recorded */
-     STREAM_SET_RECORD_STATE,     /**< arg1=bool, arg2=const char *psz_ext (if arg1 is true)  res=can fail */
-+
-+    /* for clock gap in youku httplive/mpeg2ts */
-+    STREAM_HTTPLIVE_GET_SEGMENT_START,
- };
- 
- VLC_API int stream_Read( stream_t *s, void *p_read, int i_read );
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index 254ad10..fd55692 100644
+index 254ad101983d9852436b5e2b6622b8664d7278a5..fd55692440588cdd335be5e0cf662ff09f3a3545 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
 @@ -1981,6 +1981,8 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
@@ -73,7 +58,7 @@ index 254ad10..fd55692 100644
          }
  
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 870380c..ae8bfae 100644
+index 870380c64c775d1b508ff1ab3753183ea12f538a..ae8bfae8cd2f689f673bcfc70d9821ee4fac080c 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -64,6 +64,7 @@ vlc_module_end()
@@ -232,5 +217,5 @@ index 870380c..ae8bfae 100644
              return VLC_EGENERIC;
      }
 -- 
-1.7.10.2
+1.7.10.4
 

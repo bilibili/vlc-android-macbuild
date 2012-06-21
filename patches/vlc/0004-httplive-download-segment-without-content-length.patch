@@ -1,14 +1,14 @@
-From ec3b5973c6796d4faa2ceea15f40da135fb5475c Mon Sep 17 00:00:00 2001
+From 9dd0c843e12738533b45fda780e03d40009cb109 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 29 May 2012 15:05:09 +0800
-Subject: [PATCH 04/20] httplive: download segment without content-length
+Subject: [PATCH 04/23] httplive: download segment without content-length
 
 ---
  modules/stream_filter/httplive.c |   55 ++++++++++++++++++++++++++++++++------
  1 个文件被修改，插入 47 行(+)，删除 8 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 0e5af20..f17c0d2 100644
+index 0e5af20925be199047166bbd2ac47316b3452199..f17c0d2e8605f4c2daaaf3402abb767b86d6beaa 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1717,6 +1717,10 @@ static int Prefetch(stream_t *s, int *current)
@@ -110,5 +110,5 @@ index 0e5af20..f17c0d2 100644
      return VLC_SUCCESS;
  }
 -- 
-1.7.10.2
+1.7.10.4
 

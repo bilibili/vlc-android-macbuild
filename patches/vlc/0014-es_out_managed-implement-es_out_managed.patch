@@ -1,19 +1,18 @@
-From 29b624a76acfc2f4c0a4c20657679827f9b8beb8 Mon Sep 17 00:00:00 2001
+From f33b94a9e11d7d24aa4b4512119ee26c3a784d8c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
-Date: Fri, 15 Jun 2012 17:38:40 +0800
-Subject: [PATCH 13/20] es_out_managed: implement es_out_managed
+Date: Thu, 21 Jun 2012 15:44:20 +0800
+Subject: [PATCH 14/23] es_out_managed: implement es_out_managed
 
 ---
  include/vlc_es_out_managed.h |   40 ++++++++++
- src/Makefile.am              |    2 +
  src/input/es_out_managed.c   |  170 ++++++++++++++++++++++++++++++++++++++++++
- 3 个文件被修改，插入 212 行(+)
+ 2 个文件被修改，插入 210 行(+)
  create mode 100644 include/vlc_es_out_managed.h
  create mode 100644 src/input/es_out_managed.c
 
 diff --git a/include/vlc_es_out_managed.h b/include/vlc_es_out_managed.h
 new file mode 100644
-index 0000000..04e5f45
+index 0000000000000000000000000000000000000000..70dca5d6eeab21dad5d7acc2cdaf56ef7b3c9ea6
 --- /dev/null
 +++ b/include/vlc_es_out_managed.h
 @@ -0,0 +1,40 @@
@@ -48,7 +47,7 @@ index 0000000..04e5f45
 +/****************************************************************************
 + * ES_OUT managed
 + *
-+ * Created a managed es_out, which can be destroyed 
++ * Created a managed es_out, which can be destroyed
 + * without destroying original es_out_t
 + *
 + * Share a single es_out for multiple demux, at least working for demux/avformat
@@ -58,29 +57,9 @@ index 0000000..04e5f45
 +
 +VLC_API es_out_t *demux_EsOutManagedNew( demux_t *p_demux, es_out_t *p_backend_es_out );
 \ No newline at end of file
-diff --git a/src/Makefile.am b/src/Makefile.am
-index 4cf4aba..ae84e8a 100644
---- a/src/Makefile.am
-+++ b/src/Makefile.am
-@@ -46,6 +46,7 @@ pluginsinclude_HEADERS = \
- 	../include/vlc_epg.h \
- 	../include/vlc_es.h \
- 	../include/vlc_es_out.h \
-+	../include/vlc_es_out_managed.h \
- 	../include/vlc_events.h \
- 	../include/vlc_filter.h \
- 	../include/vlc_fourcc.h \
-@@ -343,6 +344,7 @@ SOURCES_libvlc_common = \
- 	input/demux.c \
- 	input/es_out.c \
- 	input/es_out_timeshift.c \
-+	input/es_out_managed.c \
- 	input/event.c \
- 	input/input.c \
- 	input/info.h \
 diff --git a/src/input/es_out_managed.c b/src/input/es_out_managed.c
 new file mode 100644
-index 0000000..158c9df
+index 0000000000000000000000000000000000000000..22f6a96bcd28f9fc5a3076e9a1341f82cfbcdf60
 --- /dev/null
 +++ b/src/input/es_out_managed.c
 @@ -0,0 +1,170 @@
@@ -212,14 +191,14 @@ index 0000000..158c9df
 +            es_out_fmt_entry* p_entry = (es_out_fmt_entry *) vlc_array_item_at_index( p_es_fmt_cache, i );
 +            if( !p_entry )
 +                continue;
-+            
++
 +            es_format_Clean( &p_entry->fmt );
 +            free( p_entry );
 +        }
-+        
++
 +        vlc_array_destroy( p_es_fmt_cache );
 +    }
-+    
++
 +    free( p_out->p_sys );
 +    free( p_out );
 +}
@@ -256,5 +235,5 @@ index 0000000..158c9df
 +}
 \ No newline at end of file
 -- 
-1.7.10.2
+1.7.10.4
 

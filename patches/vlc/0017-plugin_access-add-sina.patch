@@ -1,0 +1,28 @@
+From 16240977e30054ece9d3486e385df43b5f7ab886 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 21 Jun 2012 15:47:39 +0800
+Subject: [PATCH 17/23] plugin_access: add sina
+
+---
+ modules/access/Modules.am |    5 +++++
+ 1 个文件被修改，插入 5 行(+)
+
+diff --git a/modules/access/Modules.am b/modules/access/Modules.am
+index b2b7503cfb7ca2beaf7dd67d0e0cf54eb82026b2..61c3e18765efad2cc009d5cf40c170c12fb54ca7 100644
+--- a/modules/access/Modules.am
++++ b/modules/access/Modules.am
+@@ -182,6 +182,11 @@ if HAVE_XCB
+ libvlc_LTLIBRARIES += libxcb_screen_plugin.la
+ endif
+ 
++libaccess_sina_plugin_la_SOURCES = sina.c
++libaccess_sina_plugin_la_CFLAGS = $(AM_CFLAGS) $(LIBXML2_CFLAGS)
++libaccess_sina_plugin_la_LIBADD = $(AM_LIBADD) $(LIBXML2_LIBS)
++libaccess_sina_plugin_la_DEPENDENCIES =
++libvlc_LTLIBRARIES += libaccess_sina_plugin.la
+ 
+ ### Digital TV ###
+ 
+-- 
+1.7.10.4
+

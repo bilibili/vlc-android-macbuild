@@ -1,7 +1,7 @@
-From dca6582320f552ce4a07934cc92dac3f7c3f1b74 Mon Sep 17 00:00:00 2001
+From 0de5343f91dfed0526e65b0d73d76f792fca9bc6 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 17 May 2012 16:37:14 +0800
-Subject: [PATCH 01/20] zlib: fix zlib build on android
+Subject: [PATCH 01/23] zlib: fix zlib build on android
 
 ---
  contrib/src/zlib/rules.mak          |    2 +-
@@ -10,7 +10,7 @@ Subject: [PATCH 01/20] zlib: fix zlib build on android
  create mode 100644 contrib/src/zlib/zlib-android.patch
 
 diff --git a/contrib/src/zlib/rules.mak b/contrib/src/zlib/rules.mak
-index 210da1e..cd86013 100644
+index 210da1eb55e651d029abda64348b5bef459b1e57..cd860135175974173b54348a07ca50722d3fca87 100644
 --- a/contrib/src/zlib/rules.mak
 +++ b/contrib/src/zlib/rules.mak
 @@ -15,7 +15,7 @@ $(TARBALLS)/zlib-$(ZLIB_VERSION).tar.gz:
@@ -24,7 +24,7 @@ index 210da1e..cd86013 100644
  .zlib: zlib
 diff --git a/contrib/src/zlib/zlib-android.patch b/contrib/src/zlib/zlib-android.patch
 new file mode 100644
-index 0000000..a315212
+index 0000000000000000000000000000000000000000..a3152124d120dfea86468ae5d4368be9c81a61fc
 --- /dev/null
 +++ b/contrib/src/zlib/zlib-android.patch
 @@ -0,0 +1,13 @@
@@ -42,5 +42,5 @@ index 0000000..a315212
 +   esac
 + else
 -- 
-1.7.10.2
+1.7.10.4
 

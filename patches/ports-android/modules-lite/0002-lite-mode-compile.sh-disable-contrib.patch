@@ -1,4 +1,4 @@
-From ce2af77c0591b352c96b3266ce962f76888f2971 Mon Sep 17 00:00:00 2001
+From 4510babc4b3b868905b4c6b0901edd6fd20bddd6 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
 Subject: [PATCH 2/5] lite-mode: compile.sh: disable contrib
@@ -8,7 +8,7 @@ Subject: [PATCH 2/5] lite-mode: compile.sh: disable contrib
  1 个文件被修改，插入 20 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index a4d98b2..e582529 100755
+index 62c59c1..4af32ef 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -109,6 +109,8 @@ cd contrib/android
@@ -44,9 +44,9 @@ index a4d98b2..e582529 100755
      --disable-samplerate \
 -    --enable-iconv
 +    --disable-iconv
+ echo EXTRA_CFLAGS=-g >> config.mak
  
  # TODO: mpeg2, theora
- 
 -- 
 1.7.10.2
 

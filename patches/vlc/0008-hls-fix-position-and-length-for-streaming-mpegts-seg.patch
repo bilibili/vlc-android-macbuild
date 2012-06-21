@@ -1,7 +1,7 @@
-From 0b990d9dd72111148b9f35560ecb9627ff5518dc Mon Sep 17 00:00:00 2001
+From d4465132bcb63d2be8c4645d8727f5dce4c3c63d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH 08/20] hls: fix position and length for streaming mpegts
+Subject: [PATCH 08/23] hls: fix position and length for streaming mpegts
  segments hls
 
 ---
@@ -10,7 +10,7 @@ Subject: [PATCH 08/20] hls: fix position and length for streaming mpegts
  2 个文件被修改，插入 73 行(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index d5583d8..254ad10 100644
+index d5583d8c0e4e2c8f462edbfbec62547e29a9f993..254ad101983d9852436b5e2b6622b8664d7278a5 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
 @@ -328,6 +328,14 @@ struct demux_sys_t
@@ -112,7 +112,7 @@ index d5583d8..254ad10 100644
              if( pid->es->p_pes && pid->es->fmt.i_cat != VIDEO_ES )
              {
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index e4929b9..870380c 100644
+index e4929b90718dbe2d8e4b2c6d27cb9d1baaec0e1d..870380c64c775d1b508ff1ab3753183ea12f538a 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1094,6 +1094,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
@@ -178,5 +178,5 @@ index e4929b9..870380c 100644
          /* restore current segment to start position */
          vlc_mutex_lock(&currentSegment->lock);
 -- 
-1.7.10.2
+1.7.10.4
 

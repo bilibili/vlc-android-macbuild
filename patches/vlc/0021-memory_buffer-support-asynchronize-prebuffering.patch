@@ -1,34 +1,16 @@
-From a7feb1178872a204f691040cecdf0de812a1c404 Mon Sep 17 00:00:00 2001
+From 764b58bde6842df8001ad3bc0f6bbf2c593d4247 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
-Date: Tue, 19 Jun 2012 17:04:29 +0800
-Subject: [PATCH 19/20] memory_buffer: support asynchronize prebuffering
+Date: Thu, 21 Jun 2012 15:49:45 +0800
+Subject: [PATCH 21/23] memory_buffer: support asynchronize prebuffering
 
 ---
- modules/stream_filter/Modules.am      |    6 +
  modules/stream_filter/memory_buffer.c |  910 +++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 916 行(+)
+ 1 个文件被修改，插入 910 行(+)
  create mode 100644 modules/stream_filter/memory_buffer.c
 
-diff --git a/modules/stream_filter/Modules.am b/modules/stream_filter/Modules.am
-index 78efb7d..f11e77e 100644
---- a/modules/stream_filter/Modules.am
-+++ b/modules/stream_filter/Modules.am
-@@ -15,6 +15,12 @@ libstream_filter_httplive_plugin_la_DEPENDENCIES =
- libvlc_LTLIBRARIES += libstream_filter_httplive_plugin.la
- endif
- 
-+libstream_filter_memory_buffer_plugin_la_SOURCES = memory_buffer.c
-+libstream_filter_memory_buffer_plugin_la_CFLAGS = $(AM_CFLAGS)
-+libstream_filter_memory_buffer_plugin_la_LIBADD = $(AM_LIBADD)
-+libstream_filter_memory_buffer_plugin_la_DEPENDENCIES =
-+libvlc_LTLIBRARIES += libstream_filter_memory_buffer_plugin.la
-+
- if !HAVE_WIN32
- if !HAVE_WINCE
- libvlc_LTLIBRARIES += libdecomp_plugin.la
 diff --git a/modules/stream_filter/memory_buffer.c b/modules/stream_filter/memory_buffer.c
 new file mode 100644
-index 0000000..1d13b13
+index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c3071206b53
 --- /dev/null
 +++ b/modules/stream_filter/memory_buffer.c
 @@ -0,0 +1,910 @@
@@ -944,5 +926,5 @@ index 0000000..1d13b13
 +}
 \ No newline at end of file
 -- 
-1.7.10.2
+1.7.10.4
 

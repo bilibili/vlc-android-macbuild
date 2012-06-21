@@ -1,38 +1,21 @@
-From 0b79878b909434497b3033c43fbabf41d35c6b28 Mon Sep 17 00:00:00 2001
+From 848475be7a827df30e3fb8c6f02f06234408aec2 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
-Date: Thu, 31 May 2012 19:23:41 +0800
-Subject: [PATCH 14/20] sina: support sina v_play
+Date: Thu, 21 Jun 2012 15:47:11 +0800
+Subject: [PATCH 16/23] sina: support sina v_play
 
 ---
- modules/access/Modules.am |    5 +
- modules/access/sina.c     |  964 +++++++++++++++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 969 行(+)
+ modules/access/sina.c |  964 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 个文件被修改，插入 964 行(+)
  create mode 100644 modules/access/sina.c
 
-diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index b2b7503..61c3e18 100644
---- a/modules/access/Modules.am
-+++ b/modules/access/Modules.am
-@@ -182,6 +182,11 @@ if HAVE_XCB
- libvlc_LTLIBRARIES += libxcb_screen_plugin.la
- endif
- 
-+libaccess_sina_plugin_la_SOURCES = sina.c
-+libaccess_sina_plugin_la_CFLAGS = $(AM_CFLAGS) $(LIBXML2_CFLAGS)
-+libaccess_sina_plugin_la_LIBADD = $(AM_LIBADD) $(LIBXML2_LIBS)
-+libaccess_sina_plugin_la_DEPENDENCIES =
-+libvlc_LTLIBRARIES += libaccess_sina_plugin.la
- 
- ### Digital TV ###
- 
 diff --git a/modules/access/sina.c b/modules/access/sina.c
 new file mode 100644
-index 0000000..83953ac
+index 0000000000000000000000000000000000000000..2d18c2b6d9b54d07b3e6509af0c2a49599201a9e
 --- /dev/null
 +++ b/modules/access/sina.c
 @@ -0,0 +1,964 @@
 +/*****************************************************************************
-+ * sina.c: Sina Video support (uncrypted)
++ * sina.c: Sina Video support
 + *****************************************************************************
 + *
 + * Authors: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
@@ -911,7 +894,7 @@ index 0000000..83953ac
 +{
 +    demux_sys_t *p_sys = p_demux->p_sys;
 +    assert( p_sys);
-+    
++
 +    sina_segment_t *p_segment = p_sys->p_segment;
 +    if( !p_segment || !p_segment->p_demux )
 +        return;
@@ -997,5 +980,5 @@ index 0000000..83953ac
 +}
 \ No newline at end of file
 -- 
-1.7.10.2
+1.7.10.4
 
