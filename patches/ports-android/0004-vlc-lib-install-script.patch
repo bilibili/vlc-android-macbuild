@@ -1,4 +1,4 @@
-From 56f2c1f356f65d34c59c02e7c7245405d5cc6821 Mon Sep 17 00:00:00 2001
+From eb1690c8ad868ab590e284ed2d1141493554b838 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 15:23:34 +0800
 Subject: [PATCH 4/5] vlc lib install script
@@ -23,5 +23,5 @@ index 0000000..7824946
 +rm ${INSTALL_PROJECT}/libs/armeabi-v7a/gdb.setup
 +rm ${INSTALL_PROJECT}/libs/armeabi-v7a/gdbserver
 -- 
-1.7.10.2
+1.7.10.4
 

@@ -1,21 +1,20 @@
-From 2343bb11788f9c8bf55136bf95b4065eea10aaec Mon Sep 17 00:00:00 2001
+From d98fb1db6ec5eccdd7eb92e8d10a5493311732f3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
-Date: Mon, 16 Apr 2012 22:41:14 +0800
+Date: Sun, 24 Jun 2012 15:40:23 +0800
 Subject: [PATCH 5/5] another libvlc wrapper
 
 ---
  Makefile                                |    7 +-
- compile.sh                              |    2 +-
  vlc-android/jni/Android.mk              |   15 +-
  vlc-android/jni/Application.mk          |    2 +
- vlc-android/jni/libvlcjni_danmaku.c     | 1018 +++++++++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c     | 1038 +++++++++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku.inc.c |   63 ++
- 6 个文件被修改，插入 1099 行(+)，删除 8 行(-)
+ 5 个文件被修改，插入 1118 行(+)，删除 7 行(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
 diff --git a/Makefile b/Makefile
-index 349a42c..7126e42 100644
+index 61a331c..6c653e7 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,12 @@
@@ -31,30 +30,17 @@ index 349a42c..7126e42 100644
  else
  ARCH = armeabi
  endif
-@@ -11,7 +16,7 @@ JAVA_SOURCES=$(SRC)/src/org/videolan/vlc/*.java
+@@ -10,7 +15,7 @@ SRC=vlc-android
+ JAVA_SOURCES=$(SRC)/src/org/videolan/vlc/*.java
  JNI_SOURCES=$(SRC)/jni/*.c $(SRC)/jni/*.h
- VLC_APK=$(SRC)/bin/VLC-debug.apk
  LIBVLCJNI=	\
 -	$(SRC)/obj/local/$(ARCH)/libvlcjni.so \
 +	$(SRC)/obj/local/$(ARCH)/$(LIBVLCJNI_MODULE_NAME) \
  	$(SRC)/obj/local/$(ARCH)/libiomx-ics.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-hc.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
-diff --git a/compile.sh b/compile.sh
-index 9f7b0a4..a4d98b2 100755
---- a/compile.sh
-+++ b/compile.sh
-@@ -36,7 +36,7 @@ fi
- if [ -z "$NO_NDK_V7" ]; then
-     # try to detect NDK version
-     REL=$(grep -o '^r[0-9]*' $ANDROID_NDK/RELEASE.TXT 2>/dev/null|cut -b2-)
--    if [ -z $REL ]; then
-+    if [ -z "$REL" ]; then
-         export NO_NDK_V7=1
-     fi
- fi
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 3169ee0..4e1045e 100644
+index a585e87..abadf1e 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -1,18 +1,21 @@
@@ -82,9 +68,9 @@ index 3169ee0..4e1045e 100644
 +
 +LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
 +
- ifeq ($(NO_NDK_V7),1)
- CPP_STATIC=$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/libs/$(ARCH)/libstdc++.a
- else
+ CPP_STATIC=$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/libs/$(ARCH)/libgnustl_static.a
+ 
+ LOCAL_CFLAGS := -std=gnu99
 diff --git a/vlc-android/jni/Application.mk b/vlc-android/jni/Application.mk
 index 9507cee..3e5f176 100644
 --- a/vlc-android/jni/Application.mk
@@ -100,10 +86,10 @@ index 9507cee..3e5f176 100644
  endif
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..82da507
+index 0000000..b49946d
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,1018 @@
+@@ -0,0 +1,1038 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -142,10 +128,26 @@ index 0000000..82da507
 +#define LOG_TAG "VLC/JNI/main"
 +#include "log.h"
 +
++#include "libvlcjni_danmaku.inc.c"
++
 +#define AOUT_AUDIOTRACK      0
 +#define AOUT_AUDIOTRACK_JAVA 1
 +#define AOUT_OPENSLES        2
-+#include "libvlcjni_danmaku.inc.c"
++
++struct length_change_monitor {
++    pthread_mutex_t doneMutex;
++    pthread_cond_t doneCondVar;
++    bool length_changed;
++};
++
++static void length_changed_callback(const libvlc_event_t *ev, void *data)
++{
++    struct length_change_monitor *monitor = data;
++    pthread_mutex_lock(&monitor->doneMutex);
++    monitor->length_changed = true;
++    pthread_cond_signal(&monitor->doneCondVar);
++    pthread_mutex_unlock(&monitor->doneMutex);
++}
 +
 +libvlc_media_t *new_media(jint instance, JNIEnv *env, jobject thiz, jstring fileLocation, bool noOmx, bool noVideo)
 +{
@@ -496,26 +498,6 @@ index 0000000..82da507
 +    (*env)->SetIntField(env, thiz, field, 0);
 +}
 +
-+int currentSdk( JNIEnv *p_env, jobject thiz )
-+{
-+    jclass  cls = (*p_env)->FindClass( p_env, "org/videolan/vlc/Util" );
-+    if ( !cls )
-+    {
-+        LOGE("Failed to load util class (org/videolan/vlc/Util)" );
-+        return 0;
-+    }
-+    jmethodID methodSdkVersion = (*p_env)->GetStaticMethodID( p_env, cls,
-+                                                       "getApiLevel", "()I" );
-+    if ( !methodSdkVersion )
-+    {
-+        LOGE("Failed to load method getApiLevel()" );
-+        return 0;
-+    }
-+    int version = (*p_env)->CallStaticIntMethod( p_env, cls, methodSdkVersion );
-+    LOGI("Phone running on API level %d\n", version );
-+    return version;
-+}
-+
 +void Java_org_videolan_vlc_LibVLC_detachEventManager(JNIEnv *env, jobject thiz)
 +{
 +    if (eventManagerInstance != NULL) {
@@ -663,6 +645,8 @@ index 0000000..82da507
 +    /* Release previous media player, if any */
 +    releaseMediaPlayer(env, thiz);
 +
++    jobject myJavaLibVLC = (*env)->NewGlobalRef(env, thiz);
++
 +    /* Create a new item */
 +    libvlc_media_t *m = new_media(instance, env, thiz, mrl, false, false);
 +    if (!m)
@@ -686,8 +670,19 @@ index 0000000..82da507
 +                LOGD("  %s", optString);
 +                if (!strncmp(optString, ":aout=", 6)) {
 +                    // seems ":aout" does not effect libvlc_media_add_option()
-+                    LOGD("    set libvlc_audio_output_set:%s", optString);
-+                    libvlc_audio_output_set(mp, optString + 6);
++                    const char* aout_name = optString + 6;
++                    if (!strncmp(aout_name, "audiotrack_java", 15))
++                    {
++                        LOGD("    set libvlc_audio_output_set:%s", aout_name);
++                        libvlc_audio_set_callbacks(mp, aout_play, NULL, NULL, NULL, NULL,
++                                                   (void*) myJavaLibVLC);
++                        libvlc_audio_set_format_callbacks(mp, aout_open, aout_close);
++                    }
++                    else
++                    {
++                        LOGD("    set libvlc_audio_output_set:%s", aout_name);
++                        libvlc_audio_output_set(mp, aout_name);
++                    }
 +                } else {
 +                    libvlc_media_add_option(m, optString);
 +                }
@@ -697,16 +692,7 @@ index 0000000..82da507
 +        }
 +    }
 +
-+    jobject myJavaLibVLC = (*env)->NewGlobalRef(env, thiz);
-+
 +    libvlc_media_player_set_media(mp, m);
-+
-+    if ( currentSdk( env, thiz )  < 9 ) //On newer version, we can use SLES
-+    {
-+        libvlc_audio_set_callbacks(mp, aout_play, NULL, NULL, NULL, NULL,
-+                                   (void*) myJavaLibVLC);
-+        libvlc_audio_set_format_callbacks(mp, aout_open, aout_close);
-+    }
 +
 +    /* No need to keep the media now */
 +    libvlc_media_release(m);
@@ -748,20 +734,55 @@ index 0000000..82da507
 +    libvlc_media_track_info_t *p_tracks;
 +    libvlc_media_parse(p_m);
 +
-+    jboolean hasVideo = JNI_FALSE;
-+    int i_nbTracks = libvlc_media_get_tracks_info(p_m, &p_tracks);
-+    unsigned i;
-+    for (i = 0; i < i_nbTracks; ++i)
-+        if (p_tracks[i].i_type == libvlc_track_video)
-+        {
-+            hasVideo = JNI_TRUE;
-+            break;
-+        }
++    libvlc_media_player_t* p_mp = libvlc_media_player_new_from_media(p_m);
 +
-+    libvlc_media_tracks_info_release(p_tracks, i_nbTracks);
++    struct length_change_monitor* monitor;
++    monitor = malloc(sizeof(struct length_change_monitor));
++    if (!monitor) return 0;
++
++    /* Initialize pthread variables. */
++    pthread_mutex_init(&monitor->doneMutex, NULL);
++    pthread_cond_init(&monitor->doneCondVar, NULL);
++    monitor->length_changed = false;
++
++    libvlc_event_manager_t *ev = libvlc_media_player_event_manager(p_mp);
++    libvlc_event_attach(ev, libvlc_MediaPlayerLengthChanged, length_changed_callback, monitor);
++    libvlc_media_player_play( p_mp );
++
++    pthread_mutex_lock(&monitor->doneMutex);
++
++    struct timespec deadline;
++    clock_gettime(CLOCK_REALTIME, &deadline);
++    deadline.tv_sec += 2; /* If "VLC can't open the file", return */
++    int mp_alive = 1;
++    while( !monitor->length_changed && mp_alive ) {
++        pthread_cond_timedwait(&monitor->doneCondVar, &monitor->doneMutex, &deadline);
++        mp_alive = libvlc_media_player_will_play(p_mp);
++    }
++    pthread_mutex_unlock(&monitor->doneMutex);
++
++    int i_nbTracks;
++    if( mp_alive )
++        i_nbTracks = libvlc_video_get_track_count(p_mp);
++    else
++        i_nbTracks = -1;
++    LOGI("Number of video tracks: %d",i_nbTracks);
++
++    libvlc_event_detach(ev, libvlc_MediaPlayerLengthChanged, length_changed_callback, monitor);
++    libvlc_media_player_stop(p_mp);
++    libvlc_media_player_release(p_mp);
 +    libvlc_media_release(p_m);
 +
-+    return hasVideo;
++    pthread_mutex_destroy(&monitor->doneMutex);
++    pthread_cond_destroy(&monitor->doneCondVar);
++    free(monitor);
++
++    if(i_nbTracks > 0)
++        return JNI_TRUE;
++    else if(i_nbTracks < 0)
++        (*env)->ThrowNew(env, (*env)->FindClass(env, "java/io/IOException"), "VLC can't open the file");
++    else
++        return JNI_FALSE;
 +}
 +
 +jobjectArray Java_org_videolan_vlc_LibVLC_readTracksInfo(JNIEnv *env, jobject thiz,
@@ -842,21 +863,6 @@ index 0000000..82da507
 +    libvlc_media_tracks_info_release(p_tracks, i_nbTracks);
 +    libvlc_media_release(p_m);
 +    return array;
-+}
-+
-+struct length_change_monitor {
-+    pthread_mutex_t doneMutex;
-+    pthread_cond_t doneCondVar;
-+    bool length_changed;
-+};
-+
-+static void length_changed_callback(const libvlc_event_t *ev, void *data)
-+{
-+    struct length_change_monitor *monitor = data;
-+    pthread_mutex_lock(&monitor->doneMutex);
-+    monitor->length_changed = true;
-+    pthread_cond_signal(&monitor->doneCondVar);
-+    pthread_mutex_unlock(&monitor->doneMutex);
 +}
 +
 +jlong Java_org_videolan_vlc_LibVLC_getLengthFromLocation(JNIEnv *env, jobject thiz,
@@ -1192,5 +1198,5 @@ index 0000000..dce2a3c
 +
 +#endif
 -- 
-1.7.10.2
+1.7.10.4
 

@@ -1,4 +1,4 @@
-From 4ed913104a70141ed1834166c83dac0c2f5c4082 Mon Sep 17 00:00:00 2001
+From 8d8b1dba807fa420f70d9012655d5719ef659c67 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 11:30:23 +0800
 Subject: [PATCH 2/5] do not build apk
@@ -8,18 +8,18 @@ Subject: [PATCH 2/5] do not build apk
  1 个文件被修改，插入 1 行(+)，删除 1 行(-)
 
 diff --git a/Makefile b/Makefile
-index 877cb49..349a42c 100644
+index 8a92508..61a331c 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -34,7 +34,7 @@ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)
+@@ -43,7 +43,7 @@ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)
  	@echo
  	@echo "=== Building $@ for $(ARCH) ==="
  	@echo
--	$(VERBOSE)cd $(SRC) && ant $(ANT_OPTS) debug
+-	$(VERBOSE)cd $(SRC) && ant $(ANT_OPTS) $(ANT_TARGET)
 +	$(VERBOSE)cd $(SRC)
  
  VLC_MODULES=`./find_modules.sh $(VLC_BUILD_DIR)`
  
 -- 
-1.7.10.2
+1.7.10.4
 

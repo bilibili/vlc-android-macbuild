@@ -1,62 +1,22 @@
-From b465c550abbb1e187fc3463f0d54c02e96fe5779 Mon Sep 17 00:00:00 2001
+From 0c60312b7ffc26515408bd6fa0593dd875802cce Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 12:32:02 +0800
 Subject: [PATCH 3/5] vlc repo reset script
 
 ---
- _reset_vlc.sh |   43 +++++++++++++++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 43 行(+)
+ _reset_vlc.sh |    3 +++
+ 1 个文件被修改，插入 3 行(+)
  create mode 100644 _reset_vlc.sh
 
 diff --git a/_reset_vlc.sh b/_reset_vlc.sh
 new file mode 100644
-index 0000000..a0ce11e
+index 0000000..f576ca8
 --- /dev/null
 +++ b/_reset_vlc.sh
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,3 @@
 +#! /bin/sh
 +
-+BUILD_PLATFORM='unknown'
-+if [ "$(uname)" == 'Linux' ]; then
-+   BUILD_PLATFORM='linux'
-+elif [ "$(uname)" == 'Darwin' ]; then
-+   BUILD_PLATFORM='darwin'
-+fi
-+
-+# 1/ libvlc, libvlccore and its plugins
-+TESTED_HASH=defdb5a9e1
-+if [ ! -d "vlc" ]; then
-+    echo "VLC source not found, cloning"
-+    git clone git://git.videolan.org/vlc.git vlc
-+    cd vlc
-+else
-+    echo "VLC source found"
-+    cd vlc
-+    git reset --hard origin
-+    git fetch origin
-+fi
-+
-+echo "======================================="
-+echo "Reset to brance android ${TESTED_HASH}"
-+git checkout -B android ${TESTED_HASH}
-+
-+echo "======================================="
-+echo "Applying the patches"
-+git am ../patches/*.patch || git am --abort
-+
-+if [ ${BUILD_PLATFORM} == 'darwin' ]; then
-+    echo "======================================="
-+    echo "Applying the patches for build on darwin"
-+    git am ../../patches/vlc-on-macosx/*.patch || git am --abort
-+fi
-+
-+echo "======================================="
-+echo "Applying the patches for libvlc_danmaku"
-+git am ../../patches/vlc/*.patch || git am --abort
-+
-+echo "======================================="
-+
-+cd -
++sh ../_do_reset_vlc.sh
 -- 
-1.7.10.2
+1.7.10.4
 

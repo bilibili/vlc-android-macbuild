@@ -1,4 +1,4 @@
-From 7bd93d8766f8d2f00ba696ef699985e6756981ae Mon Sep 17 00:00:00 2001
+From e2bed4fb06596ed7fdaf573548d211cf0f805b2d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 12:04:30 +0800
 Subject: [PATCH 4/5] lite-mode: find_modules.sh: blacklist modules
@@ -60,5 +60,5 @@ index 322033a..7b2eab4 100755
  
  regexp=
 -- 
-1.7.10.2
+1.7.10.4
 

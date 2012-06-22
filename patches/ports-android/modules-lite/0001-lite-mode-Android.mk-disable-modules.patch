@@ -1,4 +1,4 @@
-From 8940117813617b66791139ec6cae6f5c0c08b66c Mon Sep 17 00:00:00 2001
+From 7c23a8c7050ef674c9b75581717f42fd85d978f3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
 Subject: [PATCH 1/5] lite-mode: Android.mk: disable modules
@@ -8,10 +8,10 @@ Subject: [PATCH 1/5] lite-mode: Android.mk: disable modules
  1 个文件被修改，插入 4 行(+)，删除 8 行(-)
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 4e1045e..5f08846 100644
+index abadf1e..93c4108 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
-@@ -29,14 +29,10 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+@@ -25,14 +25,10 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
  	$(VLC_BUILD_DIR)/src/.libs/libvlccore.a \
  	$(VLC_BUILD_DIR)/compat/.libs/libcompat.a \
  	-ldl -lz -lm -llog \
@@ -31,5 +31,5 @@ index 4e1045e..5f08846 100644
  
  include $(BUILD_SHARED_LIBRARY)
 -- 
-1.7.10.2
+1.7.10.4
 

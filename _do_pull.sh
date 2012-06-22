@@ -6,7 +6,7 @@ if [ -z "$BILI_VLC_TARGET" ]; then
     exit 1
 fi
 
-BILI_VLC_ANDROID_HASH=b0d215e9fc
+BILI_VLC_ANDROID_HASH=c46d6a0c1d
 echo "pull "${BILI_VLC_TARGET}":"${BILI_VLC_ANDROID_HASH}
 
 if [ ! -d ${BILI_VLC_TARGET} ]; then

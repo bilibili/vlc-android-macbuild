@@ -1,24 +1,22 @@
-From df6ad7d3248aa67b001b1c69fd0ffe32f515a625 Mon Sep 17 00:00:00 2001
+From 290f5032473035c9a25144b31af49fa300e8fef3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
-Date: Thu, 29 Mar 2012 16:55:54 +0800
-Subject: [PATCH] build for tegra2
+Date: Sun, 24 Jun 2012 17:23:34 +0800
+Subject: [PATCH] build for armeabi-v7a with NEON
 
 ---
- compile.sh |    5 +++++
- 1 个文件被修改，插入 5 行(+)
+ compile.sh |    3 +++
+ 1 个文件被修改，插入 3 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index 4ee4ecc..a039eb4 100755
+index 4ee4ecc..4194ee9 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -6,6 +6,11 @@
+@@ -6,6 +6,9 @@
  
  set -e
  
-+# patched for tegra2
++# patched for armeabi-v7a with NEON
 +export ANDROID_ABI=armeabi-v7a
-+export NO_NEON=1
-+export TEGRA2=1
 +
  if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" -o -z "$ANDROID_ABI" ]; then
     echo "You must define ANDROID_NDK, ANDROID_SDK and ANDROID_ABI before starting."

@@ -1,17 +1,17 @@
-From 58fe4455a78c6d8a5cf7b57879396d3acf84c492 Mon Sep 17 00:00:00 2001
+From e77efd19c8ce0c7918fac666da32d110c86c75a2 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
 Subject: [PATCH 3/5] lite-mode: configure.sh: disable modules
 
 ---
- configure.sh |    9 +++++----
- 1 个文件被修改，插入 5 行(+)，删除 4 行(-)
+ configure.sh |   10 ++++++----
+ 1 个文件被修改，插入 6 行(+)，删除 4 行(-)
 
 diff --git a/configure.sh b/configure.sh
-index 3ff6a69..8f77fc5 100755
+index 6546e27..b915890 100755
 --- a/configure.sh
 +++ b/configure.sh
-@@ -48,7 +48,7 @@ STRIP="${CROSS_COMPILE}strip" \
+@@ -40,15 +40,17 @@ STRIP="${CROSS_COMPILE}strip" \
  RANLIB="${CROSS_COMPILE}ranlib" \
  AR="${CROSS_COMPILE}ar" \
  sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-linux $EXTRA_PARAMS \
@@ -20,19 +20,19 @@ index 3ff6a69..8f77fc5 100755
                  --enable-avformat \
                  --enable-swscale \
                  --enable-avcodec \
-@@ -56,8 +56,9 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+                 --enable-opensles \
                  --enable-audiotrack \
                  --enable-android-surface \
-                 --enable-debug \
 -                --enable-mkv \
 -                --enable-taglib \
++                --enable-debug \
 +                --disable-mkv \
 +                --disable-taglib \
 +                --disable-freetype \
                  --enable-iomx \
                  --disable-vlc --disable-shared \
                  --disable-vlm \
-@@ -93,7 +94,7 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+@@ -84,7 +86,7 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
                  --disable-skins2 \
                  --disable-mtp \
                  --disable-notify \
@@ -42,5 +42,5 @@ index 3ff6a69..8f77fc5 100755
                  --disable-sqlite \
                  --disable-udev \
 -- 
-1.7.10.2
+1.7.10.4
 
