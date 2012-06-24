@@ -1,39 +1,32 @@
 #! /bin/sh
 
-if [ -z "$BILI_VLC_TARGET" ]; then
+if [ -z "$BILI_VLC_ROOT" ]; then
     echo "_do_pull.sh is not supposed been executed directly"
     echo "execute _pull_xxx.sh instead"
     exit 1
 fi
 
 BILI_VLC_ANDROID_HASH=c46d6a0c1d
-echo "pull "${BILI_VLC_TARGET}":"${BILI_VLC_ANDROID_HASH}
+echo "pull "${BILI_VLC_ROOT}":"${BILI_VLC_ANDROID_HASH}
 
-if [ ! -d ${BILI_VLC_TARGET} ]; then
+if [ ! -d ${BILI_VLC_ROOT} ]; then
     echo "vlc-ports/android source not found, cloning"
-    git clone git://git.videolan.org/vlc-ports/android ${BILI_VLC_TARGET}
-    cd ${BILI_VLC_TARGET}   
+    git clone git://git.videolan.org/vlc-ports/android ${BILI_VLC_ROOT}
+    cd ${BILI_VLC_ROOT}   
     git checkout -B bili ${BILI_VLC_ANDROID_HASH}
     cd -
 else
     echo "vlc-ports/android source found, pulling from remote master"
-    cd ${BILI_VLC_TARGET}
+    cd ${BILI_VLC_ROOT}
     git fetch origin
     git checkout -B bili ${BILI_VLC_ANDROID_HASH}    
     cd -
 fi
 
-echo "patch "${BILI_VLC_TARGET}
-cd ${BILI_VLC_TARGET}
-git am ../patches/ports-android/${BILI_VLC_TARGET}/*.patch || git am --abort
+echo "patch "${BILI_VLC_MODULE_MODE} ${BILI_VLC_TARGET_MODE}
+cd ${BILI_VLC_ROOT}
+git am ../patches/ports-android/${BILI_VLC_TARGET_MODE}/*.patch || git am --abort
 git am ../patches/ports-android/*.patch || git am --abort
-
-if [[ ${BILI_VLC_MODULE_MODE} == 'lite' ]]; then
-    git am ../patches/ports-android/modules-lite/*.patch
-elif [[ ${BILI_VLC_MODULE_MODE} == 'live' ]]; then
-    git am ../patches/ports-android/modules-live/*.patch
-elif [[ ${BILI_VLC_MODULE_MODE} == 'full' ]]; then
-    git am ../patches/ports-android/modules-full/*.patch
-fi
+git am ../patches/ports-android/${BILI_VLC_MODULE_MODE}/*.patch
 
 cd -

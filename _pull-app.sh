@@ -1,7 +1,8 @@
 #! /bin/sh
 
-export BILI_VLC_TARGET="vlc-app-armv7a-neon"
-export BILI_VLC_MODULE_MODE="full"
+export BILI_VLC_ROOT="vlc-app-armv7a-neon"
+export BILI_VLC_MODULE_MODE="module-lite"
+export BILI_VLC_TARGET_MODE="target-armv7a-neon"
 
 mkdir -p vlc-app
 cd vlc-app
@@ -9,10 +10,11 @@ cd vlc-app
 rm tarballs
 ln -s ../tarballs
 
-mkdir -p patches/ports-android/${BILI_VLC_TARGET}
+mkdir -p patches/ports-android/${BILI_VLC_TARGET_MODE}
 rm patches/ports-android/*.patch
 cp ../patches/ports-android/*-modify-compile.sh-for-MacOS-build.patch patches/ports-android/
 cp ../patches/ports-android/*-vlc-repo-reset-script.patch patches/ports-android/
+cp ../patches/ports-android/${BILI_VLC_TARGET_MODE}/*.patch patches/ports-android/${BILI_VLC_TARGET_MODE}
 
 mkdir -p patches/vlc-on-macosx
 rm patches/vlc-on-macosx/*.patch
