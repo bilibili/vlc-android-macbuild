@@ -1,14 +1,14 @@
-From 56e7d4a93bd3e6a18fdccf0e477a03b85d6fb914 Mon Sep 17 00:00:00 2001
+From 7db66edd02b0cb3fe984ab4303e67e239b7e1898 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 19 Jun 2012 17:04:09 +0800
-Subject: [PATCH 20/23] vlc_array: support vlc_array_set
+Subject: [PATCH 18/22] core: vlc_array: support vlc_array_set
 
 ---
  include/vlc_arrays.h |    6 ++++++
  1 个文件被修改，插入 6 行(+)
 
 diff --git a/include/vlc_arrays.h b/include/vlc_arrays.h
-index c06136de984a835d1e9dd0a332d372b8778ec657..cbbc35a4a8eb4a1e8ad6ad256d787c713c0d1f38 100644
+index c06136d..cbbc35a 100644
 --- a/include/vlc_arrays.h
 +++ b/include/vlc_arrays.h
 @@ -373,6 +373,12 @@ vlc_array_remove( vlc_array_t * p_array, int i_index )

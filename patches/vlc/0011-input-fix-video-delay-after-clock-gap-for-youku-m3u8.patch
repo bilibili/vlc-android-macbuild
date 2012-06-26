@@ -1,14 +1,14 @@
-From 2f3320d47caaded46151d2d3738a61565574d81e Mon Sep 17 00:00:00 2001
+From 355ba8a4f8d5fa0eb674570553591e64d61a96ba Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 15:20:54 +0800
-Subject: [PATCH 11/23] input: fix video delay after clock gap for youku m3u8
+Subject: [PATCH 11/22] input: fix video delay after clock gap for youku m3u8
 
 ---
  src/audio_output/input.c |    4 ++--
  1 个文件被修改，插入 2 行(+)，删除 2 行(-)
 
 diff --git a/src/audio_output/input.c b/src/audio_output/input.c
-index c7c2d7ac4a1662f00b44c7b7974af7d86ff1ced6..b8ee65e0c857e24769ce9f32afdec90321596ec9 100644
+index c7c2d7a..b8ee65e 100644
 --- a/src/audio_output/input.c
 +++ b/src/audio_output/input.c
 @@ -423,7 +423,7 @@ block_t *aout_InputPlay(audio_output_t *p_aout, aout_input_t *p_input,

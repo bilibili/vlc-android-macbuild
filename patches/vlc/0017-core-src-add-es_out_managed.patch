@@ -1,14 +1,14 @@
-From a835c2c8da24da162d58531e9eeba8ef7a521612 Mon Sep 17 00:00:00 2001
+From e4fdf64fe0f6aaa28e5c8c7fafbb56b53a12ace6 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:39 +0800
-Subject: [PATCH 15/23] src: add es_out_managed
+Subject: [PATCH 17/22] core: src: add es_out_managed
 
 ---
  src/Makefile.am |    2 ++
  1 个文件被修改，插入 2 行(+)
 
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 4cf4aba75fc038790463d98a5324eb1b9d074879..ae84e8a1864a05de69611e1946696d74e58d63f8 100644
+index 4cf4aba..ae84e8a 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
 @@ -46,6 +46,7 @@ pluginsinclude_HEADERS = \

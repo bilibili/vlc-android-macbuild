@@ -1,7 +1,7 @@
-From f33b94a9e11d7d24aa4b4512119ee26c3a784d8c Mon Sep 17 00:00:00 2001
+From e5f7a292b7667d1ef2c75298ff73926f84de10d4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:20 +0800
-Subject: [PATCH 14/23] es_out_managed: implement es_out_managed
+Subject: [PATCH 16/22] es_out_managed: implement es_out_managed
 
 ---
  include/vlc_es_out_managed.h |   40 ++++++++++
@@ -12,7 +12,7 @@ Subject: [PATCH 14/23] es_out_managed: implement es_out_managed
 
 diff --git a/include/vlc_es_out_managed.h b/include/vlc_es_out_managed.h
 new file mode 100644
-index 0000000000000000000000000000000000000000..70dca5d6eeab21dad5d7acc2cdaf56ef7b3c9ea6
+index 0000000..70dca5d
 --- /dev/null
 +++ b/include/vlc_es_out_managed.h
 @@ -0,0 +1,40 @@
@@ -59,7 +59,7 @@ index 0000000000000000000000000000000000000000..70dca5d6eeab21dad5d7acc2cdaf56ef
 \ No newline at end of file
 diff --git a/src/input/es_out_managed.c b/src/input/es_out_managed.c
 new file mode 100644
-index 0000000000000000000000000000000000000000..22f6a96bcd28f9fc5a3076e9a1341f82cfbcdf60
+index 0000000..22f6a96
 --- /dev/null
 +++ b/src/input/es_out_managed.c
 @@ -0,0 +1,170 @@

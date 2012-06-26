@@ -1,0 +1,29 @@
+From 1ef0bbacdba286788f0b6ed169f8a8ed639d5e49 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 26 Jun 2012 15:47:19 +0800
+Subject: [PATCH 20/22] plugin: stream_filter: add membuf
+
+---
+ modules/stream_filter/Modules.am |    6 ++++++
+ 1 个文件被修改，插入 6 行(+)
+
+diff --git a/modules/stream_filter/Modules.am b/modules/stream_filter/Modules.am
+index 78efb7d..0561421 100644
+--- a/modules/stream_filter/Modules.am
++++ b/modules/stream_filter/Modules.am
+@@ -15,6 +15,12 @@ libstream_filter_httplive_plugin_la_DEPENDENCIES =
+ libvlc_LTLIBRARIES += libstream_filter_httplive_plugin.la
+ endif
+ 
++libstream_filter_membuf_plugin_la_SOURCES = membuf.c
++libstream_filter_membuf_plugin_la_CFLAGS = $(AM_CFLAGS)
++libstream_filter_membuf_plugin_la_LIBADD = $(AM_LIBADD)
++libstream_filter_membuf_plugin_la_DEPENDENCIES =
++libvlc_LTLIBRARIES += libstream_filter_membuf_plugin.la
++
+ if !HAVE_WIN32
+ if !HAVE_WINCE
+ libvlc_LTLIBRARIES += libdecomp_plugin.la
+-- 
+1.7.10.4
+

@@ -1,21 +1,21 @@
-From 764b58bde6842df8001ad3bc0f6bbf2c593d4247 Mon Sep 17 00:00:00 2001
+From 9ba7c41d865b68be0de11b2d412908a495b89ada Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:49:45 +0800
-Subject: [PATCH 21/23] memory_buffer: support asynchronize prebuffering
+Subject: [PATCH 19/22] membuf: support asynchronize prebuffering
 
 ---
- modules/stream_filter/memory_buffer.c |  910 +++++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 910 行(+)
- create mode 100644 modules/stream_filter/memory_buffer.c
+ modules/stream_filter/membuf.c |  932 ++++++++++++++++++++++++++++++++++++++++
+ 1 个文件被修改，插入 932 行(+)
+ create mode 100644 modules/stream_filter/membuf.c
 
-diff --git a/modules/stream_filter/memory_buffer.c b/modules/stream_filter/memory_buffer.c
+diff --git a/modules/stream_filter/membuf.c b/modules/stream_filter/membuf.c
 new file mode 100644
-index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c3071206b53
+index 0000000..dbc2555
 --- /dev/null
-+++ b/modules/stream_filter/memory_buffer.c
-@@ -0,0 +1,910 @@
++++ b/modules/stream_filter/membuf.c
+@@ -0,0 +1,932 @@
 +/*****************************************************************************
-+ * memory_buffer.c: Stream buffer in memory
++ * membuf.c: Stream buffer in memory
 + *****************************************************************************
 + *
 + * Authors: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
@@ -67,8 +67,8 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +    set_category (CAT_INPUT)
 +    set_subcategory (SUBCAT_INPUT_STREAM_FILTER)
 +    set_capability ("stream_filter", 1)
-+    add_shortcut( "memory_buffer" )
-+    add_bool( "memory-buffer-enable", false, ENABLE_TEXT, ENABLE_LONGTEXT, false )
++    add_shortcut( "membuf" )
++    add_bool( "membuf-enable", false, ENABLE_TEXT, ENABLE_LONGTEXT, false )
 +    set_callbacks (Open, Close)
 +vlc_module_end ()
 +
@@ -153,6 +153,8 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +static stream_sys_t *sys_Alloc( void );
 +static void sys_Free( stream_sys_t* p_sys);
 +
++#define msg_VVV msg_Err
++
 +/****************************************************************************
 + * Open/Close
 + ****************************************************************************/
@@ -176,10 +178,10 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +    if( p_stream->p_source->p_source )
 +        goto EXIT_FAIL;
 +
-+    bool b_enabled = var_InheritBool( p_stream, "memory-buffer-enable" );
++    bool b_enabled = var_InheritBool( p_stream, "membuf-enable" );
 +    if( !b_enabled )
 +    {
-+        msg_Info( p_stream, "membuf: disable memory-buffer" );
++        msg_Info( p_stream, "membuf: disable membuf" );
 +        goto EXIT_FAIL;
 +    }
 +
@@ -208,7 +210,7 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +    if(VLC_SUCCESS != vlc_clone( &p_sys->prebuffer_thread, PrebufferThread, p_stream, VLC_THREAD_PRIORITY_INPUT ) )
 +        goto EXIT_FAIL;
 +
-+    msg_Err( p_stream, "memory buffer loaded" );
++    msg_VVV( p_stream, "membuf: loaded" );
 +    return VLC_SUCCESS;
 +EXIT_FAIL:
 +    sys_Free( p_sys );
@@ -461,14 +463,14 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +            mutex_cleanup_push( &p_sys->source_lock );
 +
 +            /* grow array if need */
-+            msg_Err( p_stream, "grow array if need" );
++            // msg_VVV( p_stream, "grow array if need" );
 +            while( i_block_index >= vlc_array_count( &p_sys->block_array ) )
 +            {
 +                vlc_array_append( &p_sys->block_array, NULL );
 +            }
 +
 +            /* alloc block if need */
-+            msg_Err( p_stream, "alloc block" );
++            // msg_VVV( p_stream, "alloc block" );
 +            p_block = vlc_array_item_at_index( &p_sys->block_array, i_block_index );
 +            if( !p_block )
 +            {
@@ -493,12 +495,12 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +                        }
 +                    }
 +
-+                    msg_Err( p_stream, "vlc_array_set" );
++                    // msg_VVV( p_stream, "vlc_array_set" );
 +                    vlc_array_set( &p_sys->block_array, p_block, i_block_index );
 +                }
 +                else
 +                {
-+                    msg_Err( p_stream, "membuf: buffer_block_Alloc() failed" );
++                    // msg_Err( p_stream, "membuf: buffer_block_Alloc() failed" );
 +                    p_sys->b_error = true;
 +                }
 +            }
@@ -508,7 +510,7 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +                vlc_mutex_lock( &p_block->range_lock );
 +                mutex_cleanup_push( &p_block->range_lock );
 +
-+                msg_Err( p_stream, "prepare block" );
++                // msg_VVV( p_stream, "prepare block" );
 +                if( i_block_offset < p_block->i_data_begin )
 +                {
 +                    /*
@@ -550,7 +552,7 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +        } /* end { */
 +
 +        /* start fill block */
-+        msg_Err( p_stream, "start fill block %d => %d", (int) i_block_offset, (int) p_block->i_block_size );
++        // msg_VVV( p_stream, "start fill block %d => %d", (int) i_block_offset, (int) p_block->i_block_size );
 +        while( i_block_offset < p_block->i_block_size )
 +        {
 +            if( p_sys->b_error || p_sys->b_close )
@@ -572,7 +574,7 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +                uint64_t i_source_offset = stream_Tell( p_stream->p_source );
 +                if( i_prebuffer_offset != i_source_offset )
 +                {
-+                    msg_Warn( p_stream, "membuf: wrong prebuffer offset, expected: %"PRId64", actual: %"PRId64,
++                    msg_Err( p_stream, "membuf: wrong prebuffer offset, expected: %"PRId64", actual: %"PRId64,
 +                             i_prebuffer_offset,
 +                             i_source_offset );
 +                }
@@ -581,13 +583,15 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +                                         p_block->p_buffer + i_block_offset,
 +                                         i_step_read );
 +
-+                msg_Err( p_stream, "PrebufferThread: stream_Read %lld at block[%d][%d]+%d (%d read)",
++                /*
++                msg_VVV( p_stream, "PrebufferThread: stream_Read %lld at block[%d][%d]+%d (%d read)",
 +                        p_sys->i_prebuffer_offset,
 +                        i_block_index,
 +                        i_block_offset,
 +                        i_step_read,
 +                        i_read_ret );
-+                
++                */
++
 +                if( i_read_ret > 0 )
 +                {
 +                    /* move block cursor */
@@ -760,10 +764,10 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +
 +static int Read( stream_t *p_stream, void *p_buffer, unsigned int i_read )
 +{
-+    // msg_Err( p_stream, "membuf:Peek %lld, %d", stream_Tell( p_stream->p_source ), i_read );
++    // msg_VVV( p_stream, "membuf:Peek %lld, %d", stream_Tell( p_stream->p_source ), i_read );
 +    // return stream_Read( p_stream->p_source, p_buffer, i_read );
 +    stream_sys_t *p_sys = p_stream->p_sys;
-+    msg_Err( p_stream, "membuf:Read %lld, %d", p_sys->i_stream_offset, i_read );
++    // msg_VVV( p_stream, "membuf:Read %lld, %d", p_sys->i_stream_offset, i_read );
 +
 +    assert( p_stream->p_source );
 +
@@ -783,7 +787,7 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +    }
 +
 +    int i_fetch = unsafe_fetchData( p_stream, p_buffer, i_ready_data );
-+    msg_Err( p_stream, "membuf:Read return %d", i_fetch );
++    // msg_VVV( p_stream, "membuf:Read return %d", i_fetch );
 +    if( i_fetch <= 0 )
 +        return i_fetch;
 +
@@ -793,10 +797,10 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +
 +static int Peek( stream_t *p_stream, const uint8_t **pp_peek, unsigned int i_peek )
 +{
-+    // msg_Err( p_stream, "membuf:Peek %lld, %d", stream_Tell( p_stream->p_source ), i_peek );
++    // msg_VVV( p_stream, "membuf:Peek %lld, %d", stream_Tell( p_stream->p_source ), i_peek );
 +    // return stream_Peek( p_stream->p_source, pp_peek, i_peek );
 +    stream_sys_t *p_sys = p_stream->p_sys;
-+    msg_Err( p_stream, "membuf:Peek %lld, %d", p_sys->i_stream_offset, i_peek );
++    // msg_VVV( p_stream, "membuf:Peek %lld, %d", p_sys->i_stream_offset, i_peek );
 +
 +    assert( p_stream->p_source );
 +
@@ -823,10 +827,12 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +        assert( i_block_offset < p_block->i_data_end );
 +        assert( p_block->i_data_end <= p_block->i_block_size );
 +
-+        msg_Err( p_stream, "peek in same block[%d][%d]+%d (%x~%x)",
++        /*
++        msg_VVV( p_stream, "peek in same block[%d][%d]+%d (%x~%x)",
 +                 i_block_index, i_block_offset, i_peek,
 +                 (int) ( p_block->p_buffer[i_block_offset] ),
 +                 (int) ( p_block->p_buffer[i_block_offset + i_ready_data - 1] ));
++        */
 +        *pp_peek = p_block->p_buffer + i_block_offset;
 +        return i_peek;
 +    }
@@ -872,7 +878,7 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +
 +            int i_seek_ret = VLC_EGENERIC;
 +            uint64_t i_seek_pos = (va_arg (args, uint64_t));
-+            msg_Err( p_stream, "membuf: seek to %lld", i_seek_pos );
++            msg_VVV( p_stream, "membuf: seek to %lld", i_seek_pos );
 +
 +            /* try to be cancellation-safe */
 +            vlc_mutex_lock( &p_sys->source_lock );
@@ -880,25 +886,41 @@ index 0000000000000000000000000000000000000000..1d13b13d1280af353ca96ee06d414c30
 +
 +            uint64_t i_prebuffer_rewind_pos = unsafe_FindRewindBufferedPosition( p_stream, i_seek_pos );
 +
-+            i_seek_ret = stream_Seek( p_stream->p_source, i_prebuffer_rewind_pos );
-+
-+            /* no matter fail or success, we rely on stream_Tell() */
-+            uint64_t i_rewind_offset = stream_Tell( p_stream->p_source );
-+            msg_Err( p_stream, "membuf: seek rewind end at %lld", i_rewind_offset );
-+            
-+            p_sys->b_buffered_eos = false;
-+            p_sys->i_prebuffer_offset = i_rewind_offset;
-+
-+            if( i_seek_pos <= i_rewind_offset )
++            /* check current position */
++            uint64_t i_rewind_offset = 0;
++            if( i_seek_pos <= p_sys->i_prebuffer_offset &&
++                i_seek_pos < i_prebuffer_rewind_pos )
 +            {
-+                /* reasonable seek result */
++                msg_VVV( p_stream, "membuf: seek within buffered range ~%lld (expected %lld)",
++                        i_prebuffer_rewind_pos,
++                        p_sys->i_prebuffer_offset );
++
 +                p_sys->i_stream_offset = i_seek_pos;
++                i_seek_ret = VLC_SUCCESS;
 +            }
 +            else
 +            {
-+                /* may be failed to seek, reset play offset */
-+                p_sys->i_stream_offset = i_rewind_offset;
-+                i_seek_ret = VLC_EGENERIC;
++                msg_VVV( p_stream, "membuf: seek out of buffered range, rewind to %lld", i_prebuffer_rewind_pos );
++                i_seek_ret = stream_Seek( p_stream->p_source, i_prebuffer_rewind_pos );
++
++                /* no matter fail or success, we rely on stream_Tell() */
++                i_rewind_offset = stream_Tell( p_stream->p_source );
++                msg_VVV( p_stream, "membuf: seek rewind end at %lld", i_rewind_offset );
++
++                p_sys->b_buffered_eos = false;
++                p_sys->i_prebuffer_offset = i_rewind_offset;           
++
++                if( i_seek_pos <= i_rewind_offset )
++                {
++                    /* reasonable seek result */
++                    p_sys->i_stream_offset = i_seek_pos;
++                }
++                else if( p_sys->i_stream_offset > i_rewind_offset )
++                {
++                    /* may be failed to seek, do not modify play offset */
++                    p_sys->i_stream_offset = i_rewind_offset;
++                    i_seek_ret = VLC_EGENERIC;
++                }
 +            }
 +
 +            vlc_cleanup_run( );

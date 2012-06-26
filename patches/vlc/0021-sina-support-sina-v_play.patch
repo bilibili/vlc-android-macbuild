@@ -1,19 +1,33 @@
-From 848475be7a827df30e3fb8c6f02f06234408aec2 Mon Sep 17 00:00:00 2001
+From 5d2a063a42781bffb0fedd8a5da68d7bb24ba6ea Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:11 +0800
-Subject: [PATCH 16/23] sina: support sina v_play
+Subject: [PATCH 21/22] sina: support sina v_play
 
 ---
- modules/access/sina.c |  964 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 964 行(+)
- create mode 100644 modules/access/sina.c
+ modules/access/sina/Modules.am |    5 +
+ modules/access/sina/sina.c     |  983 ++++++++++++++++++++++++++++++++++++++++
+ 2 个文件被修改，插入 988 行(+)
+ create mode 100644 modules/access/sina/Modules.am
+ create mode 100644 modules/access/sina/sina.c
 
-diff --git a/modules/access/sina.c b/modules/access/sina.c
+diff --git a/modules/access/sina/Modules.am b/modules/access/sina/Modules.am
 new file mode 100644
-index 0000000000000000000000000000000000000000..2d18c2b6d9b54d07b3e6509af0c2a49599201a9e
+index 0000000..c162655
 --- /dev/null
-+++ b/modules/access/sina.c
-@@ -0,0 +1,964 @@
++++ b/modules/access/sina/Modules.am
+@@ -0,0 +1,5 @@
++libaccess_sina_plugin_la_SOURCES = sina.c
++libaccess_sina_plugin_la_CFLAGS = $(AM_CFLAGS) $(LIBXML2_CFLAGS)
++libaccess_sina_plugin_la_LIBADD = $(AM_LIBADD) $(LIBXML2_LIBS)
++libaccess_sina_plugin_la_DEPENDENCIES =
++libvlc_LTLIBRARIES += libaccess_sina_plugin.la
+\ No newline at end of file
+diff --git a/modules/access/sina/sina.c b/modules/access/sina/sina.c
+new file mode 100644
+index 0000000..232f2fe
+--- /dev/null
++++ b/modules/access/sina/sina.c
+@@ -0,0 +1,983 @@
 +/*****************************************************************************
 + * sina.c: Sina Video support
 + *****************************************************************************
@@ -59,7 +73,7 @@ index 0000000000000000000000000000000000000000..2d18c2b6d9b54d07b3e6509af0c2a495
 +#include <libxml/xpathInternals.h>
 +
 +/* FIXME */
-+#include "../../src/input/demux.h"
++#include "../../../src/input/demux.h"
 +
 +/*****************************************************************************
 + * Module descriptor
@@ -96,8 +110,11 @@ index 0000000000000000000000000000000000000000..2d18c2b6d9b54d07b3e6509af0c2a495
 +    /* segment data */
 +    vlc_mutex_t     lock;
 +
-+    stream_t        *p_stream;      /* segment stream */
-+    demux_t         *p_demux;       /* segment demux */
++    stream_t        *p_stream;          /* segment stream */
++    demux_t         *p_demux;           /* segment demux */
++
++    stream_t        *p_origin_stream;   /* weak referece */
++    stream_t        *p_membuf_filter;   /* weak referece */
 +} sina_segment_t;
 +
 +typedef struct
@@ -625,12 +642,28 @@ index 0000000000000000000000000000000000000000..2d18c2b6d9b54d07b3e6509af0c2a495
 +                p_sys->p_playlist = p_playlist;
 +            }
 +
++            /* Create segment stream */
 +            msg_Info( p_demux, "sina open segment stream %d", p_new_segment->i_order );
 +            stream_t *p_stream = stream_UrlNew( p_parent_input, p_new_segment->p_url );
 +            if( !p_stream )
 +            {
 +                msg_Err( p_demux, "failed to open stream %s", p_new_segment->p_url );
 +                continue;
++            }
++            p_new_segment->p_origin_stream = p_stream;
++
++            /* Use membuf to prebuffer segment */
++            stream_t *p_stream_filter = stream_FilterNew( p_stream, "membuf" );
++            if( p_stream_filter )
++            {
++                msg_Dbg( p_demux, "open membuf", p_new_segment->p_url );
++                p_stream = p_stream_filter;
++                p_new_segment->p_membuf_filter = p_stream_filter;
++            }
++            else
++            {
++                msg_Err( p_demux, "failed to open membuf", p_new_segment->p_url );
++                /* ignore membuf */
 +            }
 +
 +            int64_t segment_size = stream_Size( p_stream );
