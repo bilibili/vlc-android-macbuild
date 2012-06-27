@@ -1,7 +1,7 @@
-From 355ba8a4f8d5fa0eb674570553591e64d61a96ba Mon Sep 17 00:00:00 2001
+From 63788663b609c1fce204ffffcb1bfc90f17f807d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 15:20:54 +0800
-Subject: [PATCH 11/22] input: fix video delay after clock gap for youku m3u8
+Subject: [PATCH 11/23] input: fix video delay after clock gap for youku m3u8
 
 ---
  src/audio_output/input.c |    4 ++--

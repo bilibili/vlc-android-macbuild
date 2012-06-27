@@ -1,19 +1,19 @@
-From 9ba7c41d865b68be0de11b2d412908a495b89ada Mon Sep 17 00:00:00 2001
+From 7bc497f41c27ed272e0c5213c941f94a8fb6a7a4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:49:45 +0800
-Subject: [PATCH 19/22] membuf: support asynchronize prebuffering
+Subject: [PATCH 19/23] membuf: support asynchronize prebuffering
 
 ---
- modules/stream_filter/membuf.c |  932 ++++++++++++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 932 行(+)
+ modules/stream_filter/membuf.c |  931 ++++++++++++++++++++++++++++++++++++++++
+ 1 个文件被修改，插入 931 行(+)
  create mode 100644 modules/stream_filter/membuf.c
 
 diff --git a/modules/stream_filter/membuf.c b/modules/stream_filter/membuf.c
 new file mode 100644
-index 0000000..dbc2555
+index 0000000..9262826
 --- /dev/null
 +++ b/modules/stream_filter/membuf.c
-@@ -0,0 +1,932 @@
+@@ -0,0 +1,931 @@
 +/*****************************************************************************
 + * membuf.c: Stream buffer in memory
 + *****************************************************************************
@@ -98,7 +98,7 @@ index 0000000..dbc2555
 +    uint8_t    *p_buffer;       /* allocated data */
 +    int         i_block_size;   /* supposed not chaged */
 +
-+    /* 
++    /*
 +     * NOTE:
 +     *  Only buffer thread can write data or modify range, so we don't need lock
 +     *  when we fetch data to unbuffered area.
@@ -124,12 +124,12 @@ index 0000000..dbc2555
 +    vlc_mutex_t wait_rewind_lock;
 +    vlc_cond_t  wait_rewind;
 +
-+    /* 
++    /*
 +     * NOTE:
 +     *  Buffer between [i_stream_offset, i_prebuffer_offset) should be always valid.
 +     *  So, we don't need to lock block data read/write
 +     *
-+     *  If stream is seeked into or back over unbuffered data, 
++     *  If stream is seeked into or back over unbuffered data,
 +     *  i_prebuffer_offset should be recaculated immediately.
 +     */
 +    vlc_mutex_t source_lock;        /* lock stream->p_source */
@@ -161,7 +161,7 @@ index 0000000..dbc2555
 +
 +static int Open( vlc_object_t *obj )
 +{
-+    stream_t *p_stream = (stream_t *)obj;    
++    stream_t *p_stream = (stream_t *)obj;
 +    stream_sys_t *p_sys = NULL;
 +
 +    assert( p_stream );
@@ -230,9 +230,9 @@ index 0000000..dbc2555
 +        mutex_cleanup_push( &p_sys->wait_rewind_lock );
 +        vlc_cond_signal( &p_sys->wait_rewind );
 +        vlc_cleanup_run( );
-+        
++
 +        vlc_cancel( p_sys->prebuffer_thread );
-+        vlc_join( p_sys->prebuffer_thread, NULL );        
++        vlc_join( p_sys->prebuffer_thread, NULL );
 +    }
 +
 +    sys_Free( p_sys );
@@ -265,10 +265,10 @@ index 0000000..dbc2555
 +static void buffer_block_Free( buffer_block_t *p_block )
 +{
 +    free( p_block->p_buffer );
-+    
++
 +    vlc_mutex_destroy( &p_block->range_lock );
 +    p_block->p_buffer = NULL;
-+    
++
 +    free( p_block );
 +}
 +
@@ -344,7 +344,7 @@ index 0000000..dbc2555
 +
 +        vlc_mutex_destroy( &p_sys->wait_rewind_lock );
 +        vlc_cond_destroy( &p_sys->wait_rewind );
-+        
++
 +        free( p_sys );
 +    }
 +}
@@ -362,7 +362,7 @@ index 0000000..dbc2555
 +        return i_rewind_pos;
 +
 +    /* data is buffered at start point */
-+    while( i_block_index < i_array_count ) 
++    while( i_block_index < i_array_count )
 +    {
 +        buffer_block_t *p_block = (buffer_block_t *) vlc_array_item_at_index( &p_sys->block_array, i_block_index );
 +        if( !p_block )
@@ -404,7 +404,6 @@ index 0000000..dbc2555
 +
 +    return i_prebuffer_offset;
 +}
-+                                     
 +
 +/****************************************************************************
 + * Prebuffer Thread
@@ -426,7 +425,7 @@ index 0000000..dbc2555
 +            if( p_sys->b_error || p_sys->b_close )
 +                goto EXIT_THREAD;
 +
-+            
++
 +            /* Mark as EOS, and wake up any waiting Read/Peek */
 +            vlc_mutex_lock( &p_sys->source_lock );
 +            mutex_cleanup_push( &p_sys->source_lock );
@@ -514,7 +513,7 @@ index 0000000..dbc2555
 +                if( i_block_offset < p_block->i_data_begin )
 +                {
 +                    /*
-+                     * uncompleted at head of block, 
++                     * uncompleted at head of block,
 +                     * drop buffered data, rewind to request position.
 +                     */
 +                    p_block->i_data_begin = i_block_offset;
@@ -557,7 +556,7 @@ index 0000000..dbc2555
 +        {
 +            if( p_sys->b_error || p_sys->b_close )
 +                goto EXIT_THREAD;
-+            
++
 +            int i_left_size = p_block->i_block_size - i_block_offset;
 +            int i_step_read = BYTES_PER_READ;
 +            if( i_step_read > i_left_size )
@@ -597,13 +596,13 @@ index 0000000..dbc2555
 +                    /* move block cursor */
 +                    vlc_mutex_lock( &p_block->range_lock );
 +                    mutex_cleanup_push( &p_block->range_lock );
-+                    
++
 +                    i_block_offset += i_read_ret;
 +                    p_block->i_data_end += i_read_ret;
 +                    assert( p_block->i_data_end <= p_block->i_block_size );
-+                    
++
 +                    vlc_cleanup_run( );
-+                    
++
 +                    i_prebuffer_offset += i_read_ret;
 +                    p_sys->i_prebuffer_offset += i_read_ret;
 +                }
@@ -642,12 +641,12 @@ index 0000000..dbc2555
 +        /* wakeup blocked Read/Peek */
 +        vlc_mutex_lock( &p_sys->wait_fill_lock );
 +        mutex_cleanup_push( &p_sys->wait_fill_lock );
-+        
++
 +        vlc_cond_signal( &p_sys->wait_fill );
-+        
++
 +        vlc_cleanup_run( );
 +    }
-+    
++
 +    msg_Info( p_stream, "membuf: PrebufferThread exit" );
 +    return NULL;
 +}
@@ -688,7 +687,7 @@ index 0000000..dbc2555
 +        if( i_step_read > i_block_left_size )
 +            i_step_read = i_block_left_size;
 +
-+        memcpy( (uint8_t*) buffer + i_read_offset, p_block->p_buffer + i_block_offset, i_step_read );        
++        memcpy( (uint8_t*) buffer + i_read_offset, p_block->p_buffer + i_block_offset, i_step_read );
 +
 +        i_read_offset += i_step_read;
 +        i_left_size -= i_step_read;
@@ -727,7 +726,7 @@ index 0000000..dbc2555
 +                    i_read = i_left_size;
 +            }
 +        }
-+        vlc_cleanup_run( );   
++        vlc_cleanup_run( );
 +    }
 +
 +    if( i_read == 0 )
@@ -857,7 +856,7 @@ index 0000000..dbc2555
 +            //return stream_vaControl( p_stream->p_source, i_query, args );
 +            *(va_arg (args, bool *)) = p_sys->b_can_fastseek;
 +            return VLC_SUCCESS;
-+        }            
++        }
 +        case STREAM_CAN_SEEK:
 +        {
 +            //return stream_vaControl( p_stream->p_source, i_query, args );
@@ -908,7 +907,7 @@ index 0000000..dbc2555
 +                msg_VVV( p_stream, "membuf: seek rewind end at %lld", i_rewind_offset );
 +
 +                p_sys->b_buffered_eos = false;
-+                p_sys->i_prebuffer_offset = i_rewind_offset;           
++                p_sys->i_prebuffer_offset = i_rewind_offset;
 +
 +                if( i_seek_pos <= i_rewind_offset )
 +                {

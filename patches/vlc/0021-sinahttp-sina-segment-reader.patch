@@ -1,0 +1,477 @@
+From e68c4091c5846d067444767a17a6f9ecee747b56 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Wed, 27 Jun 2012 16:36:35 +0800
+Subject: [PATCH 21/23] sinahttp: sina segment reader
+
+---
+ modules/access/sina/sinahttp.c |  457 ++++++++++++++++++++++++++++++++++++++++
+ 1 个文件被修改，插入 457 行(+)
+ create mode 100644 modules/access/sina/sinahttp.c
+
+diff --git a/modules/access/sina/sinahttp.c b/modules/access/sina/sinahttp.c
+new file mode 100644
+index 0000000..fee969b
+--- /dev/null
++++ b/modules/access/sina/sinahttp.c
+@@ -0,0 +1,457 @@
++/*****************************************************************************
++ * sina.c: Sina video segment parser
++ *****************************************************************************
++ *
++ * Authors: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++/*****************************************************************************
++ * Preamble
++ *****************************************************************************/
++#ifdef HAVE_CONFIG_H
++# include "config.h"
++#endif
++
++#include <vlc_common.h>
++#include <vlc_plugin.h>
++#include <vlc_access.h>
++#include <vlc_stream.h>
++
++#include <assert.h>
++
++/*****************************************************************************
++ * Module descriptor
++ *****************************************************************************/
++static int  Open ( vlc_object_t * );
++static void Close( vlc_object_t * );
++
++vlc_module_begin ()
++    set_shortname( N_("sinahttp") )
++    set_description( N_("sina v_play segment parser") )
++    set_category( CAT_INPUT )
++    set_subcategory( SUBCAT_INPUT_ACCESS )
++    set_capability( "access", 1 )
++    add_shortcut( "sinahttp" )
++    set_callbacks( Open, Close )
++vlc_module_end ()
++
++/*****************************************************************************
++ * Local prototypes
++ *****************************************************************************/
++
++#pragma pack(push)
++#pragma pack(1)
++
++/* http://osflash.org/flv */
++typedef struct
++{
++    uint8_t     signature[3];   /* Always “FLV” */
++    uint8_t     version;        /* Currently 1 for known FLV files */
++    uint8_t     bitmask;        /* “\x05” (5, audio+video)	 Bitmask: 4 is audio, 1 is video */
++    uint32_t    be_offset;      /* BE, Total size of header (always 9 for known FLV files) */
++
++    /* followed by uint32_t BE */
++    /* uint32_t header_size BE */
++} flv_header_t;
++
++#define FLV_TAG_AUDIO   0x08
++#define FLV_TAG_VIDEO   0x09
++#define FLV_TAG_META    0x12
++typedef struct
++{
++    uint8_t     type;               /* Determines the layout of Body, see below for tag types */
++    uint8_t     be_body_length[3];  /* BE, Size of Body (total tag size - 11) */
++    uint8_t     be_timestamp[3];    /* BE, Timestamp of tag (in milliseconds) */
++    uint8_t     timestamp_extended; /* Timestamp extension to form a uint32_be. This field has the upper 8 bits. */
++    uint8_t     be_stream_id[3];    /* BE, Always 0 */
++
++    /* followed by uint8_t[body_length] and uint32_t BE */
++    /* uint32_t tag_size BE */
++} flv_tag_t;
++
++#define SINA_FLV_FRONT_MIN_SIZE 94
++
++#pragma pack(pop)
++
++struct access_sys_t
++{
++    char        *psz_url;
++
++    stream_t    *p_stream;
++};
++
++/* */
++static ssize_t Read( access_t *, uint8_t *, size_t );
++static int Seek( access_t *, uint64_t );
++static int Control( access_t *, int, va_list );
++
++/*****************************************************************************
++ * Open/Close
++ *****************************************************************************/
++static int Open( vlc_object_t *p_this )
++{
++    access_t     *p_access = (access_t*)p_this;
++    access_sys_t *p_sys = NULL;
++
++    if( 0 != strcmp( p_access->psz_access, "sinahttp" ) )
++        goto EXIT_FAIL;
++
++    /* Set up p_access */
++    STANDARD_READ_ACCESS_INIT;
++    memset( p_sys, 0, sizeof(access_sys_t) );
++    p_access->info.i_size = 0;
++    p_access->info.i_pos  = 0;
++    p_access->info.b_eof  = false;
++
++    var_Create( p_access, "http-continuous", VLC_VAR_BOOL );
++    var_SetBool( p_access, "http-continuous", false );
++
++    if( asprintf( &p_sys->psz_url, "http://%s", p_access->psz_location) < 0)
++        goto EXIT_FAIL;
++
++    p_sys->p_stream = stream_UrlNew( p_access, p_sys->psz_url );
++    if( !p_sys->p_stream )
++        goto EXIT_FAIL;
++
++    p_access->info.i_size = stream_Size( p_sys->p_stream );
++    if( p_access->info.i_size <= 0 )
++    {
++        msg_Err( p_access, "sinahttp: unknown stream size" );
++        goto EXIT_FAIL;
++    }
++
++    return VLC_SUCCESS;
++
++EXIT_FAIL:
++    free( p_sys->psz_url );
++    p_sys->psz_url = NULL;
++
++    if( p_sys->p_stream )
++    {
++        stream_Delete( p_sys->p_stream );
++        p_sys->p_stream = NULL;
++    }
++
++    return VLC_EGENERIC;
++}
++
++static void Close( vlc_object_t *p_this )
++{
++    access_t     *p_access = (access_t*)p_this;
++    access_sys_t *p_sys = p_access->p_sys;
++
++    if( p_sys->p_stream )
++    {
++        stream_Delete( p_sys->p_stream );
++        p_sys->p_stream = NULL;
++    }
++
++    free( p_sys->psz_url );
++    p_sys->psz_url = NULL;
++}
++
++/* return skipped bytes */
++static int SkipSinaSeekedHeader( access_t *p_access, stream_t *p_stream, uint64_t i_seek_pos )
++{
++    if( i_seek_pos >= p_access->info.i_size )
++        return -1;
++
++    uint64_t i_stream_len = stream_Size( p_stream );
++    if( i_stream_len < sizeof( flv_header_t ) + 4 )
++        return -1;
++
++#if 0
++    uint64_t i_whole_remain = p_access->info.i_size - i_seek_pos;
++    if( i_stream_len < i_whole_remain )
++    {
++        msg_Err( p_access, "sinahttp: too small seeked size: %"PRId64" < %"PRId64,
++                 i_stream_len,
++                 i_whole_remain);
++        return -1;
++    }
++
++    uint64_t i_align_diff = i_stream_len - i_whole_remain;
++    msg_Err( p_access, "sinahttp: align diff %"PRId64, i_align_diff );
++
++    uint64_t i_skipped = 0;
++    while( i_skipped < i_align_diff )
++    {
++        int i_skip_ret = stream_Read( p_stream, NULL, i_align_diff - i_skipped );
++        if( i_skip_ret <= 0 )
++            return -1;
++
++        i_skipped += i_skip_ret;
++    }
++
++    return i_skipped;
++#endif
++
++#if 1
++    /* TODO: reliable check */
++
++    int i_peek = ( i_stream_len < 1024 ) ? (int) i_stream_len : 1024;
++    const uint8_t *p_peek = NULL;
++    int i_peek_ret = stream_Peek( p_stream, &p_peek, i_peek );
++    if( i_peek_ret < i_peek )
++        return -1;
++
++    /* Look for flv tag */
++    flv_header_t* p_header = (flv_header_t *) p_peek;
++    if( 0 != memcmp( p_header->signature, "FLV", 3 ) )
++    {
++        msg_Warn( p_access, "sinahttp: not a valid flv stream" );
++        return -1;
++    }
++
++    /* TODO: more check for flv header */
++
++    /* Look for flv tag */
++    bool b_audio_tag_skipped = false;
++    bool b_video_tag_skipped = false;
++    bool b_meta_tag_skipped = false;
++    int i_scan = sizeof( flv_header_t ) + 4;
++    msg_Err( p_access, "sinahttp: skip flv_header %d", i_scan );
++    for( int i = 0; i < 2; ++i )
++    {
++        flv_tag_t* p_tag = (flv_tag_t *) ( p_peek + i_scan );
++        if( p_tag->type == FLV_TAG_AUDIO)
++        {
++            b_audio_tag_skipped = true;
++            msg_Dbg( p_access, "sinahttp: seeked audio tag skipped");
++        }
++        else if( p_tag->type == FLV_TAG_VIDEO )
++        {
++            b_video_tag_skipped = true;
++            msg_Dbg( p_access, "sinahttp: seeked video tag skipped");
++        }
++        else if( p_tag->type == FLV_TAG_META )
++        {
++            b_meta_tag_skipped = true;
++            msg_Dbg( p_access, "sinahttp: seeked meta tag skipped");
++        }
++        else
++        {
++            msg_Dbg( p_access, "sinahttp: seeked unknown tag %x", (int) p_tag->type);
++            break;
++        }
++
++        int i_body_len =
++            ( ( (uint32_t) p_tag->be_body_length[0] ) << 16 ) |
++            ( ( (uint32_t) p_tag->be_body_length[1] ) << 8 ) |
++            ( ( (uint32_t) p_tag->be_body_length[2] ) );
++
++        const uint8_t *p_previous_tag_size = p_peek + i_scan + sizeof( flv_tag_t ) + i_body_len;
++        int i_previous_tag_size =
++            ( ( (uint32_t) p_previous_tag_size[0] ) << 24 ) |
++            ( ( (uint32_t) p_previous_tag_size[1] ) << 16 ) |
++            ( ( (uint32_t) p_previous_tag_size[2] ) << 8 ) |
++            ( ( (uint32_t) p_previous_tag_size[3] ) );
++
++        int tag_size = sizeof( flv_tag_t ) + i_body_len + 4;
++        msg_Err( p_access, "sinahttp: skip flv_tag %d=%d+%d+4, (%d) now at %d",
++                tag_size, (int) sizeof( flv_tag_t ), i_body_len,
++                i_previous_tag_size,
++                i_scan + tag_size );
++        if( i_scan + tag_size >= i_peek_ret )
++           break;
++
++        i_scan += tag_size;
++    }
++
++    if( !b_audio_tag_skipped )
++        msg_Dbg( p_access, "sinahttp: seeked audio tag not found");
++
++    if( !b_audio_tag_skipped )
++        msg_Dbg( p_access, "sinahttp: seeked audio tag not found");
++
++    if( !b_audio_tag_skipped )
++        msg_Dbg( p_access, "sinahttp: seeked audio tag not found");
++
++    msg_Err( p_access, "sinahttp: skip %d bytes", i_scan );
++    int i_skip_ret = stream_Read( p_stream, NULL, i_scan );
++    return i_skip_ret;
++#endif
++}
++
++static ssize_t Read( access_t *p_access, uint8_t *p_buffer, size_t i_len )
++{
++    access_sys_t *p_sys = p_access->p_sys;
++    stream_t     *p_stream = p_sys->p_stream;
++
++    if( !p_stream )
++        return -1;
++
++    ssize_t i_read_ret = -1;
++    if( p_access->info.i_size != 0 )
++    {
++        /* Remaining bytes in the file */
++        uint64_t i_remaining = p_access->info.i_size - p_access->info.i_pos;
++        if( i_remaining < i_len )
++            i_len = i_remaining;
++    }
++    if( i_len <= 0 )
++        goto EXIT_FAIL;
++
++    i_read_ret = stream_Read( p_stream, p_buffer, i_len );
++    if( i_read_ret <= 0 )
++        goto EXIT_FAIL;
++
++    assert( i_read_ret >= 0 );
++    assert( p_access->info.i_pos <= p_access->info.i_size );
++    assert( p_access->info.i_pos + i_read_ret <= p_access->info.i_size );
++    p_access->info.i_pos += i_read_ret;
++
++    return i_read_ret;
++
++EXIT_FAIL:
++
++    assert( i_read_ret <= 0 );
++    if( i_read_ret <= 0 )
++        p_access->info.b_eof = true;
++
++    return i_read_ret;
++}
++
++static int Seek( access_t *p_access, uint64_t i_pos )
++{
++    access_sys_t *p_sys = p_access->p_sys;
++    stream_t *p_stream = NULL;
++
++    msg_Err( p_access, "sinahttp: seek %"PRId64"/%"PRId64, i_pos, p_access->info.i_size );
++
++    if( i_pos > p_access->info.i_size )
++        goto EXIT_FAIL;
++
++    if( i_pos == p_access->info.i_size )
++    {
++        p_access->info.i_pos = i_pos;
++        p_access->info.b_eof = true;
++        return VLC_SUCCESS;
++    }
++
++    if( i_pos == p_access->info.i_pos )
++        return VLC_SUCCESS;
++
++    /* optimize short seek */
++    if( i_pos > p_access->info.i_pos &&
++        i_pos < p_access->info.i_pos + 128 * 1024 )
++    {
++        int i_seek_forward = p_access->info.i_pos - i_pos;
++        int i_seek_ret = stream_Read( p_sys->p_stream, NULL, i_seek_forward );
++        if( i_seek_ret <= 0 )
++            goto EXIT_FAIL;
++
++        p_access->info.i_pos += i_seek_ret;
++        p_access->info.b_eof = ( p_access->info.i_pos >= p_access->info.i_size );
++        return VLC_SUCCESS;
++    }
++
++    /* */
++    char* p_seek_url = NULL;
++    const char* p_prefix = strchr( p_sys->psz_url, '?' ) ? "&" : "?";
++    if( asprintf( &p_seek_url, "http://%s%sstart=%"PRId64, p_sys->psz_url, p_prefix, i_pos ) < 0)
++        goto EXIT_FAIL;
++
++    p_stream = stream_UrlNew( p_access, p_seek_url );
++    if( !p_sys->p_stream )
++    {
++        msg_Err( p_access, "sinahttp: failed to open stream %s", p_seek_url );
++        goto EXIT_FAIL;
++    }
++
++    /* Sina add extra flv header and flv tag after seeked */
++    int i_skip_ret = SkipSinaSeekedHeader( p_access, p_stream, i_pos );
++    if( i_skip_ret <= 0 )
++    {
++        msg_Err( p_access, "sinahttp: failed to skip sina flv header" );
++        goto EXIT_FAIL;
++    }
++
++    msg_Err( p_access, "sinahttp: skip header %d, now at %"PRId64"/%"PRId64" (%"PRId64")",
++             i_skip_ret,
++             i_pos,
++             p_access->info.i_size,
++             (int64_t) stream_Tell( p_stream ) );
++
++    if( p_sys->p_stream )
++        stream_Delete( p_sys->p_stream );
++
++    p_sys->p_stream = p_stream;
++
++    p_access->info.i_pos = i_pos;
++    p_access->info.b_eof = ( i_pos >= p_access->info.i_size );
++
++    free( p_seek_url );
++    return VLC_SUCCESS;
++
++EXIT_FAIL:
++    if( p_stream )
++        stream_Delete( p_stream );
++
++    free( p_seek_url );
++
++    return VLC_EGENERIC;
++}
++
++static int Control( access_t *p_access, int i_query, va_list args )
++{
++    access_sys_t *p_sys = p_access->p_sys;
++    stream_t     *p_stream = p_sys->p_stream;
++
++    switch( i_query )
++    {
++        /* */
++        case ACCESS_CAN_SEEK:
++            *(bool*)va_arg( args, bool* ) = true;
++            return VLC_SUCCESS;
++
++        case ACCESS_CAN_FASTSEEK:
++            *(bool*)va_arg( args, bool* ) = false;
++            return VLC_SUCCESS;
++
++        case ACCESS_CAN_PAUSE:
++        case ACCESS_CAN_CONTROL_PACE:
++            *(bool*)va_arg( args, bool* ) = true;
++            return VLC_SUCCESS;
++
++        /* */
++        case ACCESS_GET_PTS_DELAY:
++        {
++            int64_t *pi_64 = (int64_t*)va_arg( args, int64_t * );
++            *pi_64 = INT64_C(1000)
++            * var_InheritInteger( p_access, "network-caching" );
++            return VLC_SUCCESS;
++        }
++
++        /* */
++        case ACCESS_SET_PAUSE_STATE:
++            return VLC_SUCCESS;
++
++        case ACCESS_GET_CONTENT_TYPE:
++            return stream_vaControl( p_stream, STREAM_GET_CONTENT_TYPE, args );
++
++        case ACCESS_GET_TITLE_INFO:
++        case ACCESS_SET_TITLE:
++        case ACCESS_SET_SEEKPOINT:
++        case ACCESS_SET_PRIVATE_ID_STATE:
++            return VLC_EGENERIC;
++
++        default:
++            msg_Warn( p_access, "unimplemented query in control" );
++            return VLC_EGENERIC;
++    }
++}
+\ No newline at end of file
+-- 
+1.7.10.4
+

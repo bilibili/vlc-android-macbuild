@@ -1,14 +1,14 @@
-From 5d2a063a42781bffb0fedd8a5da68d7bb24ba6ea Mon Sep 17 00:00:00 2001
+From c5eeaca63f25897f24cb1092a68665967f893e24 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:11 +0800
-Subject: [PATCH 21/22] sina: support sina v_play
+Subject: [PATCH 22/23] sinaxml: sina xml parser
 
 ---
  modules/access/sina/Modules.am |    5 +
- modules/access/sina/sina.c     |  983 ++++++++++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 988 行(+)
+ modules/access/sina/sinaxml.c  |  998 ++++++++++++++++++++++++++++++++++++++++
+ 2 个文件被修改，插入 1003 行(+)
  create mode 100644 modules/access/sina/Modules.am
- create mode 100644 modules/access/sina/sina.c
+ create mode 100644 modules/access/sina/sinaxml.c
 
 diff --git a/modules/access/sina/Modules.am b/modules/access/sina/Modules.am
 new file mode 100644
@@ -22,14 +22,14 @@ index 0000000..c162655
 +libaccess_sina_plugin_la_DEPENDENCIES =
 +libvlc_LTLIBRARIES += libaccess_sina_plugin.la
 \ No newline at end of file
-diff --git a/modules/access/sina/sina.c b/modules/access/sina/sina.c
+diff --git a/modules/access/sina/sinaxml.c b/modules/access/sina/sinaxml.c
 new file mode 100644
-index 0000000..232f2fe
+index 0000000..c36ccde
 --- /dev/null
-+++ b/modules/access/sina/sina.c
-@@ -0,0 +1,983 @@
++++ b/modules/access/sina/sinaxml.c
+@@ -0,0 +1,998 @@
 +/*****************************************************************************
-+ * sina.c: Sina Video support
++ * sinaxml.c: Sina video xml parser
 + *****************************************************************************
 + *
 + * Authors: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
@@ -82,12 +82,12 @@ index 0000000..232f2fe
 +static void Close( vlc_object_t * );
 +
 +vlc_module_begin ()
-+    set_shortname( N_("sina") )
-+    set_description( N_("sina v_play parser") )
++    set_shortname( N_("sinaxml") )
++    set_description( N_("sina v_play xml parser") )
 +    set_category( CAT_INPUT )
 +    set_subcategory( SUBCAT_INPUT_ACCESS )
 +    set_capability( "access_demux", 100 )
-+    add_shortcut( "http" )
++    add_shortcut( "sinaxml" )
 +    set_callbacks( Open, Close )
 +vlc_module_end ()
 +
@@ -159,7 +159,7 @@ index 0000000..232f2fe
 +    demux_sys_t *p_sys = NULL;
 +
 +    msg_Dbg( p_demux, "check access: %s", p_demux->psz_access );
-+    if( !p_demux->psz_access || 0 != strcmp( p_demux->psz_access, "http" ) )
++    if( !p_demux->psz_access || 0 != strcmp( p_demux->psz_access, "sinaxml" ) )
 +        goto EXIT_ERROR;
 +
 +    msg_Dbg( p_demux, "check location: %s", p_demux->psz_location );
@@ -172,11 +172,10 @@ index 0000000..232f2fe
 +    if( !p_sys )
 +        goto EXIT_ERROR;
 +
-+    p_sys->p_playlist_url = malloc(strlen( p_demux->psz_access ) +
-+                                   strlen( "://" ) +
++    p_sys->p_playlist_url = malloc(strlen( "http://" ) +
 +                                   strlen( p_demux->psz_location ) +
 +                                   1);
-+    sprintf( p_sys->p_playlist_url, "%s://%s", p_demux->psz_access, p_demux->psz_location );
++    sprintf( p_sys->p_playlist_url, "http://%s", p_demux->psz_location );
 +
 +    /* Open play list */
 +    p_sys->p_playlist = sina_OpenPlayList( p_demux, p_sys->p_playlist_url );
@@ -644,10 +643,26 @@ index 0000000..232f2fe
 +
 +            /* Create segment stream */
 +            msg_Info( p_demux, "sina open segment stream %d", p_new_segment->i_order );
-+            stream_t *p_stream = stream_UrlNew( p_parent_input, p_new_segment->p_url );
++
++            const char* p_segment_location = strstr( p_new_segment->p_url, "://" );
++            if( !p_segment_location )
++            {
++                msg_Err( p_demux, "invalid segment url %s", p_new_segment->p_url );
++                return VLC_EGENERIC;
++            }
++
++            char* p_sinahttp_url = NULL;
++            if( asprintf( &p_sinahttp_url, "sinahttp://%s", p_segment_location + 3) < 0)
++            {
++                msg_Err( p_demux, "failed to make sinahttp url %s", p_new_segment->p_url );
++                return VLC_EGENERIC;
++            }
++
++            stream_t *p_stream = stream_UrlNew( p_parent_input, p_sinahttp_url );
++            free( p_sinahttp_url );
 +            if( !p_stream )
 +            {
-+                msg_Err( p_demux, "failed to open stream %s", p_new_segment->p_url );
++                msg_Err( p_demux, "failed to open stream %s", p_sinahttp_url );
 +                continue;
 +            }
 +            p_new_segment->p_origin_stream = p_stream;
@@ -656,13 +671,13 @@ index 0000000..232f2fe
 +            stream_t *p_stream_filter = stream_FilterNew( p_stream, "membuf" );
 +            if( p_stream_filter )
 +            {
-+                msg_Dbg( p_demux, "open membuf", p_new_segment->p_url );
++                msg_Dbg( p_demux, "open membuf" );
 +                p_stream = p_stream_filter;
 +                p_new_segment->p_membuf_filter = p_stream_filter;
 +            }
 +            else
 +            {
-+                msg_Err( p_demux, "failed to open membuf", p_new_segment->p_url );
++                msg_Err( p_demux, "failed to open membuf" );
 +                /* ignore membuf */
 +            }
 +
