@@ -1,12 +1,12 @@
-From 91989ac781ca9ee824fab06441736e9bb23d95b9 Mon Sep 17 00:00:00 2001
+From 9b22c78ed80aa25960afeba98118262b734c0884 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:11 +0800
 Subject: [PATCH 23/24] sinaxml: sina xml parser
 
 ---
  modules/access/sina/Modules.am |    5 +
- modules/access/sina/sinaxml.c  |  998 ++++++++++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 1003 行(+)
+ modules/access/sina/sinaxml.c  | 1010 ++++++++++++++++++++++++++++++++++++++++
+ 2 个文件被修改，插入 1015 行(+)
  create mode 100644 modules/access/sina/Modules.am
  create mode 100644 modules/access/sina/sinaxml.c
 
@@ -24,10 +24,10 @@ index 0000000..c162655
 \ No newline at end of file
 diff --git a/modules/access/sina/sinaxml.c b/modules/access/sina/sinaxml.c
 new file mode 100644
-index 0000000..66fbaf0
+index 0000000..907ab66
 --- /dev/null
 +++ b/modules/access/sina/sinaxml.c
-@@ -0,0 +1,998 @@
+@@ -0,0 +1,1010 @@
 +/*****************************************************************************
 + * sinaxml.c: Sina video xml parser
 + *****************************************************************************
@@ -495,7 +495,7 @@ index 0000000..66fbaf0
 +        xmlXPathFreeContext( xp_context );
 +    if( x_doc )
 +        xmlFreeDoc( x_doc );
-+    xmlCleanupParser();
++    /* xmlCleanupParser(); */
 +
 +    return play_list;
 +}
@@ -596,7 +596,7 @@ index 0000000..66fbaf0
 +
 +    if( !p_new_segment->p_stream )
 +    {
-+        for( int i_retry = 0; i_retry < 5; ++i_retry )
++        for( int i_retry = 0; i_retry < 10; ++i_retry )
 +        {
 +            if( i_retry > 0 )
 +            {
@@ -616,14 +616,12 @@ index 0000000..66fbaf0
 +                    continue;
 +                }
 +
-+                assert( p_sys->p_playlist );
-+                assert( p_sys->p_playlist->p_segment_array );
++                assert( p_playlist );
++                assert( p_playlist->p_segment_array );
 +
-+                p_segment_array = p_sys->p_playlist->p_segment_array;
-+                assert( vlc_array_count( p_sys->p_playlist->p_segment_array ) > 0 );
++                assert( vlc_array_count( p_playlist->p_segment_array ) > 0 );
 +
 +                /* Update playlist */
-+                p_sys->p_playlist = p_playlist;
 +                assert( p_playlist->p_segment_array );
 +
 +                i_segment_count = vlc_array_count( p_playlist->p_segment_array );
@@ -634,10 +632,12 @@ index 0000000..66fbaf0
 +                    continue;
 +                }
 +
-+                p_new_segment = (sina_segment_t *) vlc_array_item_at_index( p_segment_array, i_segment );
++                p_new_segment = (sina_segment_t *) vlc_array_item_at_index( p_playlist->p_segment_array, i_segment );
 +                assert( p_new_segment );
 +
 +                sina_FreePlayList( p_sys->p_playlist );
++
++                p_segment_array = p_sys->p_playlist->p_segment_array;
 +                p_sys->p_playlist = p_playlist;
 +            }
 +
@@ -665,6 +665,16 @@ index 0000000..66fbaf0
 +                msg_Err( p_demux, "failed to open stream %s", p_sinahttp_url );
 +                continue;
 +            }
++
++            /* segment must at least 64k for video longer than 10 seconds */
++            int64_t i_stream_size = stream_Size( p_stream );
++            if( i_stream_size < 64 * 1024 && p_new_segment->i_duration > 10 * 1000 * 1000 )
++            {
++                msg_Err( p_demux, "possible 6-min cursor, retry" );
++                stream_Delete( p_stream );
++                continue;
++            }
++
 +            p_new_segment->p_origin_stream = p_stream;
 +
 +            /* Use membuf to prebuffer segment */
@@ -742,9 +752,11 @@ index 0000000..66fbaf0
 +
 +    while( p_sys->p_segment && vlc_object_alive(p_demux) )
 +    {
-+        assert( p_sys->p_segment->p_demux );
 +        if( !p_sys->p_segment || !p_sys->p_segment->p_demux )
-+            return -1;
++        {
++            msg_Err( p_demux, "NULL segment or demux, maybe EOF" );
++            return 0;
++        }
 +
 +        int i_demux_ret = demux_Demux( p_sys->p_segment->p_demux );
 +        if( i_demux_ret != 0 )
