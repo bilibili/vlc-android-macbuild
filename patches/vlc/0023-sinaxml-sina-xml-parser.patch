@@ -1,4 +1,4 @@
-From adb317c14f6f6f006d84d6ce91df577ebb74b4bc Mon Sep 17 00:00:00 2001
+From 91989ac781ca9ee824fab06441736e9bb23d95b9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:11 +0800
 Subject: [PATCH 23/24] sinaxml: sina xml parser
@@ -24,7 +24,7 @@ index 0000000..c162655
 \ No newline at end of file
 diff --git a/modules/access/sina/sinaxml.c b/modules/access/sina/sinaxml.c
 new file mode 100644
-index 0000000..c36ccde
+index 0000000..66fbaf0
 --- /dev/null
 +++ b/modules/access/sina/sinaxml.c
 @@ -0,0 +1,998 @@
@@ -756,7 +756,7 @@ index 0000000..c36ccde
 +        assert( p_segment_array );
 +
 +        /* test if whole stream EOF */
-+        if( p_sys->p_segment->i_order >= vlc_array_count( p_sys->p_playlist->p_segment_array ) )
++        if( p_sys->p_segment->i_order + 1 >= vlc_array_count( p_sys->p_playlist->p_segment_array ) )
 +            break;
 +
 +        msg_Info( p_demux, "sina segment EOF, try next segment %d", p_sys->p_segment->i_order + 1 );
