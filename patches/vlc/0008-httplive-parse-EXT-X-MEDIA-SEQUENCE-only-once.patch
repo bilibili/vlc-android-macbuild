@@ -1,7 +1,7 @@
-From 32f8545dcf59201f83db735ba2f2f4c3c6e96508 Mon Sep 17 00:00:00 2001
+From 302842340cd77db77ef7529b0d1a516b4e3e919f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 29 May 2012 20:42:41 +0800
-Subject: [PATCH 07/23] httplive: parse EXT-X-MEDIA-SEQUENCE only once
+Subject: [PATCH 08/24] httplive: parse EXT-X-MEDIA-SEQUENCE only once
 
 ---
  modules/stream_filter/httplive.c |   11 ++++++++++-

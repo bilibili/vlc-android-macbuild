@@ -1,7 +1,7 @@
-From fad82ea28de7dfec475d770260ceb1e3ed69df1a Mon Sep 17 00:00:00 2001
+From 96c6af68a611210d5e98c34fe0c12d78176c4a56 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:39 +0800
-Subject: [PATCH 23/23] plugin: access: add sina
+Subject: [PATCH 24/24] plugin: access: add sina
 
 ---
  modules/access/Modules.am      |   11 +++++++++++
