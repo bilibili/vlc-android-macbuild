@@ -1,4 +1,4 @@
-From 668566005575cb83dc3f8ab1500fb37fe54b0771 Mon Sep 17 00:00:00 2001
+From c87dd2c405febeaa55e896da643a0bd964b66879 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH 1/5] modify compile.sh for MacOS build
@@ -8,7 +8,7 @@ Subject: [PATCH 1/5] modify compile.sh for MacOS build
  1 个文件被修改，插入 31 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index a039eb4..28a0def 100755
+index 34cff5f..efb1558 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -29,13 +29,24 @@ If you plan to use a release build, run 'compile.sh release'
@@ -71,7 +71,7 @@ index a039eb4..28a0def 100755
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
-@@ -125,6 +149,12 @@ fi
+@@ -129,6 +153,12 @@ fi
  echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
  export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
  

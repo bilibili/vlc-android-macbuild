@@ -1,20 +1,19 @@
-From d98fb1db6ec5eccdd7eb92e8d10a5493311732f3 Mon Sep 17 00:00:00 2001
+From 10e9dcea467002122945859c883e87a7c8a0a4d7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 24 Jun 2012 15:40:23 +0800
 Subject: [PATCH 5/5] another libvlc wrapper
 
 ---
  Makefile                                |    7 +-
- vlc-android/jni/Android.mk              |   15 +-
- vlc-android/jni/Application.mk          |    2 +
+ vlc-android/jni/Android.mk              |    6 +-
  vlc-android/jni/libvlcjni_danmaku.c     | 1038 +++++++++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku.inc.c |   63 ++
- 5 个文件被修改，插入 1118 行(+)，删除 7 行(-)
+ 4 个文件被修改，插入 1112 行(+)，删除 2 行(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
 diff --git a/Makefile b/Makefile
-index 61a331c..6c653e7 100644
+index 6d58a68..55d5576 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,12 @@
@@ -40,50 +39,24 @@ index 61a331c..6c653e7 100644
  	$(SRC)/obj/local/$(ARCH)/libiomx-hc.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index a585e87..abadf1e 100644
+index ca3b56e..f9efd9e 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
-@@ -1,18 +1,21 @@
+@@ -1,9 +1,13 @@
  LOCAL_PATH := $(call my-dir)
  include $(CLEAR_VARS)
  
--LOCAL_MODULE    := libvlcjni
--
--LOCAL_SRC_FILES := libvlcjni.c aout.c thumbnailer.c pthread-condattr.c pthread-rwlocks.c eventfd.c sem.c
--
--LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
--
- ifeq ($(NO_NEON),)
- ARCH=armeabi-v7a
-+LOCAL_MODULE    := libvlcjni
-+else ifneq ($(TEGRA2),)
-+ARCH=armeabi-v7a
++ifneq ($(TEGRA2),)
 +LOCAL_MODULE    := libvlcjni-tegra2
- else
- ARCH=armeabi
-+LOCAL_MODULE    := libvlcjni
- endif
++else
+ LOCAL_MODULE    := libvlcjni
++endif
  
-+LOCAL_SRC_FILES := libvlcjni_danmaku.c aout.c pthread-condattr.c pthread-rwlocks.c eventfd.c sem.c
-+
-+LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
-+
- CPP_STATIC=$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++/libs/$(ARCH)/libgnustl_static.a
+-LOCAL_SRC_FILES := libvlcjni.c aout.c thumbnailer.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
++LOCAL_SRC_FILES := libvlcjni_danmaku.c aout.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
  
- LOCAL_CFLAGS := -std=gnu99
-diff --git a/vlc-android/jni/Application.mk b/vlc-android/jni/Application.mk
-index 9507cee..3e5f176 100644
---- a/vlc-android/jni/Application.mk
-+++ b/vlc-android/jni/Application.mk
-@@ -1,6 +1,8 @@
- APP_PLATFORM := android-9
- ifeq ($(NO_NEON),)
- APP_ABI := armeabi-v7a
-+else ifneq ($(TEGRA2),)
-+APP_ABI := armeabi-v7a
- else
- APP_ABI := armeabi
- endif
+ LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
+ 
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
 index 0000000..b49946d
