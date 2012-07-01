@@ -1,4 +1,4 @@
-From 5ad348f08df6d981cb7538b3812d562d0fd23ff7 Mon Sep 17 00:00:00 2001
+From 36542cb3c671403f6e5cd109caf83189b67bbd50 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
 Subject: [PATCH 15/23] omxil: sort hw codec
@@ -8,7 +8,7 @@ Subject: [PATCH 15/23] omxil: sort hw codec
  1 个文件被修改，插入 88 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 8608f0e..76337d7 100644
+index f65c85c..8c4132d 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -195,6 +195,92 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
@@ -104,7 +104,7 @@ index 8608f0e..76337d7 100644
   * ImplementationSpecificWorkarounds: place-holder for implementation
   * specific workarounds
   *****************************************************************************/
-@@ -961,6 +1047,8 @@ loaded:
+@@ -964,6 +1050,8 @@ loaded:
          return VLC_EGENERIC;
      }
  

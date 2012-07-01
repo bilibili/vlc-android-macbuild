@@ -1,19 +1,19 @@
-From e68c4091c5846d067444767a17a6f9ecee747b56 Mon Sep 17 00:00:00 2001
+From 95171dd9bf3bb8a57245796d910a102b451aa94e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 27 Jun 2012 16:36:35 +0800
 Subject: [PATCH 21/23] sinahttp: sina segment reader
 
 ---
- modules/access/sina/sinahttp.c |  457 ++++++++++++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 457 行(+)
+ modules/access/sina/sinahttp.c |  506 ++++++++++++++++++++++++++++++++++++++++
+ 1 个文件被修改，插入 506 行(+)
  create mode 100644 modules/access/sina/sinahttp.c
 
 diff --git a/modules/access/sina/sinahttp.c b/modules/access/sina/sinahttp.c
 new file mode 100644
-index 0000000..fee969b
+index 0000000..6c1a489
 --- /dev/null
 +++ b/modules/access/sina/sinahttp.c
-@@ -0,0 +1,457 @@
+@@ -0,0 +1,506 @@
 +/*****************************************************************************
 + * sina.c: Sina video segment parser
 + *****************************************************************************
@@ -134,7 +134,7 @@ index 0000000..fee969b
 +    p_access->info.b_eof  = false;
 +
 +    var_Create( p_access, "http-continuous", VLC_VAR_BOOL );
-+    var_SetBool( p_access, "http-continuous", false );
++    var_SetBool( p_access, "http-continuous", true );
 +
 +    if( asprintf( &p_sys->psz_url, "http://%s", p_access->psz_location) < 0)
 +        goto EXIT_FAIL;
@@ -190,6 +190,7 @@ index 0000000..fee969b
 +    if( i_stream_len < sizeof( flv_header_t ) + 4 )
 +        return -1;
 +
++    /* Simple align */
 +#if 0
 +    uint64_t i_whole_remain = p_access->info.i_size - i_seek_pos;
 +    if( i_stream_len < i_whole_remain )
@@ -201,7 +202,7 @@ index 0000000..fee969b
 +    }
 +
 +    uint64_t i_align_diff = i_stream_len - i_whole_remain;
-+    msg_Err( p_access, "sinahttp: align diff %"PRId64, i_align_diff );
++    msg_Dbg( p_access, "sinahttp: align diff %"PRId64, i_align_diff );
 +
 +    uint64_t i_skipped = 0;
 +    while( i_skipped < i_align_diff )
@@ -216,8 +217,49 @@ index 0000000..fee969b
 +    return i_skipped;
 +#endif
 +
++    /* Simple align with header check */
 +#if 1
-+    /* TODO: reliable check */
++#endif
++
++    int i_peek = ( i_stream_len < 1024 ) ? (int) i_stream_len : 1024;
++    const uint8_t *p_peek = NULL;
++    int i_peek_ret = stream_Peek( p_stream, &p_peek, i_peek );
++    if( i_peek_ret < i_peek )
++        return -1;
++
++    /* Look for flv tag */
++    flv_header_t* p_header = (flv_header_t *) p_peek;
++    if( 0 != memcmp( p_header->signature, "FLV", 3 ) )
++    {
++        msg_Warn( p_access, "sinahttp: not a valid flv stream" );
++        return -1;
++    }
++
++    uint64_t i_whole_remain = p_access->info.i_size - i_seek_pos;
++    if( i_stream_len < i_whole_remain )
++    {
++        msg_Err( p_access, "sinahttp: too small seeked size: %"PRId64" < %"PRId64,
++                i_stream_len,
++                i_whole_remain);
++        return -1;
++    }
++
++    uint64_t i_align_diff = i_stream_len - i_whole_remain;
++    msg_Dbg( p_access, "sinahttp: align diff %"PRId64, i_align_diff );
++
++    uint64_t i_skipped = 0;
++    while( i_skipped < i_align_diff )
++    {
++        int i_skip_ret = stream_Read( p_stream, NULL, i_align_diff - i_skipped );
++        if( i_skip_ret <= 0 )
++            return -1;
++
++        i_skipped += i_skip_ret;
++    }
++
++    return i_skipped;
++#if 0
++    /* TODO: reliable header check */
 +
 +    int i_peek = ( i_stream_len < 1024 ) ? (int) i_stream_len : 1024;
 +    const uint8_t *p_peek = NULL;
@@ -240,7 +282,7 @@ index 0000000..fee969b
 +    bool b_video_tag_skipped = false;
 +    bool b_meta_tag_skipped = false;
 +    int i_scan = sizeof( flv_header_t ) + 4;
-+    msg_Err( p_access, "sinahttp: skip flv_header %d", i_scan );
++    msg_Dbg( p_access, "sinahttp: skip flv_header %d", i_scan );
 +    for( int i = 0; i < 2; ++i )
 +    {
 +        flv_tag_t* p_tag = (flv_tag_t *) ( p_peek + i_scan );
@@ -278,7 +320,7 @@ index 0000000..fee969b
 +            ( ( (uint32_t) p_previous_tag_size[3] ) );
 +
 +        int tag_size = sizeof( flv_tag_t ) + i_body_len + 4;
-+        msg_Err( p_access, "sinahttp: skip flv_tag %d=%d+%d+4, (%d) now at %d",
++        msg_Dbg( p_access, "sinahttp: skip flv_tag %d=%d+%d+4, (%d) now at %d",
 +                tag_size, (int) sizeof( flv_tag_t ), i_body_len,
 +                i_previous_tag_size,
 +                i_scan + tag_size );
@@ -297,7 +339,7 @@ index 0000000..fee969b
 +    if( !b_audio_tag_skipped )
 +        msg_Dbg( p_access, "sinahttp: seeked audio tag not found");
 +
-+    msg_Err( p_access, "sinahttp: skip %d bytes", i_scan );
++    msg_Dbg( p_access, "sinahttp: skip %d bytes", i_scan );
 +    int i_skip_ret = stream_Read( p_stream, NULL, i_scan );
 +    return i_skip_ret;
 +#endif
@@ -307,11 +349,13 @@ index 0000000..fee969b
 +{
 +    access_sys_t *p_sys = p_access->p_sys;
 +    stream_t     *p_stream = p_sys->p_stream;
++    int          i_read_ret = -1;
++
++    //msg_Err( p_stream, "Read %d", i_len );
 +
 +    if( !p_stream )
-+        return -1;
++        goto EXIT_FAIL;
 +
-+    ssize_t i_read_ret = -1;
 +    if( p_access->info.i_size != 0 )
 +    {
 +        /* Remaining bytes in the file */
@@ -320,20 +364,25 @@ index 0000000..fee969b
 +            i_len = i_remaining;
 +    }
 +    if( i_len <= 0 )
++    {
++        i_read_ret = 0;
 +        goto EXIT_FAIL;
++    }
 +
 +    i_read_ret = stream_Read( p_stream, p_buffer, i_len );
 +    if( i_read_ret <= 0 )
 +        goto EXIT_FAIL;
 +
-+    assert( i_read_ret >= 0 );
++    assert( i_read_ret > 0 );
 +    assert( p_access->info.i_pos <= p_access->info.i_size );
 +    assert( p_access->info.i_pos + i_read_ret <= p_access->info.i_size );
 +    p_access->info.i_pos += i_read_ret;
 +
++    //msg_Err( p_stream, "Read ok %d", i_read_ret );
 +    return i_read_ret;
 +
 +EXIT_FAIL:
++    //msg_Err( p_stream, "Read failed %d", i_read_ret );
 +
 +    assert( i_read_ret <= 0 );
 +    if( i_read_ret <= 0 )
@@ -347,7 +396,7 @@ index 0000000..fee969b
 +    access_sys_t *p_sys = p_access->p_sys;
 +    stream_t *p_stream = NULL;
 +
-+    msg_Err( p_access, "sinahttp: seek %"PRId64"/%"PRId64, i_pos, p_access->info.i_size );
++    msg_Info( p_access, "sinahttp: seek %"PRId64"/%"PRId64, i_pos, p_access->info.i_size );
 +
 +    if( i_pos > p_access->info.i_size )
 +        goto EXIT_FAIL;
@@ -397,7 +446,7 @@ index 0000000..fee969b
 +        goto EXIT_FAIL;
 +    }
 +
-+    msg_Err( p_access, "sinahttp: skip header %d, now at %"PRId64"/%"PRId64" (%"PRId64")",
++    msg_Dbg( p_access, "sinahttp: skip header %d, now at %"PRId64"/%"PRId64" (%"PRId64")",
 +             i_skip_ret,
 +             i_pos,
 +             p_access->info.i_size,
