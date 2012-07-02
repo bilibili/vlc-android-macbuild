@@ -1,4 +1,4 @@
-From 92b9f31311f962c1da18b596221ff02e20fbab84 Mon Sep 17 00:00:00 2001
+From d3456271de1933d1e803ffd7da0991af1b7ed404 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 14 Jun 2012 16:44:57 +0800
 Subject: [PATCH 14/24] httplive: skip failed segment for live stream
@@ -8,7 +8,7 @@ Subject: [PATCH 14/24] httplive: skip failed segment for live stream
  1 个文件被修改，插入 83 行(+)，删除 2 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 834a857..e2261c2 100644
+index c643e57..926cbde 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -127,6 +127,10 @@ struct stream_sys_t
@@ -26,8 +26,8 @@ index 834a857..e2261c2 100644
      bool        b_error;    /* parsing error */
      bool        b_aesmsg;   /* only print one time that the media is encrypted */
  
-+    bool        b_live_eof; /* end of live */
-     bool        b_close;    /* true if Close called */
++    volatile bool b_live_eof; /* end of live */
+     volatile bool b_close;  /* true if Close called */
      vlc_mutex_t lock_close; /* for reload and download thread */
      vlc_cond_t  cond_close; /* for reload and download thread */
 @@ -1634,8 +1639,9 @@ static void* hls_Thread(void *p_this)

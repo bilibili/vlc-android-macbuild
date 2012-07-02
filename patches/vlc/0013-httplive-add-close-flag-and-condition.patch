@@ -1,4 +1,4 @@
-From 9ad1fe68aa88cc38a860eaaff8b8222119494092 Mon Sep 17 00:00:00 2001
+From 10260b2a0266bdf84069c9131cc132842719d64f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 13 Jun 2012 18:07:26 +0800
 Subject: [PATCH 13/24] httplive: add close flag and condition
@@ -10,7 +10,7 @@ which make Close() return faster.
  1 个文件被修改，插入 26 行(+)，删除 6 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index ae8bfae..834a857 100644
+index ae8bfae..c643e57 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -143,6 +143,10 @@ struct stream_sys_t
@@ -18,7 +18,7 @@ index ae8bfae..834a857 100644
      bool        b_error;    /* parsing error */
      bool        b_aesmsg;   /* only print one time that the media is encrypted */
 +
-+    bool        b_close;    /* true if Close called */
++    volatile bool b_close;  /* true if Close called */
 +    vlc_mutex_t lock_close; /* for reload and download thread */
 +    vlc_cond_t  cond_close; /* for reload and download thread */
  };
@@ -91,11 +91,15 @@ index ae8bfae..834a857 100644
      /* Initialize HLS live stream */
      if (p_sys->b_live)
      {
-@@ -2109,6 +2121,11 @@ static void Close(vlc_object_t *p_this)
+@@ -2105,10 +2117,15 @@ static void Close(vlc_object_t *p_this)
+     assert(p_sys->hls_stream);
+ 
+     /* */
++    p_sys->b_close = true;
+     vlc_mutex_lock(&p_sys->download.lock_wait);
      vlc_cond_signal(&p_sys->download.wait);
      vlc_mutex_unlock(&p_sys->download.lock_wait);
  
-+    p_sys->b_close = true;
 +    vlc_mutex_lock(&p_sys->lock_close);
 +    vlc_cond_signal(&p_sys->cond_close);
 +    vlc_mutex_unlock(&p_sys->lock_close);
