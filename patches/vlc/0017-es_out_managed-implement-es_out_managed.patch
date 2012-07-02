@@ -1,15 +1,31 @@
-From 94390f6d70a6427e430689f089964a09347db305 Mon Sep 17 00:00:00 2001
+From 54b9eb07c6bfde65dc3b1cf33b2db24633c23e26 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:20 +0800
 Subject: [PATCH 17/24] es_out_managed: implement es_out_managed
 
 ---
- include/vlc_es_out_managed.h |   40 ++++++++++
- src/input/es_out_managed.c   |  170 ++++++++++++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 210 行(+)
+ include/vlc_es_out.h         |    3 +
+ include/vlc_es_out_managed.h |   40 +++++++++
+ src/input/es_out_managed.c   |  184 ++++++++++++++++++++++++++++++++++++++++++
+ src/input/es_out_timeshift.c |    3 +
+ 4 个文件被修改，插入 230 行(+)
  create mode 100644 include/vlc_es_out_managed.h
  create mode 100644 src/input/es_out_managed.c
 
+diff --git a/include/vlc_es_out.h b/include/vlc_es_out.h
+index cf1abce..b4c6b65 100644
+--- a/include/vlc_es_out.h
++++ b/include/vlc_es_out.h
+@@ -89,6 +89,9 @@ enum es_out_query_e
+     ES_OUT_GET_PCR_SYSTEM, /* arg1=mtime_t *, arg2=mtime_t * res=can fail */
+     ES_OUT_MODIFY_PCR_SYSTEM, /* arg1=int is_absolute, arg2=mtime_t, res=can fail */
+ 
++    /* For es_out_managed_t. Mark next block is discontinuity */
++    ES_OUT_POST_DISCONTINUITY,
++
+     /* First value usable for private control */
+     ES_OUT_PRIVATE_START = 0x10000,
+ };
 diff --git a/include/vlc_es_out_managed.h b/include/vlc_es_out_managed.h
 new file mode 100644
 index 0000000..70dca5d
@@ -59,10 +75,10 @@ index 0000000..70dca5d
 \ No newline at end of file
 diff --git a/src/input/es_out_managed.c b/src/input/es_out_managed.c
 new file mode 100644
-index 0000000..22f6a96
+index 0000000..d74058b
 --- /dev/null
 +++ b/src/input/es_out_managed.c
-@@ -0,0 +1,170 @@
+@@ -0,0 +1,184 @@
 +/*****************************************************************************
 + * es_out_managed.c
 + *****************************************************************************
@@ -98,6 +114,8 @@ index 0000000..22f6a96
 +    es_out_t        *p_backend_out;     /* weak reference */
 +
 +    vlc_array_t     *p_es_fmt_cache;    /* fmt cache array */
++
++    bool            b_discontinuity;
 +};
 +
 +typedef struct
@@ -162,6 +180,12 @@ index 0000000..22f6a96
 +static int EsOutSend( es_out_t *p_out, es_out_id_t *p_es, block_t *p_block )
 +{
 +    assert( p_out );
++    if( p_out->p_sys->b_discontinuity )
++    {
++        p_out->p_sys->b_discontinuity = false;
++        es_out_Control( p_out->p_sys->p_backend_out, ES_OUT_RESET_PCR );
++    }
++
 +    return es_out_Send( p_out->p_sys->p_backend_out, p_es, p_block );
 +}
 +
@@ -174,6 +198,12 @@ index 0000000..22f6a96
 +static int EsOutControl( es_out_t *p_out, int i_query, va_list args )
 +{
 +    assert( p_out );
++    if( ES_OUT_POST_DISCONTINUITY == i_query )
++    {
++        p_out->p_sys->b_discontinuity = true;
++        return VLC_SUCCESS;
++    }
++
 +    return es_out_vaControl( p_out->p_sys->p_backend_out, i_query, args );
 +}
 +
@@ -234,6 +264,34 @@ index 0000000..22f6a96
 +    return p_out;
 +}
 \ No newline at end of file
+diff --git a/src/input/es_out_timeshift.c b/src/input/es_out_timeshift.c
+index 9a8b82d..1c537ae 100644
+--- a/src/input/es_out_timeshift.c
++++ b/src/input/es_out_timeshift.c
+@@ -608,6 +608,7 @@ static int ControlLocked( es_out_t *p_out, int i_query, va_list args )
+     case ES_OUT_SET_TIMES:
+     case ES_OUT_SET_JITTER:
+     case ES_OUT_SET_EOS:
++    case ES_OUT_POST_DISCONTINUITY:
+     {
+         ts_cmd_t cmd;
+         if( CmdInitControl( &cmd, i_query, args, p_sys->b_delayed ) )
+@@ -1330,6 +1331,7 @@ static int CmdInitControl( ts_cmd_t *p_cmd, int i_query, va_list args, bool b_co
+ 
+     case ES_OUT_RESET_PCR:           /* no arg */
+     case ES_OUT_SET_EOS:
++    case ES_OUT_POST_DISCONTINUITY:
+         break;
+ 
+     case ES_OUT_SET_META:        /* arg1=const vlc_meta_t* */
+@@ -1466,6 +1468,7 @@ static int CmdExecuteControl( es_out_t *p_out, ts_cmd_t *p_cmd )
+ 
+     case ES_OUT_RESET_PCR:           /* no arg */
+     case ES_OUT_SET_EOS:
++    case ES_OUT_POST_DISCONTINUITY:
+         return es_out_Control( p_out, i_query );
+ 
+     case ES_OUT_SET_GROUP_META:  /* arg1=int i_group arg2=const vlc_meta_t* */
 -- 
 1.7.10.4
 

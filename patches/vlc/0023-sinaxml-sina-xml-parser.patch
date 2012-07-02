@@ -1,12 +1,12 @@
-From 9b22c78ed80aa25960afeba98118262b734c0884 Mon Sep 17 00:00:00 2001
+From 54d714b7c74fe206f55ce48fe88db9aa4329cece Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:11 +0800
 Subject: [PATCH 23/24] sinaxml: sina xml parser
 
 ---
  modules/access/sina/Modules.am |    5 +
- modules/access/sina/sinaxml.c  | 1010 ++++++++++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 1015 行(+)
+ modules/access/sina/sinaxml.c  | 1012 ++++++++++++++++++++++++++++++++++++++++
+ 2 个文件被修改，插入 1017 行(+)
  create mode 100644 modules/access/sina/Modules.am
  create mode 100644 modules/access/sina/sinaxml.c
 
@@ -24,10 +24,10 @@ index 0000000..c162655
 \ No newline at end of file
 diff --git a/modules/access/sina/sinaxml.c b/modules/access/sina/sinaxml.c
 new file mode 100644
-index 0000000..907ab66
+index 0000000..f52b171
 --- /dev/null
 +++ b/modules/access/sina/sinaxml.c
-@@ -0,0 +1,1010 @@
+@@ -0,0 +1,1012 @@
 +/*****************************************************************************
 + * sinaxml.c: Sina video xml parser
 + *****************************************************************************
@@ -566,7 +566,9 @@ index 0000000..907ab66
 +                p_sys->p_segment->p_demux = NULL;
 +
 +                /* Reset PCR before use next demux */
-+                es_out_Control( p_demux->out, ES_OUT_RESET_PCR );
++                // es_out_Control( p_demux->out, ES_OUT_RESET_PCR );
++                if( p_sys->p_out_managed )
++                    es_out_Control( p_sys->p_out_managed, ES_OUT_POST_DISCONTINUITY );
 +            }
 +            if( p_sys->p_segment->p_stream )
 +            {
