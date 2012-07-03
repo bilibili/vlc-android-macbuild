@@ -1,7 +1,7 @@
 From 0fa1ff9dabe423e343fe19377f4046a6fab99a9a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 1 Jul 2012 18:44:58 +0800
-Subject: [PATCH 02/24] core: define event for total buffering
+Subject: [PATCH 02/25] core: define event for total buffering
 
 ---
  include/vlc/libvlc_events.h |    8 +++++++-

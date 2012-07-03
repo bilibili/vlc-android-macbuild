@@ -1,19 +1,19 @@
-From b2bc9e315a7cce8c88f52c7b9103255d3dd28e51 Mon Sep 17 00:00:00 2001
+From 4f710b702ea44d1508250ca99e45c5502c64f656 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:49:45 +0800
-Subject: [PATCH 20/24] membuf: support asynchronize prebuffering
+Subject: [PATCH 21/25] membuf: support asynchronize prebuffering
 
 ---
- modules/stream_filter/membuf.c |  931 ++++++++++++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 931 行(+)
+ modules/stream_filter/membuf.c |  937 ++++++++++++++++++++++++++++++++++++++++
+ 1 个文件被修改，插入 937 行(+)
  create mode 100644 modules/stream_filter/membuf.c
 
 diff --git a/modules/stream_filter/membuf.c b/modules/stream_filter/membuf.c
 new file mode 100644
-index 0000000..9262826
+index 0000000..4e2a98e
 --- /dev/null
 +++ b/modules/stream_filter/membuf.c
-@@ -0,0 +1,931 @@
+@@ -0,0 +1,937 @@
 +/*****************************************************************************
 + * membuf.c: Stream buffer in memory
 + *****************************************************************************
@@ -171,7 +171,7 @@ index 0000000..9262826
 +        goto EXIT_FAIL;
 +
 +    msg_Dbg( p_stream, "membuf: check access: %s", p_stream->psz_access );
-+    if( !p_stream->psz_access || 0 != strcmp( p_stream->psz_access, "http" ) )
++    if( !p_stream->psz_access || 0 != strcmp( p_stream->psz_access, "sinahttp" ) )
 +        goto EXIT_FAIL;
 +
 +    /* FIXME: Need a better way to check if already loaded in stream filter chain */
@@ -936,6 +936,12 @@ index 0000000..9262826
 +        {
 +            //return stream_vaControl( p_stream->p_source, i_query, args );
 +            *(va_arg (args, uint64_t *)) = p_sys->i_stream_size;
++            return VLC_SUCCESS;
++        }
++        case STREAM_GET_CACHED_SIZE:
++        {
++            /* not critical data, no need to lock */
++            *(va_arg (args, uint64_t *)) = p_sys->i_prebuffer_offset;
 +            return VLC_SUCCESS;
 +        }
 +        default:

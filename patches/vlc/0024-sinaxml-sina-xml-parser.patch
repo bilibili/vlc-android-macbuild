@@ -1,12 +1,12 @@
-From 4a27956ced46148cf1b350fd2d334c1a59e8b500 Mon Sep 17 00:00:00 2001
+From 214834ac42633da6a6947327ec2878146066c106 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:11 +0800
-Subject: [PATCH 23/24] sinaxml: sina xml parser
+Subject: [PATCH 24/25] sinaxml: sina xml parser
 
 ---
  modules/access/sina/Modules.am |    5 +
- modules/access/sina/sinaxml.c  | 1012 ++++++++++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 1017 行(+)
+ modules/access/sina/sinaxml.c  | 1049 ++++++++++++++++++++++++++++++++++++++++
+ 2 个文件被修改，插入 1054 行(+)
  create mode 100644 modules/access/sina/Modules.am
  create mode 100644 modules/access/sina/sinaxml.c
 
@@ -24,10 +24,10 @@ index 0000000..c162655
 \ No newline at end of file
 diff --git a/modules/access/sina/sinaxml.c b/modules/access/sina/sinaxml.c
 new file mode 100644
-index 0000000..f52b171
+index 0000000..aa31223
 --- /dev/null
 +++ b/modules/access/sina/sinaxml.c
-@@ -0,0 +1,1012 @@
+@@ -0,0 +1,1049 @@
 +/*****************************************************************************
 + * sinaxml.c: Sina video xml parser
 + *****************************************************************************
@@ -74,6 +74,7 @@ index 0000000..f52b171
 +
 +/* FIXME */
 +#include "../../../src/input/demux.h"
++#include "../../../src/input/event.h"
 +
 +/*****************************************************************************
 + * Module descriptor
@@ -133,6 +134,7 @@ index 0000000..f52b171
 +    sina_playlist_t     *p_playlist;
 +
 +    sina_segment_t      *p_segment;     /* current playing segment, weak reference */
++    int                 i_last_total_cached_percent;
 +
 +    /* */
 +    es_out_t            *p_out_managed; /* passed to sub demux */
@@ -762,7 +764,42 @@ index 0000000..f52b171
 +
 +        int i_demux_ret = demux_Demux( p_sys->p_segment->p_demux );
 +        if( i_demux_ret != 0 )
++        {
++            int64_t i_cached_size = 0;
++            int i_ret = stream_Control( p_sys->p_segment->p_stream,
++                                       STREAM_GET_CACHED_SIZE,
++                                       &i_cached_size );
++
++            /* Send cached total event */
++            if( VLC_SUCCESS == i_ret &&
++                i_cached_size > 0 &&
++                p_sys->p_segment->i_duration > 0 )
++            {
++                int64_t i_size = stream_Size( p_sys->p_segment->p_stream );
++                if ( i_size > 0 && i_size >= i_cached_size )
++                {
++                    float f_total_cached = i_cached_size;
++                    f_total_cached /= i_size;
++                    f_total_cached *= p_sys->p_segment->i_duration;
++                    f_total_cached += p_sys->p_segment->i_start_time;
++                    f_total_cached /= p_sys->p_playlist->i_total_duration;
++
++                    int i_total_cached_percent = f_total_cached * 100;
++                    if( p_sys->i_last_total_cached_percent != i_total_cached_percent &&
++                        i_total_cached_percent >= 0 && i_total_cached_percent <= 100 )
++                    {
++                        input_thread_t *p_input = demux_GetParentInput( p_demux );
++                        if( p_input )
++                        {
++                            input_SendEventCacheTotal( p_input, f_total_cached );
++                            p_sys->i_last_total_cached_percent = i_total_cached_percent;
++                        }
++                    }
++                }
++            }
++
 +            return i_demux_ret;  /* success or fail */
++        }
 +
 +        /* segment EOF */
 +        assert( p_sys->p_playlist );
