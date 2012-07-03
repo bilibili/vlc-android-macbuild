@@ -1,0 +1,80 @@
+From 2018a00cb20b1ca38b03409441eb23b691d4e150 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 28 May 2012 18:20:37 +0800
+Subject: [PATCH 1/2] lite-mode: ffmpeg: disable modules
+
+---
+ .../1001-lite-mode-ffmpeg-disable-modules.patch    |   61 ++++++++++++++++++++
+ 1 个文件被修改，插入 61 行(+)
+ create mode 100644 patches/1001-lite-mode-ffmpeg-disable-modules.patch
+
+diff --git a/patches/1001-lite-mode-ffmpeg-disable-modules.patch b/patches/1001-lite-mode-ffmpeg-disable-modules.patch
+new file mode 100644
+index 0000000..24dc255
+--- /dev/null
++++ b/patches/1001-lite-mode-ffmpeg-disable-modules.patch
+@@ -0,0 +1,61 @@
++From 4bcb1b7c28ce0b6f6b67b96b688d57e923207444 Mon Sep 17 00:00:00 2001
++From: bbcallen <bbcallen@gmail.com>
++Date: Thu, 22 Mar 2012 18:45:25 +0800
++Subject: [PATCH 1001/1002] lite-mode: ffmpeg: disable modules
++
++---
++ contrib/src/ffmpeg/rules.mak |   29 ++++++++++++++++++++++++++---
++ 1 个文件被修改，插入 26 行(+)，删除 3 行(-)
++
++diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
++index ed6d8e8..7175070 100644
++--- a/contrib/src/ffmpeg/rules.mak
+++++ b/contrib/src/ffmpeg/rules.mak
++@@ -6,10 +6,33 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=HEAD;sf=tgz
++ FFMPEGCONF = \
++ 	--cc="$(CC)" \
++ 	--disable-doc \
+++	--disable-network \
+++	--disable-protocols \
++ 	--disable-decoder=libvpx \
++ 	--disable-decoder=bink \
++-	--enable-libgsm \
++-	--enable-libopenjpeg \
+++	--disable-decoders \
+++	--enable-decoder=aac \
+++	--enable-decoder=aac_latm \
+++	--enable-decoder=aasc \
+++	--enable-decoder=ac3 \
+++	--enable-decoder=amrnb \
+++	--enable-decoder=amrwb \
+++	--enable-decoder=flv \
+++	--enable-decoder=h263 \
+++	--enable-decoder=h263i \
+++	--enable-decoder=h264 \
+++	--enable-decoder=mp3 \
+++	--enable-decoder=mp3adu \
+++	--enable-decoder=mp3adufloat \
+++	--enable-decoder=mp3float \
+++	--enable-decoder=mp3on4 \
+++	--enable-decoder=mp3on4float \
+++	--enable-decoder=mpeg1video \
+++	--enable-decoder=mpeg2video \
+++	--enable-decoder=mpeg4 \
+++	--enable-decoder=mpeg4v1 \
+++	--enable-decoder=mpeg4v2 \
+++	--enable-decoder=mpeg4v3 \
++ 	--disable-debug \
++ 	--disable-avdevice \
++ 	--disable-devices \
++@@ -20,7 +43,7 @@ FFMPEGCONF = \
++ #	--disable-ffserver \
++ #	--disable-ffplay \
++ #	--disable-ffprobe
++-DEPS_ffmpeg = zlib gsm openjpeg
+++DEPS_ffmpeg = zlib
++ 
++ # Optional dependencies
++ ifdef BUILD_ENCODERS
++-- 
++1.7.10.2
++
+-- 
+1.7.10.4
+
