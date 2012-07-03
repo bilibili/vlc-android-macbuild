@@ -1,17 +1,17 @@
-From 73d7cd29d8ac6f13feec57e763e17bee153e6cb0 Mon Sep 17 00:00:00 2001
+From 034f723de7fd352587198ab1742d0ef3c50a15d6 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
 Subject: [PATCH 17/25] omxil: sort hw codec
 
 ---
- modules/codec/omxil/omxil.c |   88 +++++++++++++++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 88 行(+)
+ modules/codec/omxil/omxil.c |   96 +++++++++++++++++++++++++++++++++++++++++++
+ 1 个文件被修改，插入 96 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index f65c85c..8c4132d 100644
+index f65c85c..7149b73 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -195,6 +195,92 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
+@@ -195,6 +195,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
  }
  
  /*****************************************************************************
@@ -30,6 +30,11 @@ index f65c85c..8c4132d 100644
 +    { "OMX.Nvidia.h264ext.decode", 2 },     /* Extended Profile (XP) or above */
 +
 +    /* 0 for codec not in table */
++
++    /* -1 for codec not working */
++    { "OMX.google.aac.decoder.secure", -1},
++    { "OMX.qcom.audio.decoder.aac", -1},
++    { "OMX.qcom.audio.decoder.multiaac", -1},
 +};
 +
 +static int GetOmxCodecWeight(const char* codec_name)
@@ -104,7 +109,7 @@ index f65c85c..8c4132d 100644
   * ImplementationSpecificWorkarounds: place-holder for implementation
   * specific workarounds
   *****************************************************************************/
-@@ -964,6 +1050,8 @@ loaded:
+@@ -964,6 +1055,8 @@ loaded:
          return VLC_EGENERIC;
      }
  
@@ -113,6 +118,16 @@ index f65c85c..8c4132d 100644
      /* Try to load and initialise a component */
      omx_error = OMX_ErrorUndefined;
      for(i = 0; i < p_sys->components; i++)
+@@ -980,6 +1073,9 @@ loaded:
+          * has got a working OMX.qcom.video.decoder.avc instead though. */
+         if (!strncmp(p_sys->ppsz_components[i], "OMX.ARICENT.", 12))
+             continue;
++        /* Codec in black list */
++        if (GetOmxCodecWeight( p_sys->ppsz_components[i] ) < 0)
++            continue;
+ #endif
+         omx_error = InitialiseComponent(p_dec, p_sys->ppsz_components[i],
+                                         &p_sys->omx_handle);
 -- 
 1.7.10.4
 

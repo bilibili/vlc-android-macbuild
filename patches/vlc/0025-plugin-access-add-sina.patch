@@ -1,4 +1,4 @@
-From e77a786439699379f60bd9b35b52ccba0f4728c1 Mon Sep 17 00:00:00 2001
+From f327310830397e0288b6be7b7c61f97a5bcd5321 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:39 +0800
 Subject: [PATCH 25/25] plugin: access: add sina
@@ -10,10 +10,10 @@ Subject: [PATCH 25/25] plugin: access: add sina
  delete mode 100644 modules/access/sina/Modules.am
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index b2b7503..5ff93a1 100644
+index 62703f7..5fc0a3e 100644
 --- a/modules/access/Modules.am
 +++ b/modules/access/Modules.am
-@@ -182,6 +182,17 @@ if HAVE_XCB
+@@ -177,6 +177,17 @@ if HAVE_XCB
  libvlc_LTLIBRARIES += libxcb_screen_plugin.la
  endif
  

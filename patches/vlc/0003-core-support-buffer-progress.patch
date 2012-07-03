@@ -1,4 +1,4 @@
-From 97fd49d9ad0e68db3a32710c0cdd25658542c147 Mon Sep 17 00:00:00 2001
+From 03cfa1043231cc8091312f46c0d7c6e66dd596fd Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 2 Jul 2012 18:16:13 +0800
 Subject: [PATCH 03/25] core: support buffer progress
@@ -7,7 +7,8 @@ Subject: [PATCH 03/25] core: support buffer progress
  lib/media_player.c |    2 ++
  src/input/event.c  |   10 ++++++++++
  src/input/event.h  |    1 +
- 3 个文件被修改，插入 13 行(+)
+ src/input/stream.c |    2 ++
+ 4 个文件被修改，插入 15 行(+)
 
 diff --git a/lib/media_player.c b/lib/media_player.c
 index a2d3be4..94452a2 100644
@@ -55,6 +56,19 @@ index c8f1071..3991453 100644
  
  /* TODO rename Item* */
  void input_SendEventMeta( input_thread_t *p_input );
+diff --git a/src/input/stream.c b/src/input/stream.c
+index 54d8ca8..e3e454b 100644
+--- a/src/input/stream.c
++++ b/src/input/stream.c
+@@ -636,6 +636,8 @@ static int AStreamControl( stream_t *s, int i_query, va_list args )
+         case STREAM_GET_CONTENT_TYPE:
+             return access_Control( p_access, ACCESS_GET_CONTENT_TYPE,
+                                     va_arg( args, char ** ) );
++        case STREAM_GET_CACHED_SIZE:
++            return VLC_EGENERIC;
+         case STREAM_SET_RECORD_STATE:
+         default:
+             msg_Err( s, "invalid stream_vaControl query=0x%x", i_query );
 -- 
 1.7.10.4
 

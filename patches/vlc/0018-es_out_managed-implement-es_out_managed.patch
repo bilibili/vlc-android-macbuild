@@ -1,4 +1,4 @@
-From 6f54ae61dc053ae6a76982f310fd58d0fa8daeaa Mon Sep 17 00:00:00 2001
+From 6ec983a130443229b5284dc8e716b9eb63c70b7f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:20 +0800
 Subject: [PATCH 18/25] es_out_managed: implement es_out_managed
