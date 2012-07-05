@@ -1,4 +1,4 @@
-From a8eddb9a761018da093ff9266a1bafb0f34af3fe Mon Sep 17 00:00:00 2001
+From 7b560d8221455287304780b103f0f62a602e6561 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:39 +0800
 Subject: [PATCH 27/27] plugin: access: add sina

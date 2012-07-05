@@ -1,7 +1,7 @@
-From 03cfa1043231cc8091312f46c0d7c6e66dd596fd Mon Sep 17 00:00:00 2001
+From d867d17af1fd75966707ffea0066c279fba0b660 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 2 Jul 2012 18:16:13 +0800
-Subject: [PATCH 03/27] core: support buffer progress
+Subject: [PATCH 02/27] core: support buffer progress
 
 ---
  lib/media_player.c |    2 ++
