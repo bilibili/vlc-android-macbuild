@@ -1,14 +1,30 @@
-From 38d27370c6b2d0b7383914ad1381e0d3130cd7f6 Mon Sep 17 00:00:00 2001
+From dca44baaacd7723b712285f6d1310c624bce6c41 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 5 Jul 2012 23:35:37 +0800
 Subject: [PATCH 16/27] omxil: check h264 profile and level
 
+Only load omxil codec which support video profile and level.
+Tested on devices and OMX decoder below:
+  Nexus S,               Exynos 3110
+      OMX.SEC.AVC.Decoder,    	 Baseline/Main/High Profile 3.1
+  Mione,                 MSM 8260
+      OMX.qcom.video.decoder, 	 Baseline/Main/High Profile 4
+  LG P970,               OMAP 3630
+      OMX.TI.720P.Decoder,    	 Baseline Profile 3.1
+  Sumsung GT-I9100,      Exynos 4210
+      OMX.SEC.avcdec,         	 Invalid profile information
+  Sumsung GT-P7500,      Tegra2
+      OMX.Nvidia.h264ext.decode, No profile information
+  Meizu MX dual-core,    Exynos 4210
+      OMX.SEC.AVC.Decoder,       Baseline/Main/High Profile 4
+  Tianyu Ali Cloud W806, Tegra2
+      OMX.Nvidia.h264ext.decode, No profile informatio
 ---
  modules/codec/omxil/iomx.cpp      |    2 +
- modules/codec/omxil/omxil.c       |   60 ++++++++++++++++++++++++-
- modules/codec/omxil/omxil_utils.h |   23 ++++++++++
- modules/codec/omxil/utils.c       |   90 +++++++++++++++++++++++++++++++++++++
- 4 个文件被修改，插入 174 行(+)，删除 1 行(-)
+ modules/codec/omxil/omxil.c       |  114 ++++++++++++++++++++++++++++++++++++-
+ modules/codec/omxil/omxil_utils.h |   23 ++++++++
+ modules/codec/omxil/utils.c       |   90 +++++++++++++++++++++++++++++
+ 4 个文件被修改，插入 228 行(+)，删除 1 行(-)
 
 diff --git a/modules/codec/omxil/iomx.cpp b/modules/codec/omxil/iomx.cpp
 index a45a781..89c3d96 100644
@@ -24,10 +40,10 @@ index a45a781..89c3d96 100644
          return 0;
      }
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index f65c85c..ec21ff6 100644
+index f65c85c..01bc30b 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -237,6 +237,61 @@ static OMX_ERRORTYPE ImplementationSpecificWorkarounds(decoder_t *p_dec,
+@@ -237,6 +237,115 @@ static OMX_ERRORTYPE ImplementationSpecificWorkarounds(decoder_t *p_dec,
          break;
      }
  
@@ -44,7 +60,10 @@ index f65c85c..ec21ff6 100644
 +                 i_profile, omx_video_profile,
 +                 i_level, omx_video_level);
 +
-+        /* FIXME: are profile and level reliable */
++        /*
++         * FIXME: Not sure if profile and level parsed from video are reliable.
++         * But for invalid video profile and level, no check will happen.
++         */
 +        if(OMX_VIDEO_AVCProfileMax != omx_video_profile &&
 +           OMX_VIDEO_AVCLevelMax != omx_video_level)
 +        {
@@ -54,6 +73,43 @@ index f65c85c..ec21ff6 100644
 +            OMX_INIT_STRUCTURE(param);
 +            param.nPortIndex = p_port->i_port_index;
 +
++            if(!strcmp(p_sys->psz_component, "OMX.Nvidia.h264.decode") ||
++               !strcmp(p_sys->psz_component, "OMX.Nvidia.h264ext.decode"))
++            {
++                /*
++                 * OMX.NVidia.h264*.decode support High Porfile 3.1,
++                 * but no param return
++                 */
++                bool b_profile_match = false;
++                if((H264_PROFILE_HIGH >= omx_video_profile) &&
++                   (OMX_VIDEO_AVCLevel4 >= omx_video_level))
++                {
++                    b_profile_match = true;
++                    b_match_capability = true;
++                }
++
++                msg_Info(p_dec, "%s %s ",
++                         p_sys->psz_component,
++                         b_profile_match ? "meet" : "ignore");
++            }
++            else if(!strcmp(p_sys->psz_component, "OMX.SEC.avcdec"))
++            {
++                /*
++                 * OMX.SEC.avcdec support High Porfile 4.1,
++                 * but param returns as Baseline Profile 1
++                 */
++                bool b_profile_match = false;
++                if((H264_PROFILE_HIGH >= omx_video_profile) &&
++                   (OMX_VIDEO_AVCLevel41 >= omx_video_level))
++                {
++                    b_profile_match = true;
++                    b_match_capability = true;
++                }
++
++                msg_Info(p_dec, "%s %s ",
++                         p_sys->psz_component,
++                         b_profile_match ? "meet" : "ignore");
++            }
 +            for(param.nProfileIndex = 0; ; ++param.nProfileIndex)
 +            {
 +                OMX_ERRORTYPE omx_error;
@@ -70,7 +126,7 @@ index f65c85c..ec21ff6 100644
 +                    b_match_capability = true;
 +                }
 +
-+                msg_Info(p_dec, "%s Codec profile: H264 %s Profile (%d), Level %d (0x%x)",
++                msg_Info(p_dec, "%s decoder profile: H264 %s Profile (%d), Level %d (0x%x)",
 +                         b_profile_match ? "meet" : "ignore",
 +                         OmxProfileTypeToString(param.eProfile),
 +                         (int)param.eProfile,
@@ -78,9 +134,23 @@ index f65c85c..ec21ff6 100644
 +                         (int)param.eLevel);
 +            }
 +
++#if 0
++            if(param.nProfileIndex <= 0)
++            {
++                /*
++                 * FIXME: Mstorsjo suggests that we should assume it can handle anything,
++                 * if it returns nothing. But since this is the last chance we can diable it,
++                 * I think SW decoder is better than HW decoder we do not know.
++                 *
++                 * Fow now, just make it behave like it did before. -- bbcallen
++                 */
++                msg_Warn(p_dec, "OMX_IndexParamVideoProfileLevelQuerySupported returns nothing");
++            }
++            else if(!b_match_capability)
++#endif
 +            if(!b_match_capability)
 +            {
-+                msg_Err(p_dec, "Profile level is too high for codec");
++                msg_Err(p_dec, "Vodeo profile level is too high for decoder");
 +                return OMX_ErrorNotImplemented;
 +            }
 +        }
@@ -89,7 +159,7 @@ index f65c85c..ec21ff6 100644
      if(!strcmp(p_sys->psz_component, "OMX.TI.Video.Decoder"))
      {
          if(p_fmt->i_cat == VIDEO_ES && def->eDir == OMX_DirInput &&
-@@ -935,7 +990,10 @@ loaded:
+@@ -935,7 +1044,10 @@ loaded:
      p_sys->p_ports = &p_sys->in;
      p_sys->b_use_pts = 0;
  

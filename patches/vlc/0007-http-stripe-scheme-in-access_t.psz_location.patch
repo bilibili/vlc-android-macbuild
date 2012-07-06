@@ -1,4 +1,4 @@
-From 0aa5efbf276d6b5c121ab18df902a72ce8e68f37 Mon Sep 17 00:00:00 2001
+From 2beb67dd1d19fe26e87d3eaaf171e830e3378699 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 24 May 2012 16:39:56 +0800
 Subject: [PATCH 07/27] http: stripe scheme in access_t.psz_location

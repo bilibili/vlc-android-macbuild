@@ -1,4 +1,4 @@
-From c31a5a65bfba551e1fe7e0611b665a078245ed2f Mon Sep 17 00:00:00 2001
+From 9b6c89cd78a40e1b13886261bace11ea177c4f4d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
 Subject: [PATCH 17/27] omxil: sort hw codec
@@ -8,7 +8,7 @@ Subject: [PATCH 17/27] omxil: sort hw codec
  1 个文件被修改，插入 96 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index ec21ff6..b231d17 100644
+index 01bc30b..81524ce 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -195,6 +195,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
@@ -26,7 +26,7 @@ index ec21ff6..b231d17 100644
 +static const OMX_Codec_Weight g_omx_codec_weight_table[] =
 +{
 +    /* Tegra2 codec */
-+    { "OMX.NVidia.h264.decode",    1 },     /* H264 Main Profile or below */
++    { "OMX.Nvidia.h264.decode",    1 },     /* H264 Main Profile or below */
 +    { "OMX.Nvidia.h264ext.decode", 2 },     /* Extended Profile (XP) or above */
 +
 +    /* 0 for codec not in table */
@@ -109,7 +109,7 @@ index ec21ff6..b231d17 100644
   * ImplementationSpecificWorkarounds: place-holder for implementation
   * specific workarounds
   *****************************************************************************/
-@@ -1022,6 +1113,8 @@ loaded:
+@@ -1076,6 +1167,8 @@ loaded:
          return VLC_EGENERIC;
      }
  
@@ -118,7 +118,7 @@ index ec21ff6..b231d17 100644
      /* Try to load and initialise a component */
      omx_error = OMX_ErrorUndefined;
      for(i = 0; i < p_sys->components; i++)
-@@ -1038,6 +1131,9 @@ loaded:
+@@ -1092,6 +1185,9 @@ loaded:
           * has got a working OMX.qcom.video.decoder.avc instead though. */
          if (!strncmp(p_sys->ppsz_components[i], "OMX.ARICENT.", 12))
              continue;

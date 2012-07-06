@@ -1,0 +1,46 @@
+From 5d86df0d434a08401c8fc5ce74bc63f29049182e Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 17 May 2012 16:37:14 +0800
+Subject: [PATCH 01/27] zlib: fix zlib build on android
+
+---
+ contrib/src/zlib/rules.mak          |    2 +-
+ contrib/src/zlib/zlib-android.patch |   13 +++++++++++++
+ 2 个文件被修改，插入 14 行(+)，删除 1 行(-)
+ create mode 100644 contrib/src/zlib/zlib-android.patch
+
+diff --git a/contrib/src/zlib/rules.mak b/contrib/src/zlib/rules.mak
+index 210da1e..cd86013 100644
+--- a/contrib/src/zlib/rules.mak
++++ b/contrib/src/zlib/rules.mak
+@@ -15,7 +15,7 @@ $(TARBALLS)/zlib-$(ZLIB_VERSION).tar.gz:
+ zlib: zlib-$(ZLIB_VERSION).tar.gz .sum-zlib
+ 	$(UNPACK)
+ 	$(APPLY) $(SRC)/zlib/zlib-wince.patch
+-	$(APPLY) $(SRC)/zlib/zlib-osx.patch
++	$(APPLY) $(SRC)/zlib/zlib-android.patch
+ 	$(MOVE)
+ 
+ .zlib: zlib
+diff --git a/contrib/src/zlib/zlib-android.patch b/contrib/src/zlib/zlib-android.patch
+new file mode 100644
+index 0000000..a315212
+--- /dev/null
++++ b/contrib/src/zlib/zlib-android.patch
+@@ -0,0 +1,13 @@
++diff -ru zlib.orig/configure zlib/configure
++--- zlib.orig/configure	2012-05-17 16:29:12.000000000 +0800
+++++ zlib/configure	2012-05-17 16:29:50.000000000 +0800
++@@ -206,8 +206,7 @@
++              SHAREDLIBV=libz.$VER$shared_ext
++              SHAREDLIBM=libz.$VER1$shared_ext
++              LDSHARED=${LDSHARED-"$cc -dynamiclib -install_name $libdir/$SHAREDLIBM -compatibility_version $VER1 -current_version $VER3"}
++-             AR="libtool"
++-             ARFLAGS="-o" ;;
+++             ;;
++   *)             LDSHARED=${LDSHARED-"$cc -shared"} ;;
++   esac
++ else
+-- 
+1.7.10.4
+

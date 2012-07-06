@@ -1,7 +1,7 @@
 #! /bin/sh
 
 export BILI_VLC_ROOT="vlc-app-armv7a-neon"
-export BILI_VLC_MODULE_MODE="module-lite"
+export BILI_VLC_MODULE_MODE="module-full"
 export BILI_VLC_TARGET_MODE="target-armv7a-neon"
 
 mkdir -p vlc-app
@@ -9,6 +9,9 @@ cd vlc-app
 
 rm tarballs
 ln -s ../tarballs
+
+rm _do_reset_vlc.sh
+ln -s ../_do_reset_vlc.sh _do_reset_vlc.sh
 
 mkdir -p patches/ports-android/${BILI_VLC_TARGET_MODE}
 rm patches/ports-android/*.patch
