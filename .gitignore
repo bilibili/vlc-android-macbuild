@@ -9,6 +9,7 @@ tarballs
 /vlc-live-armv7a-neon
 /vlc-live-cortex-a9-vfpv3-d16
 /vlc-app
+/MobileVLC
 /_ndk_stack.sh
 /_addr2line.sh
 /tmp
