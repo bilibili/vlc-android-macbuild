@@ -1,4 +1,4 @@
-From ca0067a6e175a2af9af9d9b2a8ae52c541d94502 Mon Sep 17 00:00:00 2001
+From 6619375fd4a71e5b46fb3a704421b2263b355a87 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 11:30:23 +0800
 Subject: [PATCH 2/5] do not build apk
@@ -8,13 +8,13 @@ Subject: [PATCH 2/5] do not build apk
  1 个文件被修改，插入 1 行(+)，删除 1 行(-)
 
 diff --git a/Makefile b/Makefile
-index 287e165..6d58a68 100644
+index ca687a8..48e0540 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -46,7 +46,7 @@ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)
- 	date +"%Y-%m-%d" > $(SRC)/assets/builddate.txt
+@@ -47,7 +47,7 @@ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)
  	echo `id -u -n`@`hostname` > $(SRC)/assets/builder.txt
  	git rev-parse --short HEAD > $(SRC)/assets/revision.txt
+ 	./gen-env.sh $(SRC)
 -	$(VERBOSE)cd $(SRC) && ant $(ANT_OPTS) $(ANT_TARGET)
 +	$(VERBOSE)cd $(SRC)
  
