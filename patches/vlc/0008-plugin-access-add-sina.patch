@@ -1,13 +1,11 @@
-From 4204d088da518f2285f43537adf2c872ff19494d Mon Sep 17 00:00:00 2001
+From 4d9b353e650d8a4e781eda4579b15c175610b70f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:39 +0800
-Subject: [PATCH 27/27] plugin: access: add sina
+Subject: [PATCH 08/27] plugin: access: add sina
 
 ---
- modules/access/Modules.am      |   11 +++++++++++
- modules/access/sina/Modules.am |    5 -----
- 2 个文件被修改，插入 11 行(+)，删除 5 行(-)
- delete mode 100644 modules/access/sina/Modules.am
+ modules/access/Modules.am |   11 +++++++++++
+ 1 个文件被修改，插入 11 行(+)
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
 index 62703f7..5fc0a3e 100644
@@ -31,18 +29,6 @@ index 62703f7..5fc0a3e 100644
  
  ### Digital TV ###
  
-diff --git a/modules/access/sina/Modules.am b/modules/access/sina/Modules.am
-deleted file mode 100644
-index c162655..0000000
---- a/modules/access/sina/Modules.am
-+++ /dev/null
-@@ -1,5 +0,0 @@
--libaccess_sina_plugin_la_SOURCES = sina.c
--libaccess_sina_plugin_la_CFLAGS = $(AM_CFLAGS) $(LIBXML2_CFLAGS)
--libaccess_sina_plugin_la_LIBADD = $(AM_LIBADD) $(LIBXML2_LIBS)
--libaccess_sina_plugin_la_DEPENDENCIES =
--libvlc_LTLIBRARIES += libaccess_sina_plugin.la
-\ No newline at end of file
 -- 
 1.7.10.4
 
