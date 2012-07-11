@@ -1,7 +1,7 @@
-From 1b132eb99f31d6dda1013811cfaa966c4c529da1 Mon Sep 17 00:00:00 2001
+From 5d38a892b14215438fba043a55908b9725fe75cb Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 4 Jul 2012 18:27:53 +0800
-Subject: [PATCH 23/27] omxil: use pts for OMX.SEC.AVC.Decoder
+Subject: [PATCH 24/28] omxil: use pts for OMX.SEC.AVC.Decoder
 
 ---
  modules/codec/omxil/omxil.c |    3 +++

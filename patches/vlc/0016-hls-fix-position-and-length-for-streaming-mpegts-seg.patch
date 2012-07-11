@@ -1,7 +1,7 @@
-From 550985f1f64be0954a9f6cab78138e19114f6a5d Mon Sep 17 00:00:00 2001
+From 50297fd86b9d689a15dd9eeac35414e42c7ed808 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH 15/27] hls: fix position and length for streaming mpegts
+Subject: [PATCH 16/28] hls: fix position and length for streaming mpegts
  segments hls
 
 ---
@@ -112,7 +112,7 @@ index d5583d8..254ad10 100644
              if( pid->es->p_pes && pid->es->fmt.i_cat != VIDEO_ES )
              {
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index e4929b9..870380c 100644
+index d8361b9..3a4eee1 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1094,6 +1094,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const

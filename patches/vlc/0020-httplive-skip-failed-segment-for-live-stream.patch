@@ -1,14 +1,14 @@
-From 8b4bd33ff342caaecf26755a67ef2f6f74f39d2e Mon Sep 17 00:00:00 2001
+From 8a8a90a616bb2e2fea4051639cfbb5d535737ff0 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 14 Jun 2012 16:44:57 +0800
-Subject: [PATCH 19/27] httplive: skip failed segment for live stream
+Subject: [PATCH 20/28] httplive: skip failed segment for live stream
 
 ---
  modules/stream_filter/httplive.c |   85 +++++++++++++++++++++++++++++++++++++-
  1 个文件被修改，插入 83 行(+)，删除 2 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index c643e57..926cbde 100644
+index 5c94e19..f2728f0 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -127,6 +127,10 @@ struct stream_sys_t

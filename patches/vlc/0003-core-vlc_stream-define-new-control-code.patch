@@ -1,7 +1,7 @@
 From a4cd4a041147e7dacc24747d0d2ec41113353928 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:02 +0800
-Subject: [PATCH 03/27] core: vlc_stream: define new control code
+Subject: [PATCH 03/28] core: vlc_stream: define new control code
 
 ---
  include/vlc_stream.h |    6 ++++++
