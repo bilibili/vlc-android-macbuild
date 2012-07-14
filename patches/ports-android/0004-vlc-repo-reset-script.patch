@@ -1,7 +1,7 @@
-From 9410a12c2aba20e72c8a91233aed3909c1112fa4 Mon Sep 17 00:00:00 2001
+From 106a086fcff66fbd8f4e16ac40880743f28a391d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 12:32:02 +0800
-Subject: [PATCH 3/5] vlc repo reset script
+Subject: [PATCH 4/6] vlc repo reset script
 
 ---
  _reset_vlc.sh |    3 +++
