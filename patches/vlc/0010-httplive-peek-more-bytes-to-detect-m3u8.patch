@@ -1,7 +1,7 @@
-From ad76cb393a24aa05803feba15dbc4e7f46d936da Mon Sep 17 00:00:00 2001
+From f02b3e8dce5967712ef10560c6a2b4f7806e6b40 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 11 Jul 2012 14:50:38 +0800
-Subject: [PATCH 10/28] httplive: peek more bytes to detect m3u8
+Subject: [PATCH 10/29] httplive: peek more bytes to detect m3u8
 
 ---
  modules/stream_filter/httplive.c |    2 +-

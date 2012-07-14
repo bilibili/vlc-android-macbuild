@@ -1,12 +1,12 @@
-From 1085c958e07afd626129009366a92561e3ec1bad Mon Sep 17 00:00:00 2001
+From 662874e46b98c4dbc1e1e1c860cffb6712322783 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:11 +0800
-Subject: [PATCH 28/28] sinaxml: sina xml parser
+Subject: [PATCH 28/29] sinaxml: sina xml parser
 
 ---
  modules/access/sina/Modules.am |    5 +
- modules/access/sina/sinaxml.c  | 1049 ++++++++++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 1054 行(+)
+ modules/access/sina/sinaxml.c  | 1067 ++++++++++++++++++++++++++++++++++++++++
+ 2 个文件被修改，插入 1072 行(+)
  create mode 100644 modules/access/sina/Modules.am
  create mode 100644 modules/access/sina/sinaxml.c
 
@@ -24,10 +24,10 @@ index 0000000..c162655
 \ No newline at end of file
 diff --git a/modules/access/sina/sinaxml.c b/modules/access/sina/sinaxml.c
 new file mode 100644
-index 0000000..aa31223
+index 0000000..8892bdf
 --- /dev/null
 +++ b/modules/access/sina/sinaxml.c
-@@ -0,0 +1,1049 @@
+@@ -0,0 +1,1067 @@
 +/*****************************************************************************
 + * sinaxml.c: Sina video xml parser
 + *****************************************************************************
@@ -75,6 +75,7 @@ index 0000000..aa31223
 +/* FIXME */
 +#include "../../../src/input/demux.h"
 +#include "../../../src/input/event.h"
++#include "../../../src/input/es_out.h"
 +
 +/*****************************************************************************
 + * Module descriptor
@@ -138,6 +139,8 @@ index 0000000..aa31223
 +
 +    /* */
 +    es_out_t            *p_out_managed; /* passed to sub demux */
++
++    bool                b_segment_changed;
 +};
 +
 +static int Control( demux_t *p_demux, int i_query, va_list args );
@@ -569,14 +572,16 @@ index 0000000..aa31223
 +
 +                /* Reset PCR before use next demux */
 +                // es_out_Control( p_demux->out, ES_OUT_RESET_PCR );
-+                if( p_sys->p_out_managed )
-+                    es_out_Control( p_sys->p_out_managed, ES_OUT_POST_DISCONTINUITY );
++                //if( p_sys->p_out_managed )
++                //    es_out_Control( p_sys->p_out_managed, ES_OUT_POST_DISCONTINUITY );
 +            }
 +            if( p_sys->p_segment->p_stream )
 +            {
 +                stream_Delete( p_sys->p_segment->p_stream );
 +                p_sys->p_segment->p_stream = NULL;
 +            }
++
++            p_sys->b_segment_changed = true;
 +        }
 +    }
 +    else
@@ -811,9 +816,22 @@ index 0000000..aa31223
 +            break;
 +
 +        msg_Info( p_demux, "sina segment EOF, try next segment %d", p_sys->p_segment->i_order + 1 );
++
++        p_sys->b_segment_changed = false;
 +        int i_ret = sina_AssureOpenSegment( p_demux, p_sys->p_segment->i_order + 1 );
 +        if( VLC_SUCCESS != i_ret )
 +            return -1;
++
++        if( p_sys->b_segment_changed )
++        {
++            /* wait es out empty */
++            while( !es_out_GetEmpty( p_demux->out ) )
++            {
++                msleep( 10 * 1000 );
++            }
++
++            es_out_Control( p_demux->out, ES_OUT_RESET_PCR );
++        }
 +    }
 +
 +    /* whole stream EOF */

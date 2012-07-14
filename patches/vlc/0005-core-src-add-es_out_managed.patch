@@ -1,7 +1,7 @@
-From fcb6c33609d4e0a43c9127f26780500947461371 Mon Sep 17 00:00:00 2001
+From a9fe8986b83a8da152604922e7b274ef90189bc8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:39 +0800
-Subject: [PATCH 05/28] core: src: add es_out_managed
+Subject: [PATCH 05/29] core: src: add es_out_managed
 
 ---
  src/Makefile.am |    2 ++
