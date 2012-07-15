@@ -1,4 +1,4 @@
-tarballs
+/tarballs
 /vlc-lite-armv6j
 /vlc-lite-armv7a-neon
 /vlc-lite-cortex-a9-vfpv3-d16
@@ -9,10 +9,12 @@ tarballs
 /vlc-live-armv7a-neon
 /vlc-live-cortex-a9-vfpv3-d16
 /vlc-app
-/MobileVLC
 /_ndk_stack.sh
 /_addr2line.sh
 /tmp
+
+/MobileVLC
+/ios-tool-tarballs
 
 # svn
 .svn/
