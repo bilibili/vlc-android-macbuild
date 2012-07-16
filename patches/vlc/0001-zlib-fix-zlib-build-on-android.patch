@@ -1,4 +1,4 @@
-From df1d48ee57320213fe39b27361d81647cacb1b4c Mon Sep 17 00:00:00 2001
+From 3c85b54e4fb0cdaa2ab92e187d2bd29d8533be3b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 17 May 2012 16:37:14 +0800
 Subject: [PATCH 01/29] zlib: fix zlib build on android

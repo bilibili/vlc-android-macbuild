@@ -1,4 +1,4 @@
-From a9fe8986b83a8da152604922e7b274ef90189bc8 Mon Sep 17 00:00:00 2001
+From 96ae6874bc84cb42809548cd58b0170b747f156c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:39 +0800
 Subject: [PATCH 05/29] core: src: add es_out_managed

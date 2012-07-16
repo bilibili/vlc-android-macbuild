@@ -1,4 +1,4 @@
-From 9345c97343b55b9b6f8f58ee14b59fbab30667ca Mon Sep 17 00:00:00 2001
+From e602be58d36374de30189cd987df9485656b0906 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:02 +0800
 Subject: [PATCH 03/29] core: vlc_stream: define new control code

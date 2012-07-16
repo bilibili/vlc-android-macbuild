@@ -1,12 +1,12 @@
-From 662874e46b98c4dbc1e1e1c860cffb6712322783 Mon Sep 17 00:00:00 2001
+From 602b5f86ec6f411aa1fafad08638acdc7707d7cc Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:11 +0800
 Subject: [PATCH 28/29] sinaxml: sina xml parser
 
 ---
  modules/access/sina/Modules.am |    5 +
- modules/access/sina/sinaxml.c  | 1067 ++++++++++++++++++++++++++++++++++++++++
- 2 个文件被修改，插入 1072 行(+)
+ modules/access/sina/sinaxml.c  | 1084 ++++++++++++++++++++++++++++++++++++++++
+ 2 个文件被修改，插入 1089 行(+)
  create mode 100644 modules/access/sina/Modules.am
  create mode 100644 modules/access/sina/sinaxml.c
 
@@ -24,10 +24,10 @@ index 0000000..c162655
 \ No newline at end of file
 diff --git a/modules/access/sina/sinaxml.c b/modules/access/sina/sinaxml.c
 new file mode 100644
-index 0000000..8892bdf
+index 0000000..a3b4899
 --- /dev/null
 +++ b/modules/access/sina/sinaxml.c
-@@ -0,0 +1,1067 @@
+@@ -0,0 +1,1084 @@
 +/*****************************************************************************
 + * sinaxml.c: Sina video xml parser
 + *****************************************************************************
@@ -759,6 +759,7 @@ index 0000000..8892bdf
 +    assert( p_playlist );
 +    assert( p_playlist->p_segment_array );
 +
++    bool b_stop_buffering = false;
 +    while( p_sys->p_segment && vlc_object_alive(p_demux) )
 +    {
 +        if( !p_sys->p_segment || !p_sys->p_segment->p_demux )
@@ -770,6 +771,12 @@ index 0000000..8892bdf
 +        int i_demux_ret = demux_Demux( p_sys->p_segment->p_demux );
 +        if( i_demux_ret != 0 )
 +        {
++            if( i_demux_ret > 0 && b_stop_buffering)
++            {
++                es_out_GetEmpty( p_demux->out );
++                b_stop_buffering = false;
++            }
++
 +            int64_t i_cached_size = 0;
 +            int i_ret = stream_Control( p_sys->p_segment->p_stream,
 +                                       STREAM_GET_CACHED_SIZE,
@@ -824,13 +831,23 @@ index 0000000..8892bdf
 +
 +        if( p_sys->b_segment_changed )
 +        {
-+            /* wait es out empty */
-+            while( !es_out_GetEmpty( p_demux->out ) )
++            /* wait es out empty, up to 'network-caching' */
++
++#define SINA_SEG_WAIT_STEP ( 50 * 1000 )
++            int64_t i_pts_delay = INT64_C(1000) * var_InheritInteger( p_demux, "network-caching" );
++            if( i_pts_delay < 0 )
++                i_pts_delay = 0;
++
++            for( int64_t i; i < i_pts_delay; i_pts_delay += SINA_SEG_WAIT_STEP )
 +            {
-+                msleep( 10 * 1000 );
++                if( es_out_GetEmpty( p_demux->out ) )
++                    break;
++
++                msleep( SINA_SEG_WAIT_STEP );
 +            }
 +
 +            es_out_Control( p_demux->out, ES_OUT_RESET_PCR );
++            b_stop_buffering = true;
 +        }
 +    }
 +

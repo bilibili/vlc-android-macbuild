@@ -1,4 +1,4 @@
-From 7a1fdaf72ab89ecf63f86523a0445943d349b495 Mon Sep 17 00:00:00 2001
+From 1d65c7212224f3f19ab1f5615ad19d3f57fc73bc Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 12 Jul 2012 19:59:25 +0800
 Subject: [PATCH 29/29] avformat: avoid EOF if av_read_frame returns
