@@ -1,4 +1,4 @@
-From 6573b509cc31a7208dec533b466eb8a6ffbf50c3 Mon Sep 17 00:00:00 2001
+From 6f8b5a5927ee8db724a0bc574380a1792f437a85 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 10 Jul 2012 19:41:13 +0800
 Subject: [PATCH 6/6] another libvlc wrapper
@@ -6,9 +6,9 @@ Subject: [PATCH 6/6] another libvlc wrapper
 ---
  Makefile                                |    7 +-
  vlc-android/jni/Android.mk              |    6 +-
- vlc-android/jni/libvlcjni_danmaku.c     | 1115 +++++++++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c     | 1099 +++++++++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku.inc.c |   64 ++
- 4 个文件被修改，插入 1190 行(+)，删除 2 行(-)
+ 4 个文件被修改，插入 1174 行(+)，删除 2 行(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
@@ -59,10 +59,10 @@ index ca3b56e..f9efd9e 100644
  
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..c93f36a
+index 0000000..eefddbc
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,1115 @@
+@@ -0,0 +1,1099 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -139,22 +139,6 @@ index 0000000..c93f36a
 +        return NULL;
 +
 +    if (!noOmx) {
-+        jclass cls = (*env)->GetObjectClass(env, thiz);
-+        jmethodID methodId = (*env)->GetMethodID(env, cls, "useIOMX", "()Z");
-+        if ((*env)->CallBooleanMethod(env, thiz, methodId)) {
-+            /*
-+             * Set higher caching values if using iomx decoding, since some omx
-+             * decoders have a very high latency, and if the preroll data isn't
-+             * enough to make the decoder output a frame, the playback timing gets
-+             * started too soon, and every decoded frame appears to be too late.
-+             * On Nexus One, the decoder latency seems to be 25 input packets
-+             * for 320x170 H.264, a few packets less on higher resolutions.
-+             * On Nexus S, the decoder latency seems to be about 7 packets.
-+             */
-+            libvlc_media_add_option(p_md, ":file-caching=1500");
-+            libvlc_media_add_option(p_md, ":network-caching=1500");
-+            libvlc_media_add_option(p_md, ":codec=iomx,all");
-+        }
 +        if (noVideo)
 +            libvlc_media_add_option(p_md, ":no-video");
 +    }

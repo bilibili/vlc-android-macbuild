@@ -1,4 +1,4 @@
-From 7bfe9db01bc45eae981b97e4624d162595cde1b0 Mon Sep 17 00:00:00 2001
+From 6248b5d2b97c94b0228a36a605082e39ca3ff958 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH 2/6] modify compile.sh for MacOS build
@@ -8,10 +8,10 @@ Subject: [PATCH 2/6] modify compile.sh for MacOS build
  1 个文件被修改，插入 31 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index 34cff5f..efb1558 100755
+index d96ea3a..628c008 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -29,13 +29,24 @@ If you plan to use a release build, run 'compile.sh release'
+@@ -31,13 +31,24 @@ If you plan to use a release build, run 'compile.sh release'
  EOF
  # try to detect NDK version
  REL=$(grep -o '^r[0-9]*' $ANDROID_NDK/RELEASE.TXT 2>/dev/null|cut -b2-)
@@ -37,7 +37,7 @@ index 34cff5f..efb1558 100755
  export PATH=${ANDROID_NDK}/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin:${PATH}
  
  # 1/ libvlc, libvlccore and its plugins
-@@ -47,6 +58,14 @@ if [ ! -d "vlc" ]; then
+@@ -49,6 +60,14 @@ if [ ! -d "vlc" ]; then
      git checkout -B android ${TESTED_HASH}
      echo "Applying the patches"
      git am ../patches/*.patch
@@ -52,7 +52,7 @@ index 34cff5f..efb1558 100755
  else
      echo "VLC source found"
      cd vlc
-@@ -63,6 +82,10 @@ git reset --hard origin
+@@ -65,6 +84,10 @@ git reset --hard origin
  git pull origin master
  git checkout -B android ${TESTED_HASH}
  git am ../patches/*
@@ -63,7 +63,7 @@ index 34cff5f..efb1558 100755
  
  *** : This will delete any changes you made to the current branch ***
  
-@@ -71,6 +94,7 @@ EOF
+@@ -73,6 +96,7 @@ EOF
      fi
  fi
  
@@ -71,7 +71,7 @@ index 34cff5f..efb1558 100755
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
-@@ -129,6 +153,12 @@ fi
+@@ -131,6 +155,12 @@ fi
  echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
  export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
  
