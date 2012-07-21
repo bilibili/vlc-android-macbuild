@@ -1,17 +1,17 @@
-From 8d44b402c671432592bbb6b683ac2411a1b5bdc5 Mon Sep 17 00:00:00 2001
+From 6dce08ac9f433c407a80b205f52b20a478eaea65 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:39 +0800
-Subject: [PATCH 08/29] plugin: access: add sina
+Subject: [PATCH 08/28] plugin: access: add sina
 
 ---
  modules/access/Modules.am |   11 +++++++++++
  1 个文件被修改，插入 11 行(+)
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index 62703f7..5fc0a3e 100644
+index a053f46..9e97c73 100644
 --- a/modules/access/Modules.am
 +++ b/modules/access/Modules.am
-@@ -177,6 +177,17 @@ if HAVE_XCB
+@@ -167,6 +167,17 @@ if HAVE_XCB
  libvlc_LTLIBRARIES += libxcb_screen_plugin.la
  endif
  

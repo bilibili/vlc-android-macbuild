@@ -1,17 +1,17 @@
-From 32bc9359c3106c1c5036bd14f3ebf126801946ec Mon Sep 17 00:00:00 2001
+From f780a55e0c82103cd1c980f740a0f62e3f303e9f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
-Subject: [PATCH 23/29] omxil: sort hw codec
+Subject: [PATCH 23/28] omxil: sort hw codec
 
 ---
  modules/codec/omxil/omxil.c |   96 +++++++++++++++++++++++++++++++++++++++++++
  1 个文件被修改，插入 96 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 01bc30b..81524ce 100644
+index 785e6c4..859f9bc 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -195,6 +195,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
+@@ -197,6 +197,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
  }
  
  /*****************************************************************************
@@ -109,7 +109,7 @@ index 01bc30b..81524ce 100644
   * ImplementationSpecificWorkarounds: place-holder for implementation
   * specific workarounds
   *****************************************************************************/
-@@ -1076,6 +1167,8 @@ loaded:
+@@ -1078,6 +1169,8 @@ loaded:
          return VLC_EGENERIC;
      }
  
@@ -118,9 +118,9 @@ index 01bc30b..81524ce 100644
      /* Try to load and initialise a component */
      omx_error = OMX_ErrorUndefined;
      for(i = 0; i < p_sys->components; i++)
-@@ -1092,6 +1185,9 @@ loaded:
-          * has got a working OMX.qcom.video.decoder.avc instead though. */
-         if (!strncmp(p_sys->ppsz_components[i], "OMX.ARICENT.", 12))
+@@ -1097,6 +1190,9 @@ loaded:
+         /* Some nVidia codec with DRM */
+         if (!strncmp(p_sys->ppsz_components[i], "OMX.Nvidia.h264.decode.secure", 29))
              continue;
 +        /* Codec in black list */
 +        if (GetOmxCodecWeight( p_sys->ppsz_components[i] ) < 0)

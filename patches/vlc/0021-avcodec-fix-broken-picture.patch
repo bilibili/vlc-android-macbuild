@@ -1,14 +1,14 @@
-From 67e7037fb3eacbcbcd68b3939cebda43b722dd53 Mon Sep 17 00:00:00 2001
+From fdcbd630a4ba54dd009dee66284898d9e0cc3bca Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 15:02:07 +0800
-Subject: [PATCH 21/29] avcodec: fix broken picture
+Subject: [PATCH 21/28] avcodec: fix broken picture
 
 ---
  modules/codec/avcodec/video.c |   12 +++++++++---
  1 个文件被修改，插入 9 行(+)，删除 3 行(-)
 
 diff --git a/modules/codec/avcodec/video.c b/modules/codec/avcodec/video.c
-index 2ea9b2d..423264a 100644
+index a346551..3352b2e 100644
 --- a/modules/codec/avcodec/video.c
 +++ b/modules/codec/avcodec/video.c
 @@ -491,8 +491,9 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )

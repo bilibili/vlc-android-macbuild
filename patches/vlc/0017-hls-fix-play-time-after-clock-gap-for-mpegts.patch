@@ -1,12 +1,12 @@
-From 006b8b256b6da422e006d15e3465072b62f37e5e Mon Sep 17 00:00:00 2001
+From 4ee83d2dc47dfea44ce86f2db59ef14efdbec2e3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:27 +0800
-Subject: [PATCH 17/29] hls: fix play time after clock gap for mpegts
+Subject: [PATCH 17/28] hls: fix play time after clock gap for mpegts
 
 ---
  modules/demux/ts.c               |   28 +++++++++++++++++++--
- modules/stream_filter/httplive.c |   50 +++++++++++++++++++++++++++++---------
- 2 个文件被修改，插入 65 行(+)，删除 13 行(-)
+ modules/stream_filter/httplive.c |   51 ++++++++++++++++++++++++++++++--------
+ 2 个文件被修改，插入 66 行(+)，删除 13 行(-)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
 index 254ad10..fd55692 100644
@@ -58,7 +58,7 @@ index 254ad10..fd55692 100644
          }
  
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 3a4eee1..a2bf75d 100644
+index 23f6def..34c0851 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -64,6 +64,7 @@ vlc_module_end()
@@ -162,15 +162,21 @@ index 3a4eee1..a2bf75d 100644
  
      /* manage encryption key if needed */
      hls_ManageSegmentKeys(s, hls_Get(p_sys->hls_stream, current));
-@@ -2260,6 +2262,7 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
+@@ -2262,11 +2264,13 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
+             else
                  segment_RestorePos(segment);
  
-             p_sys->playback.segment++;
-+            p_sys->playback.current_segment_start_time = segment->start_time;
++            int current_segment_start_time = segment->start_time;
              vlc_mutex_unlock(&segment->lock);
  
              /* signal download thread */
-@@ -2527,6 +2530,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+             vlc_mutex_lock(&p_sys->download.lock_wait);
+             p_sys->playback.segment++;
++            p_sys->playback.current_segment_start_time = current_segment_start_time;
+             vlc_cond_signal(&p_sys->download.wait);
+             vlc_mutex_unlock(&p_sys->download.lock_wait);
+             continue;
+@@ -2530,6 +2534,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
  
          vlc_mutex_lock(&segment->lock);
          segment_RestorePos(segment);
@@ -178,7 +184,7 @@ index 3a4eee1..a2bf75d 100644
          vlc_mutex_unlock(&segment->lock);
  
          /* start download at current playback segment */
-@@ -2555,6 +2559,19 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2558,6 +2563,19 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
      return b_found ? VLC_SUCCESS : VLC_EGENERIC;
  }
  
@@ -198,7 +204,7 @@ index 3a4eee1..a2bf75d 100644
  static int Control(stream_t *s, int i_query, va_list args)
  {
      stream_sys_t *p_sys = s->p_sys;
-@@ -2581,6 +2598,17 @@ static int Control(stream_t *s, int i_query, va_list args)
+@@ -2584,6 +2602,17 @@ static int Control(stream_t *s, int i_query, va_list args)
          case STREAM_GET_SIZE:
              *(va_arg (args, uint64_t *)) = GetStreamSize(s);
              break;

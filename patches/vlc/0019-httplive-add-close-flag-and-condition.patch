@@ -1,7 +1,7 @@
-From 2b34b46ac9c84b60981ced737bc1e20df9a0c625 Mon Sep 17 00:00:00 2001
+From 8dc45d99f0cb3f68f23fb87a7f65f1cf91714ec9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 13 Jun 2012 18:07:26 +0800
-Subject: [PATCH 19/29] httplive: add close flag and condition
+Subject: [PATCH 19/28] httplive: add close flag and condition
 
 hls_Reload() thread now wait for close condition instead of just sleeping,
 which make Close() return faster.
@@ -10,7 +10,7 @@ which make Close() return faster.
  1 个文件被修改，插入 26 行(+)，删除 6 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index a2bf75d..5c94e19 100644
+index 34c0851..9ef74b0 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -143,6 +143,10 @@ struct stream_sys_t
@@ -91,12 +91,15 @@ index a2bf75d..5c94e19 100644
      /* Initialize HLS live stream */
      if (p_sys->b_live)
      {
-@@ -2105,10 +2117,15 @@ static void Close(vlc_object_t *p_this)
+@@ -2105,6 +2117,7 @@ static void Close(vlc_object_t *p_this)
      assert(p_sys->hls_stream);
  
      /* */
 +    p_sys->b_close = true;
      vlc_mutex_lock(&p_sys->download.lock_wait);
+     /* negate the condition variable's predicate */
+     p_sys->download.segment = p_sys->playback.segment = 0;
+@@ -2112,6 +2125,10 @@ static void Close(vlc_object_t *p_this)
      vlc_cond_signal(&p_sys->download.wait);
      vlc_mutex_unlock(&p_sys->download.lock_wait);
  
@@ -107,7 +110,7 @@ index a2bf75d..5c94e19 100644
      /* */
      if (p_sys->b_live)
          vlc_join(p_sys->reload, NULL);
-@@ -2116,6 +2133,9 @@ static void Close(vlc_object_t *p_this)
+@@ -2119,6 +2136,9 @@ static void Close(vlc_object_t *p_this)
      vlc_mutex_destroy(&p_sys->download.lock_wait);
      vlc_cond_destroy(&p_sys->download.wait);
  
@@ -117,7 +120,7 @@ index a2bf75d..5c94e19 100644
      /* Free hls streams */
      for (int i = 0; i < vlc_array_count(p_sys->hls_stream); i++)
      {
-@@ -2305,7 +2325,7 @@ static int Read(stream_t *s, void *buffer, unsigned int i_read)
+@@ -2309,7 +2329,7 @@ static int Read(stream_t *s, void *buffer, unsigned int i_read)
  
      assert(p_sys->hls_stream);
  

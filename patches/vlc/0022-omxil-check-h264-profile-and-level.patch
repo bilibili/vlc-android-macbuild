@@ -1,7 +1,7 @@
-From 3aca69740c9d207ef5ed3c3271e2dc4609377684 Mon Sep 17 00:00:00 2001
+From 9d698463e75a641bed0675d37fc9a7320b0de146 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 5 Jul 2012 23:35:37 +0800
-Subject: [PATCH 22/29] omxil: check h264 profile and level
+Subject: [PATCH 22/28] omxil: check h264 profile and level
 
 Only load omxil codec which support video profile and level.
 Tested on devices and OMX decoder below:
@@ -40,10 +40,10 @@ index a45a781..89c3d96 100644
          return 0;
      }
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index f65c85c..01bc30b 100644
+index bd3962d..785e6c4 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -237,6 +237,115 @@ static OMX_ERRORTYPE ImplementationSpecificWorkarounds(decoder_t *p_dec,
+@@ -239,6 +239,115 @@ static OMX_ERRORTYPE ImplementationSpecificWorkarounds(decoder_t *p_dec,
          break;
      }
  
@@ -159,7 +159,7 @@ index f65c85c..01bc30b 100644
      if(!strcmp(p_sys->psz_component, "OMX.TI.Video.Decoder"))
      {
          if(p_fmt->i_cat == VIDEO_ES && def->eDir == OMX_DirInput &&
-@@ -935,7 +1044,10 @@ loaded:
+@@ -937,7 +1046,10 @@ loaded:
      p_sys->p_ports = &p_sys->in;
      p_sys->b_use_pts = 0;
  
@@ -204,10 +204,10 @@ index 635951c..055b6bf 100644
 +OMX_VIDEO_AVCLEVELTYPE H264LevelToOmxType(int level);
 \ No newline at end of file
 diff --git a/modules/codec/omxil/utils.c b/modules/codec/omxil/utils.c
-index 96deb46..0b40767 100644
+index 3ea5861..5151b7c 100644
 --- a/modules/codec/omxil/utils.c
 +++ b/modules/codec/omxil/utils.c
-@@ -917,3 +917,93 @@ void PrintOmx(decoder_t *p_dec, OMX_HANDLETYPE omx_handle, OMX_U32 i_port)
+@@ -919,3 +919,93 @@ void PrintOmx(decoder_t *p_dec, OMX_HANDLETYPE omx_handle, OMX_U32 i_port)
          }
      }
  }

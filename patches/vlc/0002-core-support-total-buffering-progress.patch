@@ -1,7 +1,7 @@
-From 61481f0661a8b9a9f02259567890c179ec6e8ceb Mon Sep 17 00:00:00 2001
+From a606afb15e8d43e5c127b7dd80516f06a3b6a052 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 1 Jul 2012 18:44:58 +0800
-Subject: [PATCH 02/29] core: support total buffering progress
+Subject: [PATCH 02/28] core: support total buffering progress
 
 ---
  include/vlc/libvlc_events.h |    8 +++++++-
@@ -54,7 +54,7 @@ index 7d8320a..40ec3a8 100644
  
  /**
 diff --git a/lib/media_player.c b/lib/media_player.c
-index b426637..94452a2 100644
+index 967593e..23ebf44 100644
 --- a/lib/media_player.c
 +++ b/lib/media_player.c
 @@ -315,6 +315,13 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
@@ -114,7 +114,7 @@ index c8f1071..3991453 100644
  /* TODO rename Item* */
  void input_SendEventMeta( input_thread_t *p_input );
 diff --git a/src/input/stream.c b/src/input/stream.c
-index 54d8ca8..e3e454b 100644
+index 67c0297..4718934 100644
 --- a/src/input/stream.c
 +++ b/src/input/stream.c
 @@ -636,6 +636,8 @@ static int AStreamControl( stream_t *s, int i_query, va_list args )
