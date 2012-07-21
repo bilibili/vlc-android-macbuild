@@ -1,4 +1,4 @@
-From 4ee83d2dc47dfea44ce86f2db59ef14efdbec2e3 Mon Sep 17 00:00:00 2001
+From 7ae9d993fee196fad2c34478d90f62c9f61348a9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:27 +0800
 Subject: [PATCH 17/28] hls: fix play time after clock gap for mpegts

@@ -1,14 +1,14 @@
-From ec4aa2a9bf6287e957a7167cca4a307a5297b15b Mon Sep 17 00:00:00 2001
+From d0389939e6b29b2bd500e6d60df9fcc56dd5bf44 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 14 Jun 2012 16:44:57 +0800
 Subject: [PATCH 20/28] httplive: skip failed segment
 
 ---
- modules/stream_filter/httplive.c |   84 +++++++++++++++++++++++++++++++++++++-
- 1 个文件被修改，插入 82 行(+)，删除 2 行(-)
+ modules/stream_filter/httplive.c |   88 +++++++++++++++++++++++++++++++++++++-
+ 1 个文件被修改，插入 86 行(+)，删除 2 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 9ef74b0..81bf3f1 100644
+index 9ef74b0..8207b8d 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -127,6 +127,10 @@ struct stream_sys_t
@@ -107,7 +107,7 @@ index 9ef74b0..81bf3f1 100644
      /* */
      if (p_sys->b_live)
          vlc_join(p_sys->reload, NULL);
-@@ -2266,12 +2300,55 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
+@@ -2266,12 +2300,59 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
  
      do
      {
@@ -121,9 +121,13 @@ index 9ef74b0..81bf3f1 100644
 +            int count = vlc_array_count(hls->segments);
 +            vlc_mutex_unlock(&hls->lock);
 +
-+            /* for Read() we do not care about seek here */
-+            if (p_sys->playback.segment >= p_sys->download.segment)
++            if (!p_sys->b_live && p_sys->playback.segment >= count)
 +            {
++                msg_Info(s, "hls_Read EOS");
++                break;
++            }
++            else if (p_sys->playback.segment >= p_sys->download.segment)
++            {   /* for Read() we do not care about seek here */
 +                /* wait */
 +                vlc_mutex_lock(&p_sys->playback.lock_wait);
 +                while (p_sys->playback.segment >= p_sys->download.segment)
@@ -164,7 +168,7 @@ index 9ef74b0..81bf3f1 100644
  
          vlc_mutex_lock(&segment->lock);
          if (segment->data->i_buffer == 0)
-@@ -2319,6 +2396,9 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
+@@ -2319,6 +2400,9 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
  
      } while (i_read > 0);
  

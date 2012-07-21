@@ -1,4 +1,4 @@
-From 0223a4433e22febd3461981a4ce44f571a84660d Mon Sep 17 00:00:00 2001
+From 202703b1393f7743b92c4d79f4bf1e8be272e7bf Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 11 Jul 2012 14:50:38 +0800
 Subject: [PATCH 10/28] httplive: peek more bytes to detect m3u8
