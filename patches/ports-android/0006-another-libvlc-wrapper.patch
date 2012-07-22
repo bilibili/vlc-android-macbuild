@@ -1,4 +1,4 @@
-From 6f8b5a5927ee8db724a0bc574380a1792f437a85 Mon Sep 17 00:00:00 2001
+From 39ea32cf96a8c90befd20b66fb884ba27df3e034 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 10 Jul 2012 19:41:13 +0800
 Subject: [PATCH 6/6] another libvlc wrapper
@@ -6,9 +6,9 @@ Subject: [PATCH 6/6] another libvlc wrapper
 ---
  Makefile                                |    7 +-
  vlc-android/jni/Android.mk              |    6 +-
- vlc-android/jni/libvlcjni_danmaku.c     | 1099 +++++++++++++++++++++++++++++++
- vlc-android/jni/libvlcjni_danmaku.inc.c |   64 ++
- 4 个文件被修改，插入 1174 行(+)，删除 2 行(-)
+ vlc-android/jni/libvlcjni_danmaku.c     | 1111 +++++++++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.inc.c |   65 ++
+ 4 个文件被修改，插入 1187 行(+)，删除 2 行(-)
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
@@ -59,10 +59,10 @@ index ca3b56e..f9efd9e 100644
  
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..eefddbc
+index 0000000..a7bcdad
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,1099 @@
+@@ -0,0 +1,1111 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -273,6 +273,18 @@ index 0000000..eefddbc
 +    case libvlc_MediaPlayerBufferingTotal: {
 +        float cache = ev->u.media_player_buffering_total.new_cache_total;
 +        vlc_event_set_float(env, eventObject, cache);
++        break;
++    }
++    case libvlc_MediaPlayerModuleChanged: {
++        char *p_module_list = NULL;
++        asprintf(&p_module_list,
++                 "video-decoder=%s;audio-decoder=%s;video-decoder-impl=%s;audio-decoder-impl=%s",
++                 ev->u.media_player_module_changed.psz_video_decoder ? ev->u.media_player_module_changed.psz_video_decoder : "",
++                 ev->u.media_player_module_changed.psz_audio_decoder ? ev->u.media_player_module_changed.psz_audio_decoder : "",
++                 ev->u.media_player_module_changed.psz_video_decoder_impl ? ev->u.media_player_module_changed.psz_video_decoder_impl : "",
++                 ev->u.media_player_module_changed.psz_audio_decoder_impl ? ev->u.media_player_module_changed.psz_audio_decoder_impl : "");
++        vlc_event_set_string(env, eventObject, p_module_list);
++        free(p_module_list);
 +        break;
 +    }
 +    }
@@ -1164,10 +1176,10 @@ index 0000000..eefddbc
 +}
 diff --git a/vlc-android/jni/libvlcjni_danmaku.inc.c b/vlc-android/jni/libvlcjni_danmaku.inc.c
 new file mode 100644
-index 0000000..2915871
+index 0000000..b4bfadd
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.inc.c
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,65 @@
 +#ifndef LIBVLCJNI_DANMAKU_INC_C
 +#define LIBVLCJNI_DANMAKU_INC_C
 +
@@ -1207,6 +1219,7 @@ index 0000000..2915871
 +    libvlc_MediaPlayerLengthChanged,
 +//        libvlc_MediaPlayerVout,
 +    libvlc_MediaPlayerBufferingTotal,
++    libvlc_MediaPlayerModuleChanged,
 +};
 +
 +void setInt(JNIEnv *env, jobject item, const char* field, int value);

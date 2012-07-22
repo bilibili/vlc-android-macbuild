@@ -1,4 +1,4 @@
-From 6248b5d2b97c94b0228a36a605082e39ca3ff958 Mon Sep 17 00:00:00 2001
+From 3aa3fe13b34dceeed24c64e04c8a0ebf30f7f52d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH 2/6] modify compile.sh for MacOS build
@@ -8,7 +8,7 @@ Subject: [PATCH 2/6] modify compile.sh for MacOS build
  1 个文件被修改，插入 31 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index d96ea3a..628c008 100755
+index 1c8ec6e..dcc9057 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -31,13 +31,24 @@ If you plan to use a release build, run 'compile.sh release'

@@ -1,4 +1,4 @@
-From d5c5e98c1da375add1b55b56a0eb6e5c654afdb8 Mon Sep 17 00:00:00 2001
+From 0fdf75749316c353c86cced9e1154319b6eef9ff Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 11:30:23 +0800
 Subject: [PATCH 3/6] do not build apk
