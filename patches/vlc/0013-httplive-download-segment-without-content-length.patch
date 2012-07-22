@@ -1,7 +1,7 @@
-From e5551af86cb2cee13cc2e001c52e7ec6b37171f1 Mon Sep 17 00:00:00 2001
+From a7dae0a8bcf2f8c27512a0aaf38a3ded769008c5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 29 May 2012 15:05:09 +0800
-Subject: [PATCH 13/29] httplive: download segment without content-length
+Subject: [PATCH 13/30] httplive: download segment without content-length
 
 ---
  modules/stream_filter/httplive.c |   55 ++++++++++++++++++++++++++++++++------

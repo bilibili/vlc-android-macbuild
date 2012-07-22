@@ -1,7 +1,7 @@
-From fb28f01831e9bf91c9620317360a87a227be6d14 Mon Sep 17 00:00:00 2001
+From e0552958cc0a8232e67d836ad89a65e0f9b8819d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:11 +0800
-Subject: [PATCH 29/29] sinaxml: sina xml parser
+Subject: [PATCH 30/30] sinaxml: sina xml parser
 
 ---
  modules/access/sina/Modules.am |    5 +

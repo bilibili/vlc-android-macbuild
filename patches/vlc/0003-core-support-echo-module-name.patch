@@ -1,17 +1,17 @@
-From 16a6fb08a1d125dd863a76105e49626dcfd95b95 Mon Sep 17 00:00:00 2001
+From fb84754ff820731e432ae5060a96338b1a4f67d5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 15:42:47 +0800
-Subject: [PATCH 03/29] core: support echo module name
+Subject: [PATCH 03/30] core: support echo module name
 
 ---
  include/vlc/libvlc_events.h |    8 ++++++++
  include/vlc_input.h         |    3 +++
  lib/media_player.c          |   10 ++++++++++
- src/input/decoder.c         |   11 +++++++++++
+ src/input/decoder.c         |   22 ++++++++++++++++++++++
  src/input/event.c           |   24 ++++++++++++++++++++++++
  src/input/event.h           |    4 ++++
  src/input/var.c             |    8 ++++++++
- 7 个文件被修改，插入 68 行(+)
+ 7 个文件被修改，插入 79 行(+)
 
 diff --git a/include/vlc/libvlc_events.h b/include/vlc/libvlc_events.h
 index d286cb4..e84ea1d 100644
@@ -82,10 +82,10 @@ index 23ebf44..8ed3aae 100644
      /* Attach a var callback to the global object to provide the glue between
       * vout_thread that generates the event and media_player that re-emits it
 diff --git a/src/input/decoder.c b/src/input/decoder.c
-index a98367f..1a2c861 100644
+index a98367f..b82d611 100644
 --- a/src/input/decoder.c
 +++ b/src/input/decoder.c
-@@ -287,6 +287,17 @@ static decoder_t *decoder_New( vlc_object_t *p_parent, input_thread_t *p_input,
+@@ -287,6 +287,25 @@ static decoder_t *decoder_New( vlc_object_t *p_parent, input_thread_t *p_input,
          return NULL;
      }
  
@@ -93,16 +93,34 @@ index a98367f..1a2c861 100644
 +    {
 +        const char *p_decoder = module_get_object( p_dec->p_module );
 +        input_SendEventModuleChanged_AudioDecoder( p_input, p_decoder );
++
++        const char *p_decoder_impl = var_GetString( p_dec, "module-audio-decoder-impl" );
++        if( p_decoder_impl )
++            input_SendEventModuleChanged_AudioDecoderImpl( p_input, p_decoder_impl );
 +    }
 +    else
 +    {
 +        const char *p_decoder = module_get_object( p_dec->p_module );
 +        input_SendEventModuleChanged_VideoDecoder( p_input, p_decoder );
++
++        const char *p_decoder_impl = var_GetString( p_dec, "module-video-decoder-impl" );
++        if( p_decoder_impl )
++            input_SendEventModuleChanged_VideoDecoderImpl( p_input, p_decoder_impl );
 +    }
 +
      p_dec->p_owner->p_clock = p_clock;
      assert( p_dec->fmt_out.i_cat != UNKNOWN_ES );
  
+@@ -749,6 +768,9 @@ static decoder_t * CreateDecoder( vlc_object_t *p_parent,
+     if( p_dec == NULL )
+         return NULL;
+ 
++    var_Create( p_dec, "module-audio-decoder-impl", VLC_VAR_STRING );
++    var_Create( p_dec, "module-video-decoder-impl", VLC_VAR_STRING );
++
+     p_dec->pf_decode_audio = NULL;
+     p_dec->pf_decode_video = NULL;
+     p_dec->pf_decode_sub = NULL;
 diff --git a/src/input/event.c b/src/input/event.c
 index 2b0a4bc..81bee9d 100644
 --- a/src/input/event.c
@@ -154,7 +172,7 @@ index 3991453..40bb585 100644
  /* TODO rename Item* */
  void input_SendEventMeta( input_thread_t *p_input );
 diff --git a/src/input/var.c b/src/input/var.c
-index 198e0f9..8c7f558 100644
+index 198e0f9..c85ce65 100644
 --- a/src/input/var.c
 +++ b/src/input/var.c
 @@ -504,6 +504,14 @@ void input_ConfigVarInit ( input_thread_t *p_input )
@@ -167,7 +185,7 @@ index 198e0f9..8c7f558 100644
 +
 +    var_Create( p_input, "module-video-decoder-impl", VLC_VAR_STRING );
 +
-+    var_Create( p_input, "module-video-decoder-impl", VLC_VAR_STRING );
++    var_Create( p_input, "module-audio-decoder-impl", VLC_VAR_STRING );
 +
      /* */
      var_Create( p_input, "input-record-native", VLC_VAR_BOOL | VLC_VAR_DOINHERIT );
