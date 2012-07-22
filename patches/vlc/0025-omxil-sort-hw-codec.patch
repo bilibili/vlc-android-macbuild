@@ -1,7 +1,7 @@
 From f9a5cbed2cebd05056b6720f04296e30209c188c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
-Subject: [PATCH 25/30] omxil: sort hw codec
+Subject: [PATCH 25/31] omxil: sort hw codec
 
 ---
  modules/codec/omxil/omxil.c |   96 +++++++++++++++++++++++++++++++++++++++++++

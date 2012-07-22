@@ -1,0 +1,25 @@
+From a12e65394cf3c565b2c4474cca89bd33262d215f Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sun, 22 Jul 2012 18:43:17 +0800
+Subject: [PATCH 28/31] omxil: disable debug info
+
+---
+ modules/codec/omxil/omxil.c |    2 +-
+ 1 个文件被修改，插入 1 行(+)，删除 1 行(-)
+
+diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
+index 70008c4..627a4c3 100644
+--- a/modules/codec/omxil/omxil.c
++++ b/modules/codec/omxil/omxil.c
+@@ -51,7 +51,7 @@
+ #include "omxil.h"
+ 
+ #ifndef NDEBUG
+-# define OMXIL_EXTRA_DEBUG
++//# define OMXIL_EXTRA_DEBUG
+ #endif
+ 
+ #define SENTINEL_FLAG 0x10000
+-- 
+1.7.10.4
+
