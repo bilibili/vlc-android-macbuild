@@ -1,7 +1,7 @@
-From b363e3ad472944ba24c7596b95493ef550f02187 Mon Sep 17 00:00:00 2001
+From c4e62cd729244b5ac541c21f0b9e32f2bda6bc71 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 4 Jul 2012 18:28:44 +0800
-Subject: [PATCH 25/28] omxil: disable audio codec
+Subject: [PATCH 26/29] omxil: disable audio codec
 
 ---
  modules/codec/omxil/omxil.c |    2 ++

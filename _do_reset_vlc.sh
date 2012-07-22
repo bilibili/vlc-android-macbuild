@@ -32,19 +32,20 @@ git checkout -B android ${TESTED_HASH}
 
 echo "======================================="
 echo "Applying the patches"
-git am ../patches/*.patch || git am --abort
+git am ../patches/*.patch
 
 if [ ${BUILD_PLATFORM} == 'darwin' ]; then
     echo "======================================="
     echo "Applying the patches for build on darwin"
-    git am ../../patches/vlc-on-macosx/*.patch || git am --abort
+    git am ../../patches/vlc-on-macosx/*.patch
 fi
 
 echo "======================================="
 echo "Applying the patches for libvlc_danmaku"
-git am ../../patches/vlc/000*.patch || git am --abort
-git am ../../patches/vlc/001*.patch || git am --abort
-git am ../../patches/vlc/002*.patch || git am --abort
+git am ../../patches/vlc/000*.patch
+git am ../../patches/vlc/001*.patch
+git am ../../patches/vlc/002*.patch
+git am ../../patches/vlc/003*.patch
 
 echo "======================================="
 
