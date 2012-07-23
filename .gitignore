@@ -5,9 +5,9 @@
 /vlc-full-armv6j
 /vlc-full-armv7a-neon
 /vlc-full-cortex-a9-vfpv3-d16
-/vlc-live-armv6j
-/vlc-live-armv7a-neon
-/vlc-live-cortex-a9-vfpv3-d16
+/vlc-medium-armv6j
+/vlc-medium-armv7a-neon
+/vlc-medium-cortex-a9-vfpv3-d16
 /vlc-app
 /_ndk_stack.sh
 /_addr2line.sh

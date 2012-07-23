@@ -1,0 +1,38 @@
+From 9889f6d9d1740e642280906029dce8b03f0577f1 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 16 Apr 2012 23:20:57 +0800
+Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
+
+---
+ configure.sh |    8 +++++---
+ 1 个文件被修改，插入 5 行(+)，删除 3 行(-)
+
+diff --git a/configure.sh b/configure.sh
+index c5dd97f..4d2082d 100755
+--- a/configure.sh
++++ b/configure.sh
+@@ -51,8 +51,10 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+                 --enable-opensles \
+                 --enable-audiotrack \
+                 --enable-android-surface \
+-                --enable-mkv \
+-                --enable-taglib \
++                --enable-debug \
++                --disable-mkv \
++                --disable-taglib \
++                --disable-freetype \
+                 --enable-iomx \
+                 --disable-vlc --disable-shared \
+                 --disable-vlm \
+@@ -88,7 +90,7 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+                 --disable-skins2 \
+                 --disable-mtp \
+                 --disable-notify \
+-                --enable-libass \
++                --disable-libass \
+                 --disable-svg \
+                 --disable-sqlite \
+                 --disable-udev \
+-- 
+1.7.10.4
+
