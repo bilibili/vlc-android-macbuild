@@ -1,22 +1,22 @@
-From 236aec63f6da4f09eb9ab0cd8b126b0adf06fb3f Mon Sep 17 00:00:00 2001
+From 84fff7de240382e37054cacc492ef5671651b807 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 25 Jul 2012 11:36:39 +0800
-Subject: [PATCH] yahttplive: yet another httplive
+Subject: [PATCH 1003/1003] yahls: yet another http live stream
 
 ---
- modules/access/yahttplive/m3u8parser.c |  796 ++++++++++++++++++++++++++++++++
- modules/access/yahttplive/m3u8parser.h |  200 ++++++++
- modules/access/yahttplive/yahttplive.c |   24 +
+ modules/access/yahls/m3u8parser.c |  796 +++++++++++++++++++++++++++++++++++++
+ modules/access/yahls/m3u8parser.h |  200 ++++++++++
+ modules/access/yahls/yahls.c      |   24 ++
  3 个文件被修改，插入 1020 行(+)
- create mode 100644 modules/access/yahttplive/m3u8parser.c
- create mode 100644 modules/access/yahttplive/m3u8parser.h
- create mode 100644 modules/access/yahttplive/yahttplive.c
+ create mode 100644 modules/access/yahls/m3u8parser.c
+ create mode 100644 modules/access/yahls/m3u8parser.h
+ create mode 100644 modules/access/yahls/yahls.c
 
-diff --git a/modules/access/yahttplive/m3u8parser.c b/modules/access/yahttplive/m3u8parser.c
+diff --git a/modules/access/yahls/m3u8parser.c b/modules/access/yahls/m3u8parser.c
 new file mode 100644
 index 0000000..d18de2c
 --- /dev/null
-+++ b/modules/access/yahttplive/m3u8parser.c
++++ b/modules/access/yahls/m3u8parser.c
 @@ -0,0 +1,796 @@
 +/*****************************************************************************
 + * m3u8parser.c
@@ -815,11 +815,11 @@ index 0000000..d18de2c
 +    return p_meta_list;
 +}
 \ No newline at end of file
-diff --git a/modules/access/yahttplive/m3u8parser.h b/modules/access/yahttplive/m3u8parser.h
+diff --git a/modules/access/yahls/m3u8parser.h b/modules/access/yahls/m3u8parser.h
 new file mode 100644
 index 0000000..28d05a0
 --- /dev/null
-+++ b/modules/access/yahttplive/m3u8parser.h
++++ b/modules/access/yahls/m3u8parser.h
 @@ -0,0 +1,200 @@
 +/*****************************************************************************
 + * m3u8parser.h
@@ -1022,11 +1022,11 @@ index 0000000..28d05a0
 +
 +#endif
 \ No newline at end of file
-diff --git a/modules/access/yahttplive/yahttplive.c b/modules/access/yahttplive/yahttplive.c
+diff --git a/modules/access/yahls/yahls.c b/modules/access/yahls/yahls.c
 new file mode 100644
 index 0000000..c3a46f5
 --- /dev/null
-+++ b/modules/access/yahttplive/yahttplive.c
++++ b/modules/access/yahls/yahls.c
 @@ -0,0 +1,24 @@
 +/*****************************************************************************
 + * yahttplive.c: Yet another httplive

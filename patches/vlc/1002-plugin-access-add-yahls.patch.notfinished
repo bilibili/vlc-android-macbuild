@@ -1,0 +1,31 @@
+From 6a20ca095a2ae28ef9f194d688170d546447df47 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Wed, 25 Jul 2012 11:36:00 +0800
+Subject: [PATCH 1002/1003] plugin: access: add yahls
+
+---
+ modules/access/Modules.am |    8 ++++++++
+ 1 个文件被修改，插入 8 行(+)
+
+diff --git a/modules/access/Modules.am b/modules/access/Modules.am
+index 9e97c73..0a549ba 100644
+--- a/modules/access/Modules.am
++++ b/modules/access/Modules.am
+@@ -179,6 +179,14 @@ libaccess_sinaxml_plugin_la_LIBADD = $(AM_LIBADD) $(LIBXML2_LIBS)
+ libaccess_sinaxml_plugin_la_DEPENDENCIES =
+ libvlc_LTLIBRARIES += libaccess_sinaxml_plugin.la
+ 
++libaccess_yahls_plugin_la_SOURCES = \
++	yahls/yahls.c \
++	yahls/m3u8parser.c
++libaccess_yahls_plugin_la_CFLAGS = $(AM_CFLAGS)
++libaccess_yahls_plugin_la_LIBADD = $(AM_LIBADD)
++libaccess_yahls_plugin_la_DEPENDENCIES =
++libvlc_LTLIBRARIES += libaccess_yahls_plugin.la
++
+ ### Digital TV ###
+ 
+ libdtv_plugin_la_SOURCES = \
+-- 
+1.7.10.4
+
