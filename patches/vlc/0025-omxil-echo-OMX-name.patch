@@ -1,0 +1,29 @@
+From 9ccc1a0e12230f8217bfaa9786dc22d84b147142 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sun, 22 Jul 2012 18:21:32 +0800
+Subject: [PATCH 25/32] omxil: echo OMX name
+
+---
+ modules/codec/omxil/omxil.c |    6 ++++++
+ 1 个文件被修改，插入 6 行(+)
+
+diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
+index 785e6c4..1e5e75c 100644
+--- a/modules/codec/omxil/omxil.c
++++ b/modules/codec/omxil/omxil.c
+@@ -1199,6 +1199,12 @@ loaded:
+     p_dec->b_need_packetized = true;
+     if (!strcmp(p_sys->psz_component, "OMX.TI.DUCATI1.VIDEO.DECODER"))
+         p_sys->b_use_pts = 1;
++
++    if( p_dec->fmt_in.i_cat != VIDEO_ES )
++        var_SetString( p_dec, "module-audio-decoder-impl", p_sys->psz_component );
++    else
++        var_SetString( p_dec, "module-video-decoder-impl", p_sys->psz_component );
++
+     return VLC_SUCCESS;
+ 
+  error:
+-- 
+1.7.10.4
+

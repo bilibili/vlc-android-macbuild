@@ -1,0 +1,183 @@
+From b864e82b034583607cd4e436dac78ffe26e4d1b3 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 14 Jun 2012 16:44:57 +0800
+Subject: [PATCH 22/32] httplive: skip failed segment
+
+---
+ modules/stream_filter/httplive.c |   88 +++++++++++++++++++++++++++++++++++++-
+ 1 个文件被修改，插入 86 行(+)，删除 2 行(-)
+
+diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
+index 9ef74b0..8207b8d 100644
+--- a/modules/stream_filter/httplive.c
++++ b/modules/stream_filter/httplive.c
+@@ -127,6 +127,10 @@ struct stream_sys_t
+         int         stream;     /* current hls_stream  */
+         int         segment;    /* current segment for playback */
+         int         current_segment_start_time; /* (seconds) */
++
++        /* live only */
++        vlc_mutex_t lock_wait;  /* protect condition */
++        vlc_cond_t  wait;       /* wait download finished */
+     } playback;
+ 
+     /* Playlist */
+@@ -144,6 +148,7 @@ struct stream_sys_t
+     bool        b_error;    /* parsing error */
+     bool        b_aesmsg;   /* only print one time that the media is encrypted */
+ 
++    volatile bool b_eof;    /* end of stream */
+     volatile bool b_close;  /* true if Close called */
+     vlc_mutex_t lock_close; /* for reload and download thread */
+     vlc_cond_t  cond_close; /* for reload and download thread */
+@@ -1634,16 +1639,19 @@ static void* hls_Thread(void *p_this)
+         segment_t *segment = segment_GetSegment(hls, p_sys->download.segment);
+         vlc_mutex_unlock(&hls->lock);
+ 
++        int download_ret = VLC_EGENERIC;
+         if ((segment != NULL) &&
+-            (hls_DownloadSegmentData(s, hls, segment, &p_sys->download.stream) != VLC_SUCCESS))
++            ((download_ret = hls_DownloadSegmentData(s, hls, segment, &p_sys->download.stream)) != VLC_SUCCESS))
+         {
+             if (!vlc_object_alive(s)) break;
+ 
++            /*
+             if (!p_sys->b_live)
+             {
+                 p_sys->b_error = true;
+                 break;
+             }
++             */
+ 
+             if (p_sys->b_close)
+                 break;
+@@ -1661,8 +1669,22 @@ static void* hls_Thread(void *p_this)
+             p_sys->download.segment++;
+         vlc_cond_signal(&p_sys->download.wait);
+         vlc_mutex_unlock(&p_sys->download.lock_wait);
++
++        /* wake up playback thread (Read() thread) */
++        if (p_sys->b_live && download_ret == VLC_SUCCESS)
++        {
++            vlc_mutex_lock(&p_sys->playback.lock_wait);
++            vlc_cond_signal(&p_sys->playback.wait);
++            vlc_mutex_unlock(&p_sys->playback.lock_wait);
++        }
+     }
+ 
++    /* wake up playback thread (Read() thread) */
++    vlc_mutex_lock(&p_sys->playback.lock_wait);
++    vlc_cond_signal(&p_sys->playback.wait);
++    vlc_mutex_unlock(&p_sys->playback.lock_wait);
++    p_sys->b_eof = true;
++
+     vlc_restorecancel(canc);
+     return NULL;
+ }
+@@ -1718,6 +1740,11 @@ static void* hls_Reload(void *p_this)
+         vlc_mutex_unlock(&p_sys->lock_close);
+     }
+ 
++    vlc_mutex_lock(&p_sys->playback.lock_wait);
++    vlc_cond_signal(&p_sys->playback.wait);
++    vlc_mutex_unlock(&p_sys->playback.lock_wait);
++    p_sys->b_eof = true;
++
+     vlc_restorecancel(canc);
+     return NULL;
+ }
+@@ -2064,6 +2091,9 @@ static int Open(vlc_object_t *p_this)
+     vlc_mutex_init(&p_sys->lock_close);
+     vlc_cond_init(&p_sys->cond_close);
+ 
++    vlc_mutex_init(&p_sys->playback.lock_wait);
++    vlc_cond_init(&p_sys->playback.wait);
++
+     /* Initialize HLS live stream */
+     if (p_sys->b_live)
+     {
+@@ -2129,6 +2159,10 @@ static void Close(vlc_object_t *p_this)
+     vlc_cond_signal(&p_sys->cond_close);
+     vlc_mutex_unlock(&p_sys->lock_close);
+ 
++    vlc_mutex_lock(&p_sys->playback.lock_wait);
++    vlc_cond_signal(&p_sys->playback.wait);
++    vlc_mutex_unlock(&p_sys->playback.lock_wait);
++
+     /* */
+     if (p_sys->b_live)
+         vlc_join(p_sys->reload, NULL);
+@@ -2266,12 +2300,59 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
+ 
+     do
+     {
++        /* Is there any downloaded segment to play? */
++        if (!p_sys->b_eof)
++        {
++            hls_stream_t *hls = hls_Get(p_sys->hls_stream, p_sys->download.stream);
++            assert(hls);
++
++            vlc_mutex_lock(&hls->lock);
++            int count = vlc_array_count(hls->segments);
++            vlc_mutex_unlock(&hls->lock);
++
++            if (!p_sys->b_live && p_sys->playback.segment >= count)
++            {
++                msg_Info(s, "hls_Read EOS");
++                break;
++            }
++            else if (p_sys->playback.segment >= p_sys->download.segment)
++            {   /* for Read() we do not care about seek here */
++                /* wait */
++                vlc_mutex_lock(&p_sys->playback.lock_wait);
++                while (p_sys->playback.segment >= p_sys->download.segment)
++                {
++                    msg_Warn(s, "may stalling, wait for segment downloading");
++                    vlc_cond_wait(&p_sys->download.wait, &p_sys->playback.lock_wait);
++                    if (!vlc_object_alive(s) || p_sys->b_close || p_sys->b_eof)
++                        break;
++                }
++                vlc_mutex_unlock(&p_sys->playback.lock_wait);
++            }
++
++            if (!vlc_object_alive(s) || p_sys->b_close)
++                break;
++
++            if (p_sys->b_eof && p_sys->playback.segment >= p_sys->download.segment)
++                break;
++        }
++
+         /* Determine next segment to read. If this is a meta playlist and
+          * bandwidth conditions changed, then the stream might have switched
+          * to another bandwidth. */
+         segment_t *segment = GetSegment(s);
+         if (segment == NULL)
+-            break;
++        {
++            if (!vlc_object_alive(s) || p_sys->b_close)
++                break;
++
++            if (p_sys->b_eof && p_sys->playback.segment >= p_sys->download.segment)
++                break;
++
++            /* for live stream, there is no EOF */
++            msg_Err(s, "NULL segment, try next segment");
++            p_sys->playback.segment++;
++            continue;
++        }
+ 
+         vlc_mutex_lock(&segment->lock);
+         if (segment->data->i_buffer == 0)
+@@ -2319,6 +2400,9 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
+ 
+     } while (i_read > 0);
+ 
++    if (used <= 0)
++        msg_Err(s, "httplive:hls_Read read %d bytes", (int)used);
++
+     return used;
+ }
+ 
+-- 
+1.7.10.4
+

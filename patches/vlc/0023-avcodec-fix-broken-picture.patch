@@ -1,0 +1,60 @@
+From c00865805c967d596e3daa5f4f220b2ff80ab065 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sat, 16 Jun 2012 15:02:07 +0800
+Subject: [PATCH 23/32] avcodec: fix broken picture
+
+---
+ modules/codec/avcodec/video.c |   12 +++++++++---
+ 1 个文件被修改，插入 9 行(+)，删除 3 行(-)
+
+diff --git a/modules/codec/avcodec/video.c b/modules/codec/avcodec/video.c
+index a346551..3352b2e 100644
+--- a/modules/codec/avcodec/video.c
++++ b/modules/codec/avcodec/video.c
+@@ -491,8 +491,9 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+         return NULL;
+     }
+ 
+-    if( p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED) )
++    if( p_block->i_flags & (BLOCK_FLAG_CORRUPTED) )
+     {
++        msg_Err( p_dec, "corrupted video -> dropping frame" );
+         p_sys->i_pts = VLC_TS_INVALID; /* To make sure we recover properly */
+ 
+         p_sys->i_late_frames = 0;
+@@ -503,6 +504,10 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+         block_Release( p_block );
+         return NULL;
+     }
++    else if( p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY) )
++    {
++        msg_Err( p_dec, "discontinuity video -> no dropping frame" );
++    }
+ 
+     if( p_block->i_flags & BLOCK_FLAG_PREROLL )
+     {
+@@ -513,11 +518,11 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+     }
+ 
+     if( !p_dec->b_pace_control && (p_sys->i_late_frames > 0) &&
+-        (mdate() - p_sys->i_late_frames_start > INT64_C(5000000)) )
++        (mdate() - p_sys->i_late_frames_start > INT64_C(50000000)) )
+     {
+         if( p_sys->i_pts > VLC_TS_INVALID )
+         {
+-            msg_Err( p_dec, "more than 5 seconds of late video -> "
++            msg_Err( p_dec, "more than 50 seconds of late video -> "
+                      "dropping frame (computer too slow ?)" );
+             p_sys->i_pts = VLC_TS_INVALID; /* To make sure we recover properly */
+         }
+@@ -567,6 +572,7 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+     {
+         /* It creates broken picture
+          * FIXME either our parser or ffmpeg is broken */
++        b_drawpicture = true;
+ #if 0
+         if( p_sys->b_hurry_up )
+             p_context->skip_frame = __MAX( p_context->skip_frame,
+-- 
+1.7.10.4
+

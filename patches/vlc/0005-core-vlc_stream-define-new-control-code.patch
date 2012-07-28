@@ -1,0 +1,29 @@
+From 4094e190dbf07c4c67f63ef0e36441c2b4da8419 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 21 Jun 2012 15:35:02 +0800
+Subject: [PATCH 05/32] core: vlc_stream: define new control code
+
+---
+ include/vlc_stream.h |    6 ++++++
+ 1 个文件被修改，插入 6 行(+)
+
+diff --git a/include/vlc_stream.h b/include/vlc_stream.h
+index c929836..62892b2 100644
+--- a/include/vlc_stream.h
++++ b/include/vlc_stream.h
+@@ -111,6 +111,12 @@ enum stream_query_e
+ 
+     /* XXX only data read through stream_Read/Block will be recorded */
+     STREAM_SET_RECORD_STATE,     /**< arg1=bool, arg2=const char *psz_ext (if arg1 is true)  res=can fail */
++
++    /* */
++    STREAM_GET_CACHED_SIZE,     /**< arg1= uint64_t *     res=can fail (0 if no sense)*/
++
++    /* for clock gap in youku httplive/mpeg2ts */
++    STREAM_HTTPLIVE_GET_SEGMENT_START,
+ };
+ 
+ VLC_API int stream_Read( stream_t *s, void *p_read, int i_read );
+-- 
+1.7.10.4
+

@@ -1,0 +1,2254 @@
+From 264ca6938876b5c931df73016ab98c24cdc67a08 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Wed, 25 Jul 2012 11:36:39 +0800
+Subject: [PATCH 34/34] yahls: yet another http live stream
+
+---
+ modules/access/yahls/m3u8parser.c |  911 ++++++++++++++++++++++++++++++
+ modules/access/yahls/m3u8parser.h |  212 +++++++
+ modules/access/yahls/yahls.c      | 1094 +++++++++++++++++++++++++++++++++++++
+ 3 个文件被修改，插入 2217 行(+)
+ create mode 100644 modules/access/yahls/m3u8parser.c
+ create mode 100644 modules/access/yahls/m3u8parser.h
+ create mode 100644 modules/access/yahls/yahls.c
+
+diff --git a/modules/access/yahls/m3u8parser.c b/modules/access/yahls/m3u8parser.c
+new file mode 100644
+index 0000000..db54956
+--- /dev/null
++++ b/modules/access/yahls/m3u8parser.c
+@@ -0,0 +1,911 @@
++/*****************************************************************************
++ * m3u8parser.c
++ *****************************************************************************
++ *
++ * Authors: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++/*****************************************************************************
++ * Preamble
++ *  Version 1:
++ *      http://tools.ietf.org/html/draft-pantos-http-live-streaming-00
++ *      http://tools.ietf.org/html/draft-pantos-http-live-streaming-01
++ *      http://tools.ietf.org/html/draft-pantos-http-live-streaming-02
++ *  Version 2:
++ *      http://tools.ietf.org/html/draft-pantos-http-live-streaming-03
++ *      http://tools.ietf.org/html/draft-pantos-http-live-streaming-04
++ *  Version 3:
++ *      http://tools.ietf.org/html/draft-pantos-http-live-streaming-05
++ *      http://tools.ietf.org/html/draft-pantos-http-live-streaming-06
++ *  Version 4:
++ *      http://tools.ietf.org/html/draft-pantos-http-live-streaming-07
++ *      http://tools.ietf.org/html/draft-pantos-http-live-streaming-08
++ *
++ *  meta
++ *
++ *      #EXT-X-VERSION:[version]
++ *
++ *      #EXT-X-STREAM-INF:[attribute=value][,attribute=value]*
++ *      <URI>
++ *          v1 attrs
++ *              BANDWIDTH=<n>
++ *              PROGRAM-ID=<i>
++ *              CODECS="[format][,format]*"
++ *          v2 attrs
++ *              RESOLUTION=<N>x<M>
++ *          v4 attrs
++ *              AUDIO=""        EXT-X-MEDIA[TYPE=AUDIO][GROUP-ID]
++ *              VIDEO=""        EXT-X-MEDIA[TYPE=VIDEO][GROUP-ID]
++ *
++ *  play list
++ *
++ *      #EXTINF:<duration>,<title>
++ *      
++ *
++ *****************************************************************************/
++
++#include "m3u8parser.h"
++
++#include <vlc_memory.h>
++
++#include <assert.h>
++
++/* define this macro to enable debug log */
++#define M3U8_DEBUG
++
++#define M3U8_MAX_PEEK_SIZE 100
++
++/* Read M3U8 file */
++static ssize_t m3u8_ReadAllFromStream( vlc_object_t *p_this,
++                                       stream_t *p_stream,
++                                       uint8_t **pp_buffer )
++{
++    int64_t i_total_bytes = 0;
++    int64_t i_total_allocated = 0;
++    uint8_t *p_buffer = NULL;
++
++#ifdef M3U8_DEBUG
++    msg_Info( p_this, "m3u8_ReadAllFromStream" );
++#endif
++    while (1)
++    {
++        char buf[4096];
++        int64_t i_bytes;
++
++        i_bytes = stream_Read( p_stream, buf, sizeof( buf ) );
++        if (i_bytes == 0)
++            break;      /* EOF ? */
++        else if (i_bytes < 0)
++            goto EXIT_FAIL;
++
++        if ( (i_total_bytes + i_bytes + 1) > i_total_allocated )
++        {
++            if (i_total_allocated)
++                i_total_allocated *= 2;
++            else
++                i_total_allocated = __MIN( (uint64_t)i_bytes + 1, sizeof( buf ) );
++
++            p_buffer = realloc_or_free( p_buffer, i_total_allocated );
++            if (p_buffer == NULL)
++                goto EXIT_FAIL;
++        }
++
++        memcpy( p_buffer + i_total_bytes, buf, i_bytes );
++        i_total_bytes += i_bytes;
++    }
++
++    if (i_total_allocated == 0)
++        goto EXIT_FAIL;
++
++    p_buffer[i_total_bytes] = '\0';
++    *pp_buffer = p_buffer;
++
++#ifdef M3U8_DEBUG
++    msg_Info( p_this, "%d, %s", (int) i_total_bytes, p_buffer );
++#endif
++    return i_total_bytes;
++
++EXIT_FAIL:
++
++    msg_Err( p_this, "m3u8_ReadAllFromStream failed" );
++    return -1;
++}
++
++/* */
++static bool m3u8_IsM3U8Data( const uint8_t *peek, int size )
++{
++    if( size < 7 )
++        return false;
++
++    if( memcmp( peek, "#EXTM3U", 7 ) != 0 )
++        return false;
++    
++    peek += 7;
++    size -= 7;
++    
++    /* Parse stream and search for
++     * EXT-X-TARGETDURATION or EXT-X-STREAM-INF tag, see
++     * http://tools.ietf.org/html/draft-pantos-http-live-streaming-08#page-8 */
++    while( size-- )
++    {
++        static const char *const ext[] = {
++            "TARGETDURATION",
++            "MEDIA-SEQUENCE",
++            "KEY",
++            "ALLOW-CACHE",
++            "ENDLIST",
++            "STREAM-INF",
++            "DISCONTINUITY",
++            "VERSION"
++        };
++        
++        if( *peek++ != '#' )
++            continue;
++        
++        if( size < 6 )
++            continue;
++        
++        if( memcmp( peek, "EXT-X-", 6 ) )
++            continue;
++        
++        peek += 6;
++        size -= 6;
++        
++        for( size_t i = 0; i < ARRAY_SIZE( ext ); i++ )
++        {
++            size_t len = strlen( ext[i] );
++            if ( size < 0 || (size_t)size < len )
++                continue;
++            if ( !memcmp( peek, ext[i], len ) )
++                return true;
++        }
++    }
++    
++    return false;
++}
++
++/* */
++inline static bool m3u8_IsM3U8Stream( stream_t *p_stream )
++{
++    const uint8_t *peek = NULL;
++
++    int size = stream_Peek( p_stream, &peek, M3U8_MAX_PEEK_SIZE );
++    if( size <= 0 )
++        return false;
++
++    return m3u8_IsM3U8Data( peek, size );
++}
++
++/*****************************************************************************
++ * Tokenize
++ *****************************************************************************/
++
++/* */
++static char *m3u8_TokenizeLine( uint8_t *p_begin, uint8_t *p_end, uint8_t **pp_next_line )
++{
++    uint8_t *p = p_begin;
++    while( p < p_end )
++    {
++        if( ( *p == '\r' ) || ( *p == '\n') || ( *p == '\0' ) )
++            break;
++        p++;
++    }
++
++    assert( p < p_end );
++    uint8_t *p_line_end = p;
++
++    *pp_next_line = p;
++    while( p < p_end && ( ( *p == '\r' ) || ( *p == '\n' ) || ( *p == '\0' ) ) )
++    {
++        /* next pass start after \r and \n */
++        p++;
++        *pp_next_line = p;
++    }
++
++    *p_line_end = '\0';
++    return (char *) p_begin;
++}
++
++/* */
++static char *m3u8_TokenizeAttrList( char *p_attr_list, char **pp_save )
++{
++    char *p = NULL;
++
++    if( p_attr_list )
++    {
++        p = strchr( p_attr_list, ':' );
++        if( p )
++            ++p;
++    }
++    else if( pp_save )
++    {
++        p = *pp_save;
++    }
++
++    if( !p || !*p )
++        return NULL;
++
++    /* trim head */
++    char ch = *p;
++    while( ch )
++    {
++        if( ch != ',' )
++            break;
++
++        *p = '\0';
++        p++;
++        ch = *p;
++    }
++
++    /* tokenize */
++    char *p_attr_pair_begin = p;
++    bool b_quoted = false;
++    while( ch )
++    {
++        if( !b_quoted && ch == ',' )
++            break;
++
++        if( ch == '"' )
++            b_quoted = !b_quoted;
++
++        p++;
++        ch = *p;
++    }
++
++    /* trim tail */
++    while( ch )
++    {
++        if( ch != ',' )
++            break;
++        
++        *p = '\0';
++        p++;
++        ch = *p;
++    }
++
++    *pp_save = p;
++    return p_attr_pair_begin;
++}
++
++static char *m3u8_TokenizeAttr( char *p_attr, char **pp_value)
++{
++    *pp_value = NULL;
++
++    char *p = strchr( p_attr, '=' );
++    if( !p )
++        return p_attr;
++
++    *p = '\0';
++    *pp_value = p + 1;
++
++    char *p_value = *pp_value;
++    if( *p_value == '"' )
++    {
++        int i_value_len = strlen( p_value );
++        if( i_value_len >= 2 && p_value[ i_value_len - 1 ] == '"')
++        {
++            *pp_value = p_value + 1;
++            p_value[ i_value_len - 1 ] = '\0';
++        }
++    }
++
++    return p_attr;
++}
++
++/*****************************************************************************
++ * Tokenize play list
++ *****************************************************************************/
++/* */
++static int m3u8_TokenizeAttr_EXTINF( vlc_object_t *p_this,
++                                     m3u8_segmentinf_t *p_segmentinf,
++                                     char *p_line )
++{
++    p_segmentinf->i_duration_ms = 0;
++
++    char *p_save = NULL;
++    char *p_attr_pair = m3u8_TokenizeAttrList( p_line, &p_save );
++    if( p_attr_pair && *p_attr_pair )
++    {
++        p_segmentinf->i_duration_ms = (int) ( atof( p_attr_pair ) * 1000 );
++    }
++
++    /* TODO: parse attr <title> */
++
++    if( p_segmentinf->i_duration_ms == 0 )
++        msg_Warn( p_this, "#EXTINF:<0>" );
++    else
++    {
++#ifdef M3U8_DEBUG
++        msg_Dbg( p_this, "#EXTINF:<%d>", (int) p_segmentinf->i_duration_ms );
++#endif
++    }
++
++    return VLC_SUCCESS;
++}
++
++/* */
++static int m3u8_TokenizeAttr_EXT_X_TARGETDURATION( vlc_object_t *p_this,
++                                                   m3u8_playlist_t *p_playlist,
++                                                   char *p_line )
++{
++    p_playlist->i_target_duration_ms = 0;
++
++    char *p_save = NULL;
++    char *p_attr_pair = m3u8_TokenizeAttrList( p_line, &p_save );
++    if( p_attr_pair && *p_attr_pair )
++    {
++        p_playlist->i_target_duration_ms = atol( p_attr_pair ) * 1000;
++    }
++
++    if( p_playlist->i_target_duration_ms == 0 )
++        msg_Warn( p_this, "#EXT-X-TARGETDURATION:<0>" );
++    else
++    {
++#ifdef M3U8_DEBUG
++        msg_Dbg( p_this, "#EXT-X-TARGETDURATION:<%d>", (int) p_playlist->i_target_duration_ms );
++#endif
++    }
++
++    return VLC_SUCCESS;
++}
++
++/* */
++static int m3u8_TokenizeAttr_EXT_X_MEDIA_SEQUENCE( vlc_object_t *p_this,
++                                                  m3u8_playlist_t *p_playlist,
++                                                  char *p_line )
++{
++    p_playlist->i_media_sequence = 0;
++
++    char *p_save = NULL;
++    char *p_attr_pair = m3u8_TokenizeAttrList( p_line, &p_save );
++    if( p_attr_pair && *p_attr_pair )
++    {
++        p_playlist->i_media_sequence = atoll( p_attr_pair );
++    }
++
++    if( p_playlist->i_media_sequence == 0 )
++        msg_Warn( p_this, "#EXT-X-MEDIA-SEQUENCE:<0>" );
++    else
++    {
++#ifdef M3U8_DEBUG
++        msg_Dbg( p_this, "#EXT-X-MEDIA-SEQUENCE:<%"PRId64">", (int64_t) p_playlist->i_media_sequence );
++#endif
++    }
++
++    return VLC_SUCCESS;
++}
++
++/* */
++static m3u8_playlist_t *m3u8_TokenizePlayList( vlc_object_t *p_this,
++                                               uint8_t *p_begin,
++                                               uint8_t *p_end )
++{
++    uint8_t *p_next_line = p_begin;
++
++    m3u8_playlist_t *p_playlist = m3u8_AllocPlayList();
++    m3u8_segmentinf_t *p_next_segmentinf = m3u8_AllocSegmentInf();
++    bool b_expecting_url = false;
++    while( true )
++    {
++        p_begin = p_next_line;
++        if( p_begin >= p_end )
++            break;
++
++        char *p_line = m3u8_TokenizeLine( p_begin, p_end, &p_next_line );
++        if( p_line == NULL )
++            break;
++
++        int i_order = vlc_array_count( &p_playlist->segment_array );
++        int i_ret = VLC_EGENERIC;
++        if( *p_line != '#' )
++        {
++            if( b_expecting_url )
++            {
++                b_expecting_url = false;
++
++#ifdef M3U8_DEBUG
++                msg_Dbg( p_this, "segment[%d] url: %s", i_order, p_line );
++#endif
++
++                /* TODO: resolve relative url */
++                p_next_segmentinf->p_url = strdup( p_line );
++
++                vlc_array_append( &p_playlist->segment_array, p_next_segmentinf );
++                p_next_segmentinf = m3u8_AllocSegmentInf();
++                if( !p_next_segmentinf )
++                    break;
++                
++                i_ret = VLC_SUCCESS;
++            }
++            else
++            {
++                msg_Err( p_this, "unexpected line: %s", p_line );
++            }
++        }
++        else if( 0 != strncmp( p_line, "#EXT", 4 ) )
++        {
++#ifdef M3U8_DEBUG
++            msg_Dbg( p_this, "%s", p_line );
++#endif
++            /* Comment */
++            i_ret = VLC_SUCCESS;
++        }
++        else if( b_expecting_url )
++        {
++            b_expecting_url = false;
++            msg_Err( p_this, "expecting url before next TAG" );
++
++            /* reparse this line */
++            p_next_line = (uint8_t *) p_line;
++        }
++        else if( strncmp( p_line, "#EXTINF", 7 ) == 0 )
++        {
++            i_ret = m3u8_TokenizeAttr_EXTINF( p_this, p_next_segmentinf, p_line );
++            b_expecting_url = true;
++        }
++        else if( strncmp( p_line, "#EXT-X-TARGETDURATION", 21 ) == 0 )
++        {
++            i_ret = m3u8_TokenizeAttr_EXT_X_TARGETDURATION( p_this, p_playlist, p_line );
++        }
++        else if( strncmp( p_line, "#EXT-X-MEDIA-SEQUENCE", 21 ) == 0 )
++        {
++            if( p_playlist->i_media_sequence == 0 )
++                i_ret = m3u8_TokenizeAttr_EXT_X_MEDIA_SEQUENCE( p_this, p_playlist, p_line );
++            else
++                msg_Warn( p_this, "unexpected #EXT-X-MEDIA-SEQUENCE for 2nd time" );
++        }
++        else if( strncmp( p_line, "#EXT-X-ENDLIST", 14 ) == 0 )
++        {
++#ifdef M3U8_DEBUG
++            msg_Dbg( p_this, "#EXT-X-ENDLIST" );
++#endif
++            p_playlist->b_endlist = true;
++            i_ret = VLC_SUCCESS;
++        }
++        else if( strncmp( p_line, "#EXT-X-DISCONTINUITY", 20 ) == 0 )
++        {
++#ifdef M3U8_DEBUG
++            msg_Dbg( p_this, "#EXT-X-DISCONTINUITY" );
++#endif
++            p_next_segmentinf->b_discontinuity = true;
++            i_ret = VLC_SUCCESS;
++        }
++        else if( strncmp( p_line, "#EXT-X-ALLOW-CACHE", 18 ) == 0 )
++        {
++#ifdef M3U8_DEBUG
++            msg_Dbg( p_this, "%s", p_line );
++#endif
++            msg_Dbg( p_this, "#EXT-X-ALLOW-CACHE:<not support>" );
++        }
++        else if( strncmp( p_line, "#EXTM3U", 7 ) == 0 )
++        {
++#ifdef M3U8_DEBUG
++            msg_Dbg( p_this, "%s", p_line );
++#endif
++        }
++        else
++        {
++            msg_Warn( p_this, "unknown line %s", p_line );
++        }
++    }
++
++    int i_segment_count = vlc_array_count( &p_playlist->segment_array );
++    if( 0 ==  i_segment_count)
++    {
++        msg_Err( p_this, "No playable segment found in playlist");
++        m3u8_FreePlayList( p_playlist );
++        p_playlist = NULL;
++    }
++    else
++    {
++        msg_Dbg( p_this, "%d segments loaded", i_segment_count );
++    }
++
++    return p_playlist;
++}
++
++/* */
++static m3u8_playlist_t *m3u8_LoadPlayListStream( vlc_object_t *p_this,
++                                                 stream_t *p_stream )
++{
++    if( !m3u8_IsM3U8Stream( p_stream ) )
++    {
++        msg_Err( p_this, "not valid m3u8" );
++        return NULL;
++    }
++
++#ifdef M3U8_DEBUG
++    msg_Info( p_stream, "m3u8 detected" );
++#endif
++    uint8_t *p_buffer = NULL;
++    ssize_t i_length = m3u8_ReadAllFromStream( p_this, p_stream, &p_buffer );
++    if( i_length <= 0 )
++    {
++        msg_Err( p_this, "failed to " );
++        return NULL;
++    }
++
++    m3u8_playlist_t *p_play_list = m3u8_TokenizePlayList( p_this, p_buffer, p_buffer + i_length );
++
++    free( p_buffer );
++    p_buffer = NULL;
++
++    return p_play_list;    
++}
++
++/* */
++m3u8_playlist_t *m3u8_LoadPlayListUrl( vlc_object_t *p_this, const char *p_url )
++{
++    stream_t *p_stream = stream_UrlNew( p_this, p_url );
++    if( !p_stream )
++    {
++        msg_Err( p_this, "failed to connect to m3u8 server %s", p_url );
++        return NULL;
++    }
++
++    m3u8_playlist_t *p_play_list = m3u8_LoadPlayListStream( p_this, p_stream );
++    p_play_list->p_real_url = NULL;
++    if ( asprintf( &p_play_list->p_real_url, "%s://%s",
++                   p_stream->psz_access,
++                   p_stream->psz_path ) < 0 )
++    {
++        msg_Err( p_this, "failed to get real meat url" );
++        m3u8_FreePlayList( p_play_list );
++        p_play_list = NULL;
++    }
++
++    stream_Delete( p_stream );
++    p_stream = NULL;
++
++    return p_play_list;
++}
++
++/*****************************************************************************
++ * Tokenize meta list
++ *****************************************************************************/
++static int m3u8_TokenizeAttr_EXT_X_VERSION( vlc_object_t *p_this,
++                                            m3u8_metalist_t *p_metalist,
++                                            char *p_line )
++{
++    p_metalist->i_version = 0;
++
++    char *p_save = NULL;
++    char *p_attr = m3u8_TokenizeAttrList( p_line, &p_save );
++    if( p_attr && *p_attr )
++    {
++        p_metalist->i_version = atol( p_attr );
++    }
++
++    if( p_metalist->i_version == 0 )
++        msg_Warn( p_this, "#EXT-X-VERSION:<0>" );
++
++#ifdef M3U8_DEBUG
++    msg_Dbg( p_this, "#EXT-X-VERSION:%d", p_metalist->i_version );
++#endif
++    return VLC_SUCCESS;
++}
++
++static int m3u8_TokenizeAttr_EXT_X_STREAM_INF( vlc_object_t *p_this,
++                                               m3u8_streaminf_t *p_streaminf,
++                                               char *p_line )
++{
++    p_streaminf->i_program_id = 0;
++    p_streaminf->i_bandwidth = 0;
++
++    char *p_save = NULL;
++    char *p_attr = m3u8_TokenizeAttrList( p_line, &p_save );
++    while( p_attr )
++    {
++        if( !*p_attr )
++            continue;
++
++        char *p_attr_value = NULL;
++        char *p_attr_name = m3u8_TokenizeAttr( p_attr, &p_attr_value );
++        if( !p_attr_name || !*p_attr_name )
++            continue;
++
++        if( !p_attr_value  || !*p_attr_value )
++        {
++            msg_Warn( p_this, "%s=<null>", p_attr_name );
++            continue;
++        }
++
++        if( 0 == strncasecmp( p_attr_name, "PROGRAM-ID", 10 ) )
++        {
++            p_streaminf->i_program_id = atol( p_attr_value );
++            msg_Dbg( p_this, "PROGRAM-ID=%d", p_streaminf->i_program_id );
++        }
++        else if( 0 == strncasecmp( p_attr_name, "BANDWIDTH", 9 ) )
++        {
++            p_streaminf->i_bandwidth = atoll( p_attr_value );            
++            msg_Dbg( p_this, "BANDWIDTH=%"PRId64, p_streaminf->i_bandwidth );
++        }
++        else if( 0 == strncasecmp( p_attr_name, "CODECS", 6 ) )
++        {
++            msg_Dbg( p_this, "CODECS=<not support>" );
++        }
++        else if( 0 == strncasecmp( p_attr_name, "RESOLUTION", 10 ) )
++        {
++            msg_Dbg( p_this, "RESOLUTION=<not support>" );           
++        }
++        else if( 0 == strncasecmp( p_attr_name, "AUDIO", 5 ) )
++        {
++            msg_Dbg( p_this, "AUDIO=<not support>" );
++        }
++        else if( 0 == strncasecmp( p_attr_name, "VIDEO", 5 ) )
++        {
++            msg_Dbg( p_this, "VIDEO=<not support>" );
++        }
++        else
++        {
++            msg_Warn( p_this, "%s=<unexpected>", p_attr_name );
++        }
++
++        p_attr = m3u8_TokenizeAttrList( NULL, &p_save );
++    }
++
++    if( p_streaminf->i_program_id == 0 )
++        msg_Err( p_this, "missing program-id" );
++
++    if( p_streaminf->i_bandwidth == 0 )
++        msg_Err( p_this, "missing bandwidth" );
++
++#ifdef M3U8_DEBUG
++    msg_Dbg( p_this, "#EXT-X-STREAM-INF:program-id=%d,bandwidth=%"PRIu64")",
++              p_streaminf->i_program_id,
++              p_streaminf->i_bandwidth );
++#endif
++    return VLC_SUCCESS;
++}
++
++/* */
++static m3u8_metalist_t *m3u8_TokenizeMetaList( vlc_object_t *p_this,
++                                               uint8_t *p_begin,
++                                               uint8_t *p_end )
++{
++    uint8_t *p_next_line = p_begin;
++
++    m3u8_metalist_t *p_metalist = m3u8_AllocMetaList();
++    m3u8_streaminf_t *p_next_streaminf = m3u8_AllocStreamInf();
++    bool b_expecting_url = false;
++    while( true )
++    {
++        p_begin = p_next_line;
++        if( p_begin >= p_end )
++            break;
++
++        char *p_line = m3u8_TokenizeLine( p_begin, p_end, &p_next_line );
++        if( p_line == NULL )
++            break;
++
++        int i_order = vlc_array_count( &p_metalist->stream_array );
++        int i_ret = VLC_EGENERIC;
++        if( *p_line != '#' )
++        {
++            if( b_expecting_url )
++            {
++                b_expecting_url = false;
++
++                msg_Dbg( p_this, "stream[%d] url: %s", i_order, p_line );
++
++                /* TODO: retry */
++                p_next_streaminf->p_playlist = m3u8_LoadPlayListUrl( p_this, p_line );
++                if( !p_next_streaminf->p_playlist )
++                {
++                    msg_Err( p_this, "stream[%d] failed to load: %s", i_order, p_line );
++                }
++
++                /* TODO: resolve relative url */
++                p_next_streaminf->p_url = strdup( p_line );
++
++                vlc_array_append( &p_metalist->stream_array, p_next_streaminf );
++                p_next_streaminf = m3u8_AllocStreamInf();
++                if( !p_next_streaminf )
++                    break;
++
++                i_ret = VLC_SUCCESS;
++            }
++            else
++            {
++                msg_Err( p_this, "unexpected line: %s", p_line );
++            }
++        }
++        else if( 0 != strncmp( p_line, "#EXT", 4 ) )
++        {
++            /* Comment */
++            i_ret = VLC_SUCCESS;
++        }
++        else if( b_expecting_url )
++        {
++            b_expecting_url = false;
++            msg_Err( p_this, "expecting url before next TAG" );
++            
++            /* reparse this line */
++            p_next_line = (uint8_t *) p_line;
++        }
++        else if( 0 == strncmp( p_line, "#EXT-X-STREAM-INF", 17 ) )
++        {
++            i_ret = m3u8_TokenizeAttr_EXT_X_STREAM_INF( p_this, p_next_streaminf, p_line );
++            b_expecting_url = true;
++        }
++        else if( 0 == strncmp( p_line, "#EXT-X-VERSION", 14 ) )
++        {
++            i_ret = m3u8_TokenizeAttr_EXT_X_VERSION( p_this, p_metalist, p_line );
++        }
++        else
++        {
++            msg_Warn( p_this, "unknown line %s", p_line );
++        }
++    }
++
++    if( p_next_streaminf )
++    {
++        m3u8_FreeStreamInf( p_next_streaminf );
++        p_next_streaminf = NULL;
++    }
++
++    int i_stream_count = vlc_array_count( &p_metalist->stream_array );
++    if( 0 ==  i_stream_count )
++    {
++        msg_Err( p_this, "No playable streams found in metalist");
++        m3u8_FreeMetaList( p_metalist );
++        p_metalist = NULL;
++    }
++    else
++    {
++        msg_Dbg( p_this, "%d stream loaded", i_stream_count );
++    }
++
++    return p_metalist;
++}
++
++/* */
++static m3u8_metalist_t *m3u8_Tokenize( vlc_object_t *p_this,
++                                       uint8_t *p_begin,
++                                       uint8_t *p_end )
++{
++#ifdef M3U8_DEBUG
++    msg_Info( p_this, "m3u8_Tokenize" );
++#endif
++    uint8_t *p_next_line = NULL;
++
++    char *p_line = m3u8_TokenizeLine(p_begin, p_end, &p_next_line);
++    if ( p_line == NULL )
++        return NULL;
++
++    if ( strncmp( p_line, "#EXTM3U", 7 ) != 0 )
++    {
++        msg_Err( p_this, "missing #EXTM3U tag .. aborting" );
++        return NULL;
++    }
++
++    m3u8_metalist_t *p_metalist = NULL;
++    const char* p_find_stream_info = strstr( (const char *)p_next_line,
++                                             "#EXT-X-STREAM-INF" );
++    if( p_find_stream_info )
++    {
++#ifdef M3U8_DEBUG
++        msg_Info( p_this, "metalist detected" );
++#endif
++        p_metalist = m3u8_TokenizeMetaList( p_this, p_next_line, p_end );
++    }
++    else
++    {
++#ifdef M3U8_DEBUG
++        msg_Info( p_this, "playlist detected" );
++#endif
++        m3u8_streaminf_t *p_streaminf = NULL;
++
++        p_metalist = m3u8_AllocMetaList();
++        if( !p_metalist )
++            goto EXIT_FAIL;
++
++        p_streaminf = m3u8_AllocStreamInf();
++        if( !p_streaminf )
++            goto EXIT_FAIL;
++        vlc_array_append( &p_metalist->stream_array, p_streaminf );
++
++        p_streaminf->p_playlist = m3u8_TokenizePlayList( p_this, p_next_line, p_end );
++        if( !p_streaminf->p_playlist )
++            goto EXIT_FAIL;
++    }
++
++    return p_metalist;
++
++EXIT_FAIL:
++
++    if( p_metalist )
++    {
++        m3u8_FreeMetaList( p_metalist );
++        p_metalist = NULL;
++    }
++
++    return NULL;
++}
++
++/* */
++static m3u8_metalist_t *m3u8_LoadStream( vlc_object_t *p_this,
++                                         stream_t *p_stream )
++{
++    if( !m3u8_IsM3U8Stream( p_stream ) )
++    {
++        msg_Err( p_this, "not valid m3u8" );
++        return NULL;
++    }
++
++    uint8_t *p_buffer = NULL;
++    ssize_t i_length = m3u8_ReadAllFromStream( p_this, p_stream, &p_buffer );
++    if( i_length <= 0 )
++        return NULL;
++
++    m3u8_metalist_t *p_meta_list = m3u8_Tokenize( p_this, p_buffer, p_buffer + i_length );
++
++    free( p_buffer );
++    p_buffer = NULL;
++
++    return p_meta_list;    
++}
++
++/* */
++m3u8_metalist_t *m3u8_LoadUrl( vlc_object_t *p_this, const char *p_url )
++{
++    stream_t *p_stream = stream_UrlNew( p_this, p_url );
++    if( !p_stream )
++    {
++        msg_Err( p_this, "failed to connect to m3u8 server %s", p_url );
++        return NULL;
++    }
++
++    m3u8_metalist_t *p_metalist = m3u8_LoadStream( p_this, p_stream );
++    p_metalist->p_real_url = NULL;
++    if ( asprintf( &p_metalist->p_real_url, "%s://%s",
++                    p_stream->psz_access,
++                    p_stream->psz_path ) < 0 )
++    {
++        msg_Err( p_this, "failed to get real meat url" );
++        m3u8_FreeMetaList( p_metalist );
++        p_metalist = NULL;
++    }
++    else
++    {
++        int i_stream_count = vlc_array_count( &p_metalist->stream_array );
++        assert( i_stream_count > 0 );
++        if( i_stream_count == 1 )
++        {
++            m3u8_streaminf_t *p_streaminf = (m3u8_streaminf_t *)
++                vlc_array_item_at_index( &p_metalist->stream_array, 0 );
++
++            if( NULL == p_streaminf->p_url )
++            {
++                /* metalist is playlist */
++                p_streaminf->p_url = strdup( p_url );
++            }
++
++            assert( p_streaminf->p_playlist );
++            if( NULL == p_streaminf->p_playlist->p_real_url )
++            {
++                /* metalist is playlist */
++                p_streaminf->p_playlist->p_real_url = strdup( p_metalist->p_real_url );
++            }
++        }
++    }
++
++    stream_Delete( p_stream );
++    p_stream = NULL;
++
++    return p_metalist;
++}
+\ No newline at end of file
+diff --git a/modules/access/yahls/m3u8parser.h b/modules/access/yahls/m3u8parser.h
+new file mode 100644
+index 0000000..5243540
+--- /dev/null
++++ b/modules/access/yahls/m3u8parser.h
+@@ -0,0 +1,212 @@
++/*****************************************************************************
++ * m3u8parser.h
++ *****************************************************************************
++ *
++ * Authors: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++/*****************************************************************************
++ * Preamble
++ *****************************************************************************/
++
++#ifndef M3U8PARSER_H
++#define M3U8PARSER_H
++
++#ifdef HAVE_CONFIG_H
++# include "config.h"
++#endif
++
++#include <vlc_common.h>
++#include <vlc_arrays.h>
++#include <vlc_stream.h>
++
++typedef struct
++{
++    char        *p_url;
++
++    bool        b_discontinuity;
++    int         i_duration_ms;          /* millisecond */
++} m3u8_segmentinf_t;
++
++typedef struct
++{
++    char        *p_real_url;            /* real url */
++
++    bool        b_endlist;
++
++    int         i_target_duration_ms;   /* millisecond */
++    int64_t     i_media_sequence;
++
++    vlc_array_t segment_array;
++} m3u8_playlist_t;
++
++typedef struct
++{
++    char            *p_url;
++
++    /* v1 attrs */
++    int             i_program_id;
++    int64_t         i_bandwidth;
++
++    /* v2 attrs */
++    /* v3 attrs */
++    /* v4 attrs */
++
++    /* references */
++    m3u8_playlist_t *p_playlist;
++
++} m3u8_streaminf_t;
++
++typedef struct
++{
++    /* tags */
++    int         i_version;
++
++    char        *p_real_url;    /* real url */
++
++    vlc_array_t stream_array;
++} m3u8_metalist_t;
++
++
++m3u8_metalist_t *m3u8_LoadUrl( vlc_object_t *p_this, const char *p_url );
++m3u8_playlist_t *m3u8_LoadPlayListUrl( vlc_object_t *p_this, const char *p_url );
++
++/* m3u8_segmentinf_t */
++inline static m3u8_segmentinf_t *m3u8_AllocSegmentInf()
++{
++    m3u8_segmentinf_t *p_segmentinf = (m3u8_segmentinf_t *) malloc( sizeof(m3u8_segmentinf_t) );
++    if( !p_segmentinf )
++        return NULL;
++
++    memset( p_segmentinf, 0, sizeof( m3u8_segmentinf_t ) );
++    return p_segmentinf;
++}
++
++inline static void m3u8_FreeSegmentInf( m3u8_segmentinf_t *p_segmentinf )
++{
++    if( !p_segmentinf )
++        return;
++
++    if( p_segmentinf->p_url )
++    {
++        free( p_segmentinf->p_url );
++        p_segmentinf->p_url = NULL;
++    }
++
++    free( p_segmentinf );
++}
++
++/* m3u8_playlist_t */
++inline static m3u8_playlist_t *m3u8_AllocPlayList()
++{
++    m3u8_playlist_t *p_playlist = (m3u8_playlist_t *) malloc( sizeof(m3u8_playlist_t) );
++    if( !p_playlist )
++        return NULL;
++    
++    memset( p_playlist, 0, sizeof( m3u8_playlist_t ) );
++
++    vlc_array_init( &p_playlist->segment_array );
++
++    return p_playlist;
++}
++
++inline static void m3u8_FreePlayList( m3u8_playlist_t *p_playlist )
++{
++    if( !p_playlist )
++        return;
++
++    int i_count = vlc_array_count( &p_playlist->segment_array );
++    for( int i = 0; i < i_count; ++i )
++    {
++        m3u8_segmentinf_t *p_segmentinf =
++        (m3u8_segmentinf_t *) vlc_array_item_at_index( &p_playlist->segment_array, i );
++        
++        if( p_segmentinf )
++            m3u8_FreeSegmentInf( p_segmentinf );
++    }
++
++    vlc_array_clear( &p_playlist->segment_array );
++
++    free( p_playlist );
++}
++
++/* m3u8_stream_t */
++inline static m3u8_streaminf_t *m3u8_AllocStreamInf()
++{
++    m3u8_streaminf_t *p_streaminf = (m3u8_streaminf_t *) malloc( sizeof(m3u8_streaminf_t) );
++    if( !p_streaminf )
++        return NULL;
++
++    memset( p_streaminf, 0, sizeof( m3u8_streaminf_t ) );
++    return p_streaminf;
++}
++
++inline static void m3u8_FreeStreamInf( m3u8_streaminf_t *p_streaminf )
++{
++    if( !p_streaminf )
++        return;
++
++    if( p_streaminf->p_playlist )
++    {
++        m3u8_FreePlayList( p_streaminf->p_playlist );
++        p_streaminf->p_playlist = NULL;
++    }
++
++    free( p_streaminf );
++}
++
++/* m3u8_metalist_t */
++inline static m3u8_metalist_t *m3u8_AllocMetaList()
++{
++    m3u8_metalist_t *p_metalist = (m3u8_metalist_t *) malloc( sizeof(m3u8_metalist_t) );
++    if( !p_metalist )
++        return NULL;
++
++    memset( p_metalist, 0, sizeof( m3u8_metalist_t ) );
++
++    vlc_array_init( &p_metalist->stream_array );
++
++    return p_metalist;
++}
++
++inline static void m3u8_FreeMetaList( m3u8_metalist_t *p_metalist )
++{
++    if( !p_metalist )
++        return;
++
++    int i_count = vlc_array_count( &p_metalist->stream_array );
++    for( int i = 0; i < i_count; ++i )
++    {
++        m3u8_streaminf_t *p_streaminf =
++            (m3u8_streaminf_t *) vlc_array_item_at_index( &p_metalist->stream_array, i );
++
++        if( p_streaminf )
++            m3u8_FreeStreamInf( p_streaminf );
++    }
++
++    if( p_metalist->p_real_url )
++    {
++        free( p_metalist->p_real_url );
++        p_metalist->p_real_url = NULL;
++    }
++
++    vlc_array_clear( &p_metalist->stream_array );
++
++    free( p_metalist );
++}
++
++#endif
+\ No newline at end of file
+diff --git a/modules/access/yahls/yahls.c b/modules/access/yahls/yahls.c
+new file mode 100644
+index 0000000..dceb5e5
+--- /dev/null
++++ b/modules/access/yahls/yahls.c
+@@ -0,0 +1,1094 @@
++/*****************************************************************************
++ * yahttplive.c: Yet another httplive
++ *****************************************************************************
++ *
++ * Authors: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++/*****************************************************************************
++ * Preamble
++ *****************************************************************************/
++
++#include "m3u8parser.h"
++
++#include <vlc_plugin.h>
++#include <vlc_threads.h>
++#include <vlc_demux.h>
++
++#include <vlc_es_out_managed.h>
++
++#include <assert.h>
++
++#include "../../../src/input/demux.h"
++#include "../../../src/input/es_out.h"
++
++/*****************************************************************************
++ * Module descriptor
++ *****************************************************************************/
++static int  Open ( vlc_object_t * );
++static void Close( vlc_object_t * );
++
++vlc_module_begin ()
++    set_shortname( N_("yahls") )
++    set_description( N_("yet another hls implement") )
++    set_category( CAT_INPUT )
++    set_subcategory( SUBCAT_INPUT_ACCESS )
++    set_capability( "access_demux", 0 )
++    add_shortcut( "yahls" )
++    set_callbacks( Open, Close )
++vlc_module_end ()
++
++
++/*****************************************************************************
++ * Documentation
++ *  examples:
++ *****************************************************************************/
++
++/*****************************************************************************
++ * Local prototypes
++ *****************************************************************************/
++
++/* define this macro to enable debug log */
++#define YAHLS_DEBUG
++//#define YAHLS_TRACE
++
++#define YAHLS_BYTES_PER_READ        32768
++#define YAHLS_POP_SEGMENT_TIMEOUT   ( 100 * 1000 )
++
++typedef struct yahls_segment_t yahls_segment_t;
++struct yahls_segment_t
++{
++    int64_t             i_start_time_ms;
++    int64_t             i_media_sequence;
++
++    m3u8_segmentinf_t   *p_segmentinf;
++    stream_t            *p_stream;
++    
++    yahls_segment_t     *p_next;
++};
++
++typedef struct
++{
++    vlc_mutex_t         lock;
++    vlc_cond_t          wait_can_pop;
++    vlc_cond_t          wait_can_push;
++
++    int64_t             i_next_segment_start_time_ms;
++    int64_t             i_next_segment_media_sequence;
++
++    yahls_segment_t     *p_head;
++    yahls_segment_t     *p_tail;
++} yahls_segment_queue_t;
++
++struct demux_sys_t
++{
++    volatile bool           b_close;
++    bool                    b_demux_error;
++
++    bool                    b_endlist;          /* set to true if no more segment to reload */
++    bool                    b_eos;              /* set to true if no more segment to play */
++
++    char                    *p_m3u8_url;
++    m3u8_metalist_t         *p_metalist;
++
++    m3u8_streaminf_t        *p_streaminf;       /* weak reference */
++    char                    *p_playlist_url;    /* weak reference, for reload */
++
++    yahls_segment_queue_t   prefetched_queue;
++    vlc_thread_t            prefetch_thread;
++
++    yahls_segment_queue_t   reloaded_queue;
++    vlc_thread_t            reload_thread;
++
++    yahls_segment_t         *p_current_segment;
++    int64_t                 i_current_segment_media_sequence;   /* duplicated */
++    int64_t                 i_current_segment_start_time_ms;    /* duplicated */
++
++    /* */
++    demux_t                 *p_segment_demux;       
++    es_out_t                *p_out_managed;     /* passed to sub demux */
++
++    bool                    b_need_change_segment;
++};
++
++static int Control( demux_t *p_demux, int i_query, va_list args );
++static int Demux( demux_t *p_demux );
++
++static demux_sys_t *yahls_Alloc( void );
++static void         yahls_Free( demux_sys_t* p_sys );
++
++static void* yahls_PrefetchThread( void * );
++static void* yahls_ReloadThread( void * );
++
++static int yahls_MergeSegmentList( demux_t *p_demux,
++                                   m3u8_playlist_t *p_playlist,
++                                   bool *p_playlist_changed /* = NULL */ );
++
++static demux_t *OpenNextSegmentDemux( demux_t *p_demux, bool *pb_segment_gap /* = NULL */ );
++#define msg_YahlsDebug msg_Err
++
++/****************************************************************************
++ * Module Open/Close
++ ****************************************************************************/
++static int Open( vlc_object_t *p_this )
++{
++    demux_t     *p_demux = (demux_t*) p_this;
++    demux_sys_t *p_sys = NULL;
++    int         i_ret = VLC_EGENERIC;
++    int         i_stream_count = 0;
++
++    msg_Dbg( p_demux, "check access: %s", p_demux->psz_access );
++    if( !p_demux->psz_access || 0 != strcmp( p_demux->psz_access, "yahls" ) )
++        goto EXIT_ERROR;
++
++    /* Init p_demux */
++    p_demux->pf_control = Control;
++    p_demux->pf_demux = Demux;
++    p_demux->p_sys = yahls_Alloc();
++    p_sys = p_demux->p_sys;
++    if( !p_sys )
++        goto EXIT_ERROR;
++
++    i_ret = asprintf( &p_sys->p_m3u8_url, "http://%s", p_demux->psz_location );
++    if( !i_ret )
++        goto EXIT_ERROR;
++
++    /* Open m3u8 */
++    p_sys->p_metalist = m3u8_LoadUrl( VLC_OBJECT( p_demux ), p_sys->p_m3u8_url );
++    if( !p_sys->p_metalist )
++    {
++        msg_Err( p_demux, "failed to load m3u8" );
++        goto EXIT_ERROR;
++    }
++
++    i_stream_count = vlc_array_count( &p_sys->p_metalist->stream_array );
++    if( i_stream_count <= 0 )
++    {
++        msg_Err( p_demux, "no playable stream found in m3u8" );
++        goto EXIT_ERROR;
++    }
++
++    /* FIXME: always choose 1st playable stream for now */
++    p_sys->p_streaminf = (m3u8_streaminf_t *)
++        vlc_array_item_at_index( &p_sys->p_metalist->stream_array, 0 );
++
++    assert( p_sys->p_streaminf );
++    assert( p_sys->p_streaminf->p_playlist );
++    assert( p_sys->p_streaminf->p_playlist->p_real_url );
++
++    p_sys->p_playlist_url = p_sys->p_streaminf->p_playlist->p_real_url;
++    p_sys->b_endlist      = p_sys->p_streaminf->p_playlist->b_endlist;
++
++    p_sys->p_out_managed = demux_EsOutManagedNew( p_demux, p_demux->out );
++    if( !p_sys->p_out_managed )
++        goto EXIT_ERROR;
++
++    /* */
++#ifdef YAHLS_DEBUG
++    msg_Info( p_demux, "yahls_MergeSegmentList" );
++#endif
++    i_ret = yahls_MergeSegmentList( p_demux,
++                                    p_sys->p_streaminf->p_playlist,
++                                    NULL );
++    if( VLC_SUCCESS != i_ret )
++    {
++        msg_Err( p_demux, "failed to append segment list" );
++        goto EXIT_ERROR;
++    }
++
++    if ( !p_sys->b_endlist )
++    {
++        if ( vlc_clone( &p_sys->reload_thread, yahls_ReloadThread, p_demux, VLC_THREAD_PRIORITY_LOW ) )
++        {
++            msg_Err( p_demux, "failed to start reload thread" );
++            goto EXIT_ERROR;
++        }   
++    }
++
++    if ( vlc_clone( &p_sys->prefetch_thread, yahls_PrefetchThread, p_demux, VLC_THREAD_PRIORITY_INPUT ) )
++    {
++        msg_Err( p_demux, "failed to start prefetch thread" );
++        goto EXIT_ERROR;
++    }
++
++    {
++        vlc_mutex_lock( &p_sys->prefetched_queue.lock );
++        vlc_cond_timedwait( &p_sys->prefetched_queue.wait_can_pop,
++                            &p_sys->prefetched_queue.lock,
++                            mdate() + 10 * 1000 * 1000 );
++        vlc_mutex_unlock( &p_sys->prefetched_queue.lock );
++    }
++
++#ifdef YAHLS_DEBUG
++    msg_Info( p_demux, "OpenNextSegmentDemux 1st chance" );
++#endif
++    p_sys->p_segment_demux = OpenNextSegmentDemux( p_demux, NULL );
++    if( !p_sys->p_segment_demux )
++    {
++        msg_Err( p_demux, "failed to open demux for 1st segment" );
++        goto EXIT_ERROR;
++    }
++
++    msg_Info( p_demux, "yahlf loaded as access_demux" );
++    return VLC_SUCCESS;
++
++EXIT_ERROR:
++
++    msg_Err( p_demux, "failed to load yahlf as access_demux" );
++
++    Close( VLC_OBJECT( p_demux ) );
++
++    return VLC_EGENERIC;
++}
++
++static void Close(vlc_object_t *p_this)
++{
++    demux_t *p_demux = (demux_t *) p_this;
++    demux_sys_t *p_sys = p_demux->p_sys;
++
++    p_sys->b_close = true;
++
++    vlc_mutex_lock( &p_sys->reloaded_queue.lock );
++    vlc_cond_signal( &p_sys->reloaded_queue.wait_can_pop );
++    vlc_cond_signal( &p_sys->reloaded_queue.wait_can_push );
++    vlc_mutex_unlock( &p_sys->reloaded_queue.lock );
++    
++    vlc_mutex_lock( &p_sys->prefetched_queue.lock );
++    vlc_cond_signal( &p_sys->prefetched_queue.wait_can_pop );
++    vlc_cond_signal( &p_sys->prefetched_queue.wait_can_push );
++    vlc_mutex_unlock( &p_sys->prefetched_queue.lock );
++
++    vlc_join( p_sys->reload_thread, NULL );
++    vlc_join( p_sys->prefetch_thread, NULL );
++
++    yahls_Free(p_sys);
++}
++
++/****************************************************************************
++ * Open/Close
++ ****************************************************************************/
++static yahls_segment_t *yahls_AllocSegment()
++{
++    yahls_segment_t *p_segment = (yahls_segment_t *) malloc( sizeof( yahls_segment_t ) );
++    if ( !p_segment )
++        return NULL;
++    memset( p_segment, 0, sizeof( yahls_segment_t ) );
++
++    return p_segment;
++}
++
++static void yahls_ResetSegment( yahls_segment_t *p_segment )
++{
++    if( !p_segment )
++        return;
++
++    if( p_segment->p_segmentinf )
++        m3u8_FreeSegmentInf( p_segment->p_segmentinf );
++
++    if( p_segment->p_stream )
++        stream_Delete( p_segment->p_stream );
++
++    memset( p_segment, 0, sizeof( p_segment ) );
++}
++
++static void yahls_FreeSegment( yahls_segment_t *p_segment )
++{
++    if( !p_segment )
++        return;
++
++    yahls_ResetSegment( p_segment );
++
++    free( p_segment );
++}
++
++static void yahls_initSegmentQueue( yahls_segment_queue_t* p_queue )
++{
++    vlc_mutex_init( &p_queue->lock );
++    vlc_cond_init( &p_queue->wait_can_pop );
++    vlc_cond_init( &p_queue->wait_can_push );
++}
++
++static void yahls_destroySegmentQueue( yahls_segment_queue_t* p_queue )
++{
++    vlc_mutex_destroy( &p_queue->lock );
++    vlc_cond_destroy( &p_queue->wait_can_pop );
++    vlc_cond_destroy( &p_queue->wait_can_push );
++
++    yahls_segment_t *p_head = p_queue->p_head;
++    while( p_head )
++    {
++        if( !p_head )
++            continue;
++        
++        yahls_FreeSegment( p_head );
++        p_head = p_head->p_next;
++    }
++    p_queue->p_head = NULL;
++    p_queue->p_tail = NULL;
++}
++
++static demux_sys_t *yahls_Alloc()
++{
++    demux_sys_t *p_sys = (demux_sys_t *) malloc( sizeof( demux_sys_t ) );
++    if ( !p_sys )
++        return NULL;
++    memset( p_sys, 0, sizeof( demux_sys_t ) );
++
++    yahls_initSegmentQueue( &p_sys->prefetched_queue );
++    yahls_initSegmentQueue( &p_sys->reloaded_queue );
++
++    return p_sys;
++}
++
++static void yahls_Free( demux_sys_t* p_sys )
++{
++    if( !p_sys )
++        return;
++
++    if( p_sys->p_metalist )
++    {
++        m3u8_FreeMetaList( p_sys->p_metalist );
++        p_sys->p_metalist = NULL;
++    }
++
++    if( p_sys->p_m3u8_url )
++    {
++        free( p_sys->p_m3u8_url );
++        p_sys->p_m3u8_url = NULL;
++    }
++
++    if( p_sys->p_segment_demux )
++    {
++        demux_Delete( p_sys->p_segment_demux );
++        p_sys->p_segment_demux = NULL;        
++    }
++
++    if( p_sys->p_out_managed )
++    {
++        es_out_Delete( p_sys->p_out_managed );
++        p_sys->p_out_managed = NULL;
++    }
++
++    if( p_sys->p_current_segment )
++    {
++        yahls_FreeSegment( p_sys->p_current_segment );
++        p_sys->p_segment_demux = NULL;
++    }
++
++    yahls_destroySegmentQueue( &p_sys->prefetched_queue );
++    yahls_destroySegmentQueue( &p_sys->reloaded_queue );
++
++    free( p_sys );
++}
++
++
++/****************************************************************************
++ * Segment queue
++ ****************************************************************************/
++
++static yahls_segment_t *yahls_WaitPopHeadSegment( demux_t *p_demux,
++                                                  yahls_segment_queue_t* p_queue,
++                                                  mtime_t deadline)
++{
++    demux_sys_t *p_sys = p_demux->p_sys;
++
++    yahls_segment_t* p_pop = NULL;
++
++    vlc_mutex_lock( &p_queue->lock );
++    mutex_cleanup_push( &p_queue->lock );
++
++    while( !p_sys->b_close && !p_queue->p_head )
++    {
++        if( 0 != vlc_cond_timedwait( &p_queue->wait_can_pop, &p_queue->lock, deadline ) )
++        {
++            /* error or timeout */
++            break;
++        }
++    }
++
++    if( p_queue->p_head )
++    {
++        p_pop = p_queue->p_head;
++        p_queue->p_head = p_queue->p_head->p_next;
++        if ( !p_queue->p_head )
++            p_queue->p_tail = NULL;
++    }
++
++    vlc_cleanup_run( );
++
++    return p_pop;
++}
++
++static int yahls_PushSegment_not_locked( yahls_segment_queue_t* p_queue,
++                                         yahls_segment_t *p_segment )
++{
++    if( p_queue->p_tail )
++    {
++        p_queue->p_tail->p_next = p_segment;
++        p_queue->p_tail = p_segment;
++    }
++    else
++    {
++        p_queue->p_head = p_segment;
++        p_queue->p_tail = p_segment;
++    }
++    p_segment->p_next = NULL;
++
++    p_queue->i_next_segment_media_sequence++;
++    p_queue->i_next_segment_start_time_ms += p_segment->p_segmentinf->i_duration_ms;
++
++    return VLC_SUCCESS;
++}
++
++static int yahls_MergeSegmentList( demux_t *p_demux,
++                                    m3u8_playlist_t *p_playlist,
++                                    bool *p_playlist_changed /* = NULL */ )
++{
++    demux_sys_t* p_sys = p_demux->p_sys;
++    yahls_segment_queue_t* p_queue = &p_sys->reloaded_queue;
++    int i_ret = VLC_SUCCESS;
++
++    if( p_playlist_changed )
++        *p_playlist_changed = false;
++
++    vlc_mutex_lock( &p_queue->lock );
++    mutex_cleanup_push( &p_queue->lock );
++
++    int new_segment_count = vlc_array_count( &p_playlist->segment_array );
++#ifdef YAHLS_DEBUG
++    msg_Dbg( p_demux, "reload: %d segment to merge ", new_segment_count );
++#endif
++    
++    int i_merge_offset = 0;
++    if( p_playlist->i_media_sequence )
++    {
++        /* merge from start */
++        i_merge_offset = 0;
++
++        msg_Warn( p_demux, "reload: no media sequence " );
++    }
++    else if( p_queue->i_next_segment_media_sequence < p_playlist->i_media_sequence )
++    {
++        /* merge from start */
++        i_merge_offset = 0;
++
++        if( p_queue->i_next_segment_media_sequence != 0 )
++        {
++            msg_Warn( p_demux, "reload: segment gap %"PRId64"->%"PRId64,
++                      p_queue->i_next_segment_media_sequence,
++                      p_playlist->i_media_sequence );
++        }
++
++        /* reset media sequence */
++        p_queue->i_next_segment_media_sequence = p_playlist->i_media_sequence;
++    }
++    else if ( p_queue->i_next_segment_media_sequence == p_playlist->i_media_sequence )
++    {
++        /* merge from start */
++        i_merge_offset = 0;
++#ifdef YAHLS_DEBUG
++        msg_Dbg( p_demux, "reload: continuity " );
++#endif
++    }
++    else
++    {
++        i_merge_offset = p_queue->i_next_segment_media_sequence - p_playlist->i_media_sequence;
++#ifdef YAHLS_DEBUG
++        msg_Dbg( p_demux, "reload: %d same segment ", i_merge_offset );
++#endif
++    }
++
++    /* merge */
++    char* p_url_root = NULL;
++    char* p_url_parent = NULL;
++    const char* p_search = NULL;
++    for( int i = i_merge_offset; i < new_segment_count; ++i )
++    {
++        m3u8_segmentinf_t *p_segmentinf = (m3u8_segmentinf_t *)
++            vlc_array_item_at_index( &p_playlist->segment_array, i );
++
++        assert( p_segmentinf );
++        if( !p_segmentinf )
++        {
++            /* should no be here */
++            msg_Err( p_demux, "NULL segmentinf ?" );
++            p_queue->i_next_segment_media_sequence += 1;
++            continue;
++        }
++
++        /* init segment */
++        yahls_segment_t *p_segment = yahls_AllocSegment();
++        if( !p_segment )
++        {
++            i_ret = VLC_ENOMEM;
++            break;
++        }
++
++        p_segment->p_segmentinf = p_segmentinf;
++        vlc_array_set( &p_playlist->segment_array, NULL, i );
++
++        p_segment->p_next = NULL;
++        p_segment->i_media_sequence = p_queue->i_next_segment_media_sequence;
++        p_segment->i_start_time_ms  = p_queue->i_next_segment_start_time_ms;
++
++        char* p_segment_url = p_segment->p_segmentinf->p_url;
++        assert( p_segment_url );
++        if( !strstr( p_segment_url, "://" ) )
++        {
++            /* relative url */
++            if( p_segment_url[0] == '/' )
++            {
++                /* absolute path */
++                if( !p_url_root )
++                {
++                    p_search = strstr( p_playlist->p_real_url, "://" );
++                    assert( p_search );
++                    p_search = strchr( p_search + 3, '/' );
++
++                    if( p_search )
++                    {
++                        p_url_root = strndup( p_playlist->p_real_url, 
++                                              p_search - p_playlist->p_real_url );
++                    }
++                    else
++                    {
++                        p_url_root = strdup( p_playlist->p_real_url );
++                    }
++                }
++
++                if( p_url_root )
++                {
++                    if( asprintf( &p_segment_url, "%s%s",
++                                  p_url_root,
++                                  p_segment_url ) > 0 )
++                    {
++                        free( p_segment->p_segmentinf->p_url );
++                        p_segment->p_segmentinf->p_url = p_segment_url;
++                    }
++                    else
++                    {
++                        /* FIXME: failed to allocate resolved string */
++                        p_segment_url = p_segment->p_segmentinf->p_url;
++                    }
++                }
++                else
++                {
++                    /* FIXME: failed to allocate resolved string */
++                }
++            }
++            else
++            {
++                /* relative path */
++                if( !p_url_parent )
++                {
++                    p_search = strrchr( p_playlist->p_real_url, '/' );
++                    if( p_search )
++                    {
++                        p_url_parent = strndup( p_playlist->p_real_url, 
++                                                p_search - p_playlist->p_real_url );
++                    }
++                    else
++                    {
++                        p_url_parent = strdup( p_playlist->p_real_url );
++                    }
++                }
++
++                if( p_url_parent )
++                {
++                    if( asprintf( &p_segment_url, "%s/%s",
++                                  p_url_parent,
++                                  p_segment_url ) > 0 )
++                    {
++                        free( p_segment->p_segmentinf->p_url );
++                        p_segment->p_segmentinf->p_url = p_segment_url;
++                    }
++                    else
++                    {
++                        /* FIXME: failed to allocate resolved string */
++                        p_segment_url = p_segment->p_segmentinf->p_url;
++                    }
++                }
++                else
++                {
++                    /* FIXME: failed to allocate resolved string */
++                }
++            }
++        }
++
++        /* append to queue */
++#ifdef YAHLS_DEBUG
++        msg_Dbg( p_demux, "reload: append segment %"PRId64,
++                 p_segment->i_media_sequence );
++#endif
++        yahls_PushSegment_not_locked( p_queue, p_segment );
++
++        /* play list changed */
++        if( p_playlist_changed )
++            *p_playlist_changed = true;
++    }
++
++    if( p_url_root )
++    {
++        free( p_url_root );
++        p_url_root = NULL;
++    }
++
++    if( p_url_parent )
++    {
++        free( p_url_parent );
++        p_url_parent = NULL;
++    }
++
++    if( p_playlist_changed )
++        vlc_cond_signal( &p_queue->wait_can_pop );
++
++    vlc_cleanup_run( );
++
++    return i_ret;
++}
++
++/****************************************************************************
++ * Demux
++ ****************************************************************************/
++static demux_t *OpenNextSegmentDemux( demux_t *p_demux,
++                                      bool *pb_segment_gap )
++{
++    demux_sys_t     *p_sys = p_demux->p_sys;
++    demux_t         *p_segment_demux = NULL;
++    yahls_segment_t *p_segment = NULL;
++
++    /* pop next connected segment */
++    while( true )
++    {
++        const char  *p_segment_url = NULL;
++        stream_t    *p_segment_stream = NULL;
++        mtime_t     deadline = mdate() + YAHLS_POP_SEGMENT_TIMEOUT;
++        p_segment = yahls_WaitPopHeadSegment( p_demux, &p_sys->prefetched_queue, deadline );
++        if( !p_segment )
++        {
++            msg_Err( p_demux, "no segment to pop, EOS or timeout?" );
++            goto EXIT_ERROR;
++        }
++
++        /* detect segment gap */
++        if( pb_segment_gap &&
++            p_sys->i_current_segment_media_sequence != 0 &&
++            p_sys->i_current_segment_media_sequence + 1 != p_segment->i_media_sequence )
++        {
++            *pb_segment_gap = true;
++        }
++
++#ifdef YAHLS_DEBUG
++        msg_Err( p_demux, "open next segment[%"PRId64"]",
++                 p_segment->i_media_sequence );
++#endif
++
++        assert( p_segment );
++        assert( p_segment->p_segmentinf );
++        assert( p_segment->p_segmentinf->p_url );
++
++        /* open segment stream */
++        p_segment_url = p_segment->p_segmentinf->p_url;
++        p_segment_stream = p_segment->p_stream;
++        if( !p_segment_stream )
++        {
++            /* TODO: retry */
++            p_segment_stream = stream_UrlNew( p_demux, p_segment_url );
++            if( !p_segment_stream )
++            {
++                msg_Err( p_demux, "failed to connect to segment[%"PRId64"]: %s",
++                         p_segment->i_media_sequence,
++                         p_segment_url );
++                msg_Err( p_demux, "try next segment" );
++
++                yahls_FreeSegment( p_segment );
++                continue;
++            }
++
++            p_segment->p_stream = p_segment_stream;
++            p_segment_demux = demux_New( p_demux, 
++                                         demux_GetParentInput( p_demux ),
++                                         "", "avformat", "",
++                                         p_segment_stream,
++                                         p_sys->p_out_managed,
++                                         false );
++            if( !p_segment_demux )
++            {
++                msg_Err( p_demux, "failed to create demux for segment[%"PRId64"]: %s",
++                         p_segment->i_media_sequence,
++                         p_segment_url );
++                p_sys->b_demux_error = true;
++                goto EXIT_ERROR;
++            }
++        }
++
++        break;
++    }
++
++    /* replace current segment */
++    if( p_sys->p_current_segment )
++    {
++        yahls_FreeSegment( p_sys->p_current_segment );
++        p_sys->p_current_segment = NULL;
++    }
++
++    p_sys->p_current_segment = p_segment;
++    p_sys->i_current_segment_media_sequence = p_segment->i_media_sequence;
++    p_sys->i_current_segment_start_time_ms  = p_segment->i_start_time_ms;
++
++    msg_Dbg( p_demux, "demux created for segment[%"PRId64"]: %s",
++            (int64_t) p_segment->i_media_sequence,
++            p_segment->p_segmentinf->p_url );
++
++    return p_segment_demux;
++
++EXIT_ERROR:
++
++    if( p_segment_demux )
++    {
++        demux_Delete( p_segment_demux );
++        p_segment_demux = NULL;
++    }
++
++    if( p_segment )
++    {
++        yahls_FreeSegment( p_segment );
++        p_segment = NULL;
++    }
++
++    return NULL;
++}
++
++static int Demux( demux_t *p_demux )
++{
++    demux_sys_t *p_sys = p_demux->p_sys;
++    bool        b_segment_gap = false;
++
++    if( p_sys->b_need_change_segment )
++    {
++        demux_t *p_segment_demux = OpenNextSegmentDemux( p_demux, &b_segment_gap );
++        if( NULL == p_segment_demux )
++        {
++            if( p_sys->b_demux_error )
++            {
++                msg_Err( p_demux, "demux error, force EOS!" );
++                return 0;
++            }
++            else
++            {
++#ifdef YAHLS_DEBUG
++                msg_Warn( p_demux, "waiting for new segment" );
++#endif
++                return 1;
++            }
++        }
++
++        demux_Delete( p_sys->p_segment_demux );
++        p_sys->p_segment_demux = p_segment_demux;
++    }
++
++    if( b_segment_gap )
++    {
++        /* FIXME: process segment gap */
++        b_segment_gap = true;
++    }
++
++    int i_demux_ret = demux_Demux( p_sys->p_segment_demux );
++    if( i_demux_ret > 0 )
++    {
++        /* continue demux */
++        p_sys->b_need_change_segment = false;
++        return i_demux_ret;
++    }
++    else if( i_demux_ret < 0 )
++    {
++        /* error */
++        p_sys->b_need_change_segment = true;
++
++        msg_Err( p_demux, "Demux error" );
++        return i_demux_ret;
++    }
++    else
++    {
++        /* end of segment */
++        p_sys->b_need_change_segment = true;
++
++        msg_Err( p_demux, "end of segment" );
++        return 1;
++    }
++}
++
++/****************************************************************************
++ * Control
++ ****************************************************************************/
++#ifdef YAHLS_TRACE
++static void yahls_DebugControlCode( demux_t *p_demux, int i_query )
++{
++    const char* p_debug_msg = "unknown";
++    switch( i_query )
++    {
++        case DEMUX_GET_POSITION:            p_debug_msg = "DEMUX_GET_POSITION"; break;
++        case DEMUX_SET_POSITION:            p_debug_msg = "DEMUX_SET_POSITION"; break;
++        case DEMUX_GET_LENGTH:              p_debug_msg = "DEMUX_GET_LENGTH"; break;
++        case DEMUX_GET_TIME:                p_debug_msg = "DEMUX_GET_TIME"; break;
++        case DEMUX_SET_TIME:                p_debug_msg = "DEMUX_SET_TIME"; break;
++        case DEMUX_GET_TITLE_INFO:          p_debug_msg = "DEMUX_GET_TITLE_INFO"; break;
++        case DEMUX_SET_TITLE:               p_debug_msg = "DEMUX_SET_TITLE"; break;
++        case DEMUX_SET_SEEKPOINT:           p_debug_msg = "DEMUX_SET_SEEKPOINT"; break;
++        case DEMUX_SET_GROUP:               p_debug_msg = "DEMUX_SET_GROUP"; break;
++        case DEMUX_SET_NEXT_DEMUX_TIME:     p_debug_msg = "DEMUX_SET_NEXT_DEMUX_TIME"; break;
++        case DEMUX_GET_FPS:                 p_debug_msg = "DEMUX_GET_FPS"; break;
++        case DEMUX_GET_META:                p_debug_msg = "DEMUX_GET_META"; break;
++        case DEMUX_HAS_UNSUPPORTED_META:    p_debug_msg = "DEMUX_HAS_UNSUPPORTED_META"; break;
++        case DEMUX_GET_ATTACHMENTS:         p_debug_msg = "DEMUX_GET_ATTACHMENTS"; break;
++        case DEMUX_CAN_RECORD:              p_debug_msg = "DEMUX_CAN_RECORD"; break;
++        case DEMUX_SET_RECORD_STATE:        p_debug_msg = "DEMUX_SET_RECORD_STATE"; break;
++        case DEMUX_CAN_PAUSE:               p_debug_msg = "DEMUX_CAN_PAUSE"; break;
++        case DEMUX_SET_PAUSE_STATE:         p_debug_msg = "DEMUX_SET_PAUSE_STATE"; break;
++        case DEMUX_GET_PTS_DELAY:           p_debug_msg = "DEMUX_GET_PTS_DELAY"; break;
++        case DEMUX_CAN_CONTROL_PACE:        p_debug_msg = "DEMUX_CAN_CONTROL_PACE"; break;
++        case DEMUX_CAN_CONTROL_RATE:        p_debug_msg = "DEMUX_CAN_CONTROL_RATE"; break;
++        case DEMUX_SET_RATE:                p_debug_msg = "DEMUX_SET_RATE"; break;
++        case DEMUX_CAN_SEEK:                p_debug_msg = "DEMUX_CAN_SEEK"; break;
++        case DEMUX_GET_SIGNAL:              p_debug_msg = "DEMUX_GET_SIGNAL"; break;
++    }
++
++    msg_Err( p_demux, "sina:Control:%s", p_debug_msg );
++}
++#endif
++
++static int Control( demux_t *p_demux, int i_query, va_list args )
++{
++#ifdef YAHLS_TRACE
++    yahls_DebugControlCode( p_demux, i_query );
++#endif
++    demux_sys_t *p_sys = p_demux->p_sys;
++    assert( p_sys);
++
++    switch( i_query )
++    {
++        case DEMUX_GET_POSITION:
++        {
++            /* TODO: support */
++            double *p_position = (double *) va_arg( args, double * );
++            *p_position = 0.0f;
++            return VLC_SUCCESS;
++        }
++        case DEMUX_SET_POSITION:
++        {
++            /* TODO: support */
++            return VLC_EGENERIC;
++        }
++        case DEMUX_GET_TIME:
++        {
++            int64_t *p_time = (int64_t *) va_arg( args, int64_t * );
++
++            if( p_sys->p_segment_demux )
++            {
++                int i_ret = demux_Control( p_sys->p_segment_demux, DEMUX_GET_TIME, p_time );
++                if( i_ret != VLC_SUCCESS )
++                    return i_ret;
++                
++                *p_time += p_sys->i_current_segment_start_time_ms * 1000;                
++            }
++            else
++            {
++                *p_time = 0;                
++            }
++
++            return VLC_SUCCESS;
++        }
++        case DEMUX_SET_TIME:
++        {
++            /* TODO: support */
++            return VLC_EGENERIC;
++        }
++        case DEMUX_GET_LENGTH:
++        {
++            /* TODO: support */
++            return VLC_EGENERIC;
++        }
++        case DEMUX_CAN_PAUSE:
++        case DEMUX_CAN_CONTROL_PACE:
++        {
++            *va_arg( args, bool * ) = true;
++            return VLC_SUCCESS;
++        }
++        case DEMUX_CAN_SEEK:
++        case DEMUX_CAN_CONTROL_RATE:
++        {
++            *va_arg( args, bool * ) = false;
++            return VLC_SUCCESS;
++        }
++        case DEMUX_SET_PAUSE_STATE:
++        {
++            if( p_sys->p_segment_demux )
++            {
++                bool b_pause_state = va_arg( args, int );
++                return demux_Control( p_sys->p_segment_demux, DEMUX_GET_TIME, b_pause_state );
++            }
++            return VLC_SUCCESS;
++        }
++        case DEMUX_GET_PTS_DELAY:
++        {
++            int64_t *p_pts_delay = va_arg( args, int64_t * );
++            *p_pts_delay = INT64_C(1000) * var_InheritInteger( p_demux, "network-caching" );
++
++            return VLC_SUCCESS;
++        }
++    }
++
++    return VLC_EGENERIC;
++}
++
++
++
++/****************************************************************************
++ * Prefetch thread
++ ****************************************************************************/
++static void* yahls_PrefetchThread( void *p_this )
++{
++    demux_t *p_demux    = (demux_t *) p_this;
++    demux_sys_t *p_sys  = p_demux->p_sys;
++
++    yahls_segment_queue_t *p_prefetched_queue = &p_sys->prefetched_queue;
++    yahls_segment_queue_t *p_reloaded_queue = &p_sys->reloaded_queue;
++
++    while( !p_sys->b_close && !p_sys->b_demux_error )
++    {
++        /* fetch from reloaded queue */
++        int64_t deadline = mdate() + 1000 * 1000;
++        yahls_segment_t *p_segment = yahls_WaitPopHeadSegment( p_demux, p_reloaded_queue, deadline );
++        if( !p_segment )
++            continue;
++
++        /* TODO: do prefetch */
++        /* put into prefetched queue */
++        {
++            vlc_mutex_lock( &p_prefetched_queue->lock );
++            mutex_cleanup_push( &p_prefetched_queue->lock );
++
++#ifdef YAHLS_DEBUG
++            msg_Dbg( p_demux, "prefetched segment %"PRId64,
++                     p_segment->i_media_sequence );
++#endif
++
++            yahls_PushSegment_not_locked( p_prefetched_queue, p_segment );
++            vlc_cond_signal( &p_prefetched_queue->wait_can_pop );
++
++            vlc_cleanup_run( );
++        }
++    }
++
++    msg_Info( p_demux, "exit prefetch thread" );
++    p_sys->b_eos = true;
++    return NULL;
++}
++
++/****************************************************************************
++ * Reload thread
++ ****************************************************************************/
++static void* yahls_ReloadThread( void *p_this )
++{
++    demux_t     *p_demux = (demux_t *) p_this;
++    demux_sys_t *p_sys = p_demux->p_sys;
++
++    assert( p_sys->p_streaminf );
++    assert( p_sys->p_streaminf->p_playlist );
++    assert( p_sys->p_streaminf->p_playlist->i_target_duration_ms );
++
++    int64_t i_target_duration_ms = p_sys->p_streaminf->p_playlist->i_target_duration_ms;
++
++    yahls_segment_queue_t *p_reloaded_queue = &p_sys->reloaded_queue;
++    int i_unchanged_count = 0;
++    bool b_playlist_changed = true;
++    while( !p_sys->b_close && !p_sys->b_demux_error )
++    {
++        if( b_playlist_changed )
++            i_unchanged_count = 0;
++        else
++            i_unchanged_count++;
++
++        /* 
++         * wait for reload
++         *
++         * http://tools.ietf.org/html/draft-pantos-http-live-streaming-06#section-6.3.4
++         * v3:
++         *  The minimum delay is a multiple of the target duration.
++         *  This multiple is 0.5 for the first attempt, 1.5 for the second, 
++         *  and 3.0 thereafter.
++         *
++         * http://tools.ietf.org/html/draft-pantos-http-live-streaming-08#section-6.3.4
++         * v4:
++         *  It MUST be made available relative to the time that 
++         *  the previous version of the Playlist file was made available: 
++         *      no earlier than one-half the target duration after that time,
++         *      and no later than 1.5 times the target duration after that time.
++         *
++         * FIXME: follow v4 for now.
++         */
++        {
++            vlc_mutex_lock( &p_reloaded_queue->lock );
++            mutex_cleanup_push( &p_reloaded_queue->lock );
++
++            int64_t i_wait_deadline = mdate();
++            if( !p_reloaded_queue->p_tail )
++            {
++                /* fast retry */
++                i_wait_deadline += 1000 * 1000;
++            }
++            if( i_unchanged_count == 0)
++            {
++                i_wait_deadline += i_target_duration_ms * 1000;
++            }
++            else
++            {
++                i_wait_deadline += i_target_duration_ms * 1000 * 3 / 2;                
++            }
++
++            vlc_cond_timedwait( &p_reloaded_queue->wait_can_push,
++                                &p_reloaded_queue->lock,
++                                i_wait_deadline );
++
++            vlc_cleanup_run( );
++        }
++
++        if( p_sys->b_close || p_sys->b_demux_error )
++            break;
++
++        b_playlist_changed = false;
++
++        m3u8_playlist_t *p_playlist = m3u8_LoadPlayListUrl( VLC_OBJECT( p_demux ), p_sys->p_playlist_url );
++        if( !p_playlist )
++        {
++            msg_Err( p_demux, "failed to reload playlist" );
++            continue;
++        }
++
++        int i_ret = yahls_MergeSegmentList( p_demux,
++                                             p_playlist,
++                                             &b_playlist_changed );
++        if( VLC_SUCCESS != i_ret )
++        {
++            msg_Err( p_demux, "failed to merge playlist" );
++        }
++    }
++
++    msg_Info( p_demux, "exit reload thread" );
++    p_sys->b_endlist = true;
++    return NULL;
++}
+-- 
+1.7.10.4
+
