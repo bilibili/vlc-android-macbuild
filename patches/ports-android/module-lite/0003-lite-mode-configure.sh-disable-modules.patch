@@ -1,21 +1,23 @@
-From e77efd19c8ce0c7918fac666da32d110c86c75a2 Mon Sep 17 00:00:00 2001
+From 45d2768f782d26f246b6cb1bb41629de79a5b9c2 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH 3/5] lite-mode: configure.sh: disable modules
+Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
 
 ---
- configure.sh |   10 ++++++----
- 1 个文件被修改，插入 6 行(+)，删除 4 行(-)
+ configure.sh |   12 +++++++-----
+ 1 个文件被修改，插入 7 行(+)，删除 5 行(-)
 
 diff --git a/configure.sh b/configure.sh
-index 6546e27..b915890 100755
+index 71e39b4..cf92ed0 100755
 --- a/configure.sh
 +++ b/configure.sh
-@@ -40,15 +40,17 @@ STRIP="${CROSS_COMPILE}strip" \
+@@ -49,17 +49,19 @@ NM="${CROSS_COMPILE}nm" \
+ STRIP="${CROSS_COMPILE}strip" \
  RANLIB="${CROSS_COMPILE}ranlib" \
  AR="${CROSS_COMPILE}ar" \
- sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-linux $EXTRA_PARAMS \
+-sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $EXTRA_PARAMS \
 -                --enable-live555 --enable-realrtsp \
++sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-linux $EXTRA_PARAMS \
 +                --disable-live555 --disable-realrtsp \
                  --enable-avformat \
                  --enable-swscale \
@@ -28,11 +30,12 @@ index 6546e27..b915890 100755
 +                --enable-debug \
 +                --disable-mkv \
 +                --disable-taglib \
+                 --enable-dvbpsi \
 +                --disable-freetype \
                  --enable-iomx \
                  --disable-vlc --disable-shared \
                  --disable-vlm \
-@@ -84,7 +86,7 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+@@ -95,7 +97,7 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
                  --disable-skins2 \
                  --disable-mtp \
                  --disable-notify \

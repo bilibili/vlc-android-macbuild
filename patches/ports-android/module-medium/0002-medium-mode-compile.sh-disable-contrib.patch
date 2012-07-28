@@ -1,17 +1,17 @@
-From 8ab67c4fa30b2423a5877adb7b4c145453b5e88f Mon Sep 17 00:00:00 2001
+From b299af9d2c19810c469f4b47428842e95e6db7a3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
 Subject: [PATCH 2/4] medium-mode: compile.sh: disable contrib
 
 ---
- compile.sh |   21 ++++++++++++++++++++-
- 1 个文件被修改，插入 20 行(+)，删除 1 行(-)
+ compile.sh |   19 +++++++++++++++++++
+ 1 个文件被修改，插入 19 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index 718a1bc..af225fa 100755
+index 4be7ab0..3d320aa 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -105,6 +105,8 @@ cd contrib/android
+@@ -115,6 +115,8 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
      --disable-sdl \
      --disable-SDL_image \
      --disable-fontconfig \
@@ -20,7 +20,7 @@ index 718a1bc..af225fa 100755
      --disable-zvbi \
      --disable-kate \
      --disable-caca \
-@@ -115,9 +117,26 @@ cd contrib/android
+@@ -125,6 +127,23 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
      --disable-tremor \
      --disable-vorbis \
      --disable-sidplay2 \
@@ -43,11 +43,7 @@ index 718a1bc..af225fa 100755
 +    --disable-openjpg \
      --disable-samplerate \
      --disable-faad2 \
--    --enable-iconv
-+    --disable-iconv
- 
- # TODO: mpeg2, theora
- 
+     --disable-iconv
 -- 
 1.7.10.4
 

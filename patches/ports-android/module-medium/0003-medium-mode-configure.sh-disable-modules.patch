@@ -1,4 +1,4 @@
-From 79b615e8b8e4f9bd8cf927615acedd050c5584eb Mon Sep 17 00:00:00 2001
+From d628e050f576b3b3b24c9e1e2ce34444446056ff Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
 Subject: [PATCH 3/4] medium-mode: configure.sh: disable modules
@@ -8,7 +8,7 @@ Subject: [PATCH 3/4] medium-mode: configure.sh: disable modules
  1 个文件被修改，插入 5 行(+)，删除 3 行(-)
 
 diff --git a/configure.sh b/configure.sh
-index 2c5cdae..c6d9f25 100755
+index 71e39b4..5bb2477 100755
 --- a/configure.sh
 +++ b/configure.sh
 @@ -57,9 +57,11 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E

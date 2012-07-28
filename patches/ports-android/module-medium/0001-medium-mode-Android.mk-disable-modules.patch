@@ -1,4 +1,4 @@
-From 2d840d076bb3f223a37737cfe9c9d7de0f879782 Mon Sep 17 00:00:00 2001
+From f9464db6793d3774c096d73f7075113f253aaad3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
 Subject: [PATCH 1/4] medium-mode: Android.mk: disable modules

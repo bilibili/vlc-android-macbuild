@@ -1,0 +1,104 @@
+From f2117674453dd6814ca6b20d60e4ee1f471593f0 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sat, 28 Jul 2012 17:21:40 +0800
+Subject: [PATCH 3/7] compile.sh: support fastcompile.sh
+
+---
+ compile.sh     |   16 +++++++++++++++-
+ fastcompile.sh |    4 ++++
+ 2 个文件被修改，插入 19 行(+)，删除 1 行(-)
+ create mode 100644 fastcompile.sh
+
+diff --git a/compile.sh b/compile.sh
+index e785938..4be7ab0 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -66,6 +66,7 @@ export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-4.4.3/prebuilt/darwin-x86/bin
+ export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-4.4.3/prebuilt/linux-x86/bin:${PATH}
+ 
+ # 1/ libvlc, libvlccore and its plugins
++if [ -z "${VLC_FAST_COMPILE}" ]; then
+ TESTED_HASH=57cace3
+ if [ ! -d "vlc" ]; then
+     echo "VLC source not found, cloning"
+@@ -102,10 +103,14 @@ EOF
+         exit 1
+     fi
+ fi
++else
++    cd vlc
++fi
+ 
+ echo "Building the contribs"
+ mkdir -p contrib/android
+ cd contrib/android
++if [ -z "${VLC_FAST_COMPILE}" ]; then
+ ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout --enable-small \
+     --disable-sdl \
+     --disable-SDL_image \
+@@ -122,7 +127,8 @@ cd contrib/android
+     --disable-sidplay2 \
+     --disable-samplerate \
+     --disable-faad2 \
+-    --enable-iconv
++    --disable-iconv
++fi
+ 
+ # TODO: mpeg2, theora
+ 
+@@ -133,7 +139,9 @@ if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
+         EXTRA_CFLAGS="-mfpu=vfpv3-d16 -mcpu=cortex-a9"
+     fi
+     EXTRA_CFLAGS="${EXTRA_CFLAGS} -mthumb -mfloat-abi=softfp"
++    if [ -z "${VLC_FAST_COMPILE}" ]; then
+     echo "NOTHUMB := -marm" >> config.mak
++    fi
+ elif [ ${ANDROID_ABI} = "armeabi" ] ; then
+     export NO_NEON=1
+     if [ -n "${NO_ARMV6}" ]; then
+@@ -161,9 +169,12 @@ else
+     OPTS="--enable-debug"
+ fi
+ 
++if [ -z "${VLC_FAST_COMPILE}" ]; then
+ echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
++fi
+ export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
+ 
++if [ -z "${VLC_FAST_COMPILE}" ]; then
+ if  test -d "../../../../tarballs" ; then
+     echo "fetch local tarballs"
+     mkdir -p ../tarballs
+@@ -172,9 +183,11 @@ fi
+ 
+ make fetch
+ make
++fi
+ 
+ cd ../.. && mkdir -p android && cd android
+ 
++if [ -z "${VLC_FAST_COMPILE}" ]; then
+ if test ! -s "../configure" ; then
+     echo "Bootstraping"
+     ../bootstrap
+@@ -182,6 +195,7 @@ fi
+ 
+ echo "Configuring"
+ ../../configure.sh $OPTS
++fi
+ 
+ echo "Building"
+ make
+diff --git a/fastcompile.sh b/fastcompile.sh
+new file mode 100644
+index 0000000..97130c1
+--- /dev/null
++++ b/fastcompile.sh
+@@ -0,0 +1,4 @@
++#! /bin/sh
++
++export VLC_FAST_COMPILE=1
++sh compile.sh
+-- 
+1.7.10.4
+

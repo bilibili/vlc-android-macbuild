@@ -1,17 +1,17 @@
-From 84c4250cf2431c59273d7c124f6622cb44e90a6b Mon Sep 17 00:00:00 2001
+From 4914ad5b85d7f71942e96f33102feeb96c7e149b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
-Subject: [PATCH 2/5] lite-mode: compile.sh: disable contrib
+Subject: [PATCH 2/4] lite-mode: compile.sh: disable contrib
 
 ---
- compile.sh |   21 ++++++++++++++++++++-
- 1 个文件被修改，插入 20 行(+)，删除 1 行(-)
+ compile.sh |   19 +++++++++++++++++++
+ 1 个文件被修改，插入 19 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index 516a012..485713c 100755
+index 4be7ab0..c5fe92f 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -108,6 +108,8 @@ cd contrib/android
+@@ -115,6 +115,8 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
      --disable-sdl \
      --disable-SDL_image \
      --disable-fontconfig \
@@ -20,7 +20,7 @@ index 516a012..485713c 100755
      --disable-zvbi \
      --disable-kate \
      --disable-caca \
-@@ -118,8 +120,25 @@ cd contrib/android
+@@ -125,6 +127,23 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
      --disable-tremor \
      --disable-vorbis \
      --disable-sidplay2 \
@@ -42,11 +42,8 @@ index 516a012..485713c 100755
 +    --disable-png \
 +    --disable-openjpg \
      --disable-samplerate \
--    --enable-iconv
-+    --disable-iconv
- 
- # TODO: mpeg2, theora
- 
+     --disable-faad2 \
+     --disable-iconv
 -- 
 1.7.10.4
 

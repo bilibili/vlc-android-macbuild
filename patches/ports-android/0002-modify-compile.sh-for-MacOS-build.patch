@@ -1,11 +1,12 @@
-From f77a56652f03337ba75fba1095a7ac4c66ba1db0 Mon Sep 17 00:00:00 2001
+From b504afe548a57ad86b6bde84ea20ab81457d575b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
-Subject: [PATCH 2/6] modify compile.sh for MacOS build
+Subject: [PATCH 2/7] modify compile.sh for MacOS build
 
 ---
- compile.sh |    9 ++++++++-
- 1 个文件被修改，插入 8 行(+)，删除 1 行(-)
+ compile.sh   |    9 ++++++++-
+ configure.sh |    2 +-
+ 2 个文件被修改，插入 9 行(+)，删除 2 行(-)
 
 diff --git a/compile.sh b/compile.sh
 index b1de0bc..e785938 100755
@@ -41,6 +42,19 @@ index b1de0bc..e785938 100755
  make fetch
  make
  
+diff --git a/configure.sh b/configure.sh
+index 2c5cdae..71e39b4 100755
+--- a/configure.sh
++++ b/configure.sh
+@@ -36,7 +36,7 @@ CPPFLAGS="-I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/include -I${ANDROID_NDK
+ LDFLAGS="$LDFLAGS -L${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/libs/${ANDROID_ABI}"
+ 
+ SYSROOT=$ANDROID_NDK/platforms/$ANDROID_API/arch-$PLATFORM_SHORT_ARCH
+-ANDROID_BIN=$ANDROID_NDK/toolchains/${PATH_HOST}-4.4.3/prebuilt/linux-x86/bin/
++ANDROID_BIN=$ANDROID_NDK/toolchains/${PATH_HOST}-4.4.3/prebuilt/*-x86/bin/
+ CROSS_COMPILE=${ANDROID_BIN}/${TARGET_TUPLE}-
+ 
+ CPPFLAGS="$CPPFLAGS" \
 -- 
 1.7.10.4
 

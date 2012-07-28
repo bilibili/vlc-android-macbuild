@@ -1,21 +1,20 @@
-From 7b637434a166be29cc41ff72b18ce15869eba05e Mon Sep 17 00:00:00 2001
+From eec1a93e88a700ef1cfcf6f285a9692f91168e6b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 14 Jul 2012 15:15:42 +0800
-Subject: [PATCH 1/6] .gitignore
+Subject: [PATCH 1/7] .gitignore
 
 ---
- .gitignore |    2 ++
- 1 个文件被修改，插入 2 行(+)
+ .gitignore |    1 +
+ 1 个文件被修改，插入 1 行(+)
 
 diff --git a/.gitignore b/.gitignore
-index b5ae6d4..f3c14ee 100644
+index b5ae6d4..b4cd6de 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -1,5 +1,7 @@
+@@ -1,5 +1,6 @@
  /vlc/
  /android-libs/*.so
 +/patches/100*.patch
-+/fastbuild.sh
  vlc-android/local.properties
  .DS_Store
  *.keystore
