@@ -1,4 +1,4 @@
-From d0b4d023df9efbac319684f3752fad1fe536f52c Mon Sep 17 00:00:00 2001
+From c736f075871ba4ac828f343b47bf7fe8cfe1cec5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 30 May 2012 17:41:35 +0800
 Subject: [PATCH 13/32] httplive: ignore failed stream in meta list

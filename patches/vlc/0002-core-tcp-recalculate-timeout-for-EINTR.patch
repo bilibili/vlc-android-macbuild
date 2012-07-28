@@ -1,14 +1,14 @@
-From 65b2228b8bf153f21a5ba3393268433b62df8987 Mon Sep 17 00:00:00 2001
+From e2c9e5eb684c83b7f315ce99bbce07fae489afd6 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 11:20:15 +0800
 Subject: [PATCH 02/32] core: tcp: recalculate timeout for EINTR
 
 ---
- src/network/tcp.c |   56 +++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 个文件被修改，插入 52 行(+)，删除 4 行(-)
+ src/network/tcp.c |   54 +++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 个文件被修改，插入 50 行(+)，删除 4 行(-)
 
 diff --git a/src/network/tcp.c b/src/network/tcp.c
-index 9e0442c..263443d 100644
+index 9e0442c..119d3e1 100644
 --- a/src/network/tcp.c
 +++ b/src/network/tcp.c
 @@ -151,6 +151,7 @@ int net_Connect( vlc_object_t *p_this, const char *psz_host, int i_port,
@@ -19,7 +19,7 @@ index 9e0442c..263443d 100644
      for( ptr = res; ptr != NULL; ptr = ptr->ai_next )
      {
          int fd = net_Socket( p_this, ptr->ai_family,
-@@ -176,10 +177,57 @@ int net_Connect( vlc_object_t *p_this, const char *psz_host, int i_port,
+@@ -176,10 +177,55 @@ int net_Connect( vlc_object_t *p_this, const char *psz_host, int i_port,
                  { .fd = evfd, .events = POLLIN },
              };
  
@@ -35,16 +35,14 @@ index 9e0442c..263443d 100644
 +            }
 +            else
 +            {
-+                struct timeval tv_begin;
 +                struct timeval tv_deadline;
-+
-+                gettimeofday( &tv_begin, 0 );
++                gettimeofday( &tv_deadline, 0 );
 +                tv_deadline.tv_sec = tv_begin.tv_sec;
 +                tv_deadline.tv_usec = tv_begin.tv_usec;
 +
 +                tv_deadline.tv_sec += ( ( timeout ) / 1000 );
 +                tv_deadline.tv_usec += ( ( timeout % 1000 ) * 1000 );
-+                while( tv_deadline.tv_usec >= 1000000 )
++                if( tv_deadline.tv_usec >= 1000000 )
 +                {
 +                    tv_deadline.tv_usec -= 1000000;
 +                    tv_deadline.tv_sec += 1;
@@ -69,10 +67,10 @@ index 9e0442c..263443d 100644
 +
 +                    /* no need to normalize tv_wait */
 +                    i_wait = tv_wait.tv_sec * 1000 + ( tv_wait.tv_usec + 999 ) / 1000;
-+                    if( i_wait < 0 )
++                    if( i_wait <= 0 )
 +                    {
 +                        /* continue poll */
-+                        msg_Err( p_this, "timed out while EINTR" );
++                        msg_Err( p_this, "timed out with EINTR" );
 +                        val = 0;
 +                        break;
 +                    }

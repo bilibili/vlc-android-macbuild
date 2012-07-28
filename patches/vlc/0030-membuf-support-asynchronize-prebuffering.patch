@@ -1,4 +1,4 @@
-From f9b5cb375258c144a940ff9e355f114232176070 Mon Sep 17 00:00:00 2001
+From 03244856eabc910c3f1cc6ba12cac9c1da33892a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:49:45 +0800
 Subject: [PATCH 30/32] membuf: support asynchronize prebuffering
