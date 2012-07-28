@@ -1,11 +1,11 @@
 /tarballs
-/vlc-lite-armv6j
+/vlc-lite-armv6-vfp
 /vlc-lite-armv7a-neon
 /vlc-lite-cortex-a9-vfpv3-d16
-/vlc-full-armv6j
+/vlc-full-armv6-vfp
 /vlc-full-armv7a-neon
 /vlc-full-cortex-a9-vfpv3-d16
-/vlc-medium-armv6j
+/vlc-medium-armv6-vfp
 /vlc-medium-armv7a-neon
 /vlc-medium-cortex-a9-vfpv3-d16
 /vlc-app

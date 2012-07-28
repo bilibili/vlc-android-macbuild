@@ -1,21 +1,21 @@
-From 131b7bd6044e573519ee00dbe71987838ad275a6 Mon Sep 17 00:00:00 2001
+From a0eda9076510bd41e5598134a22fe7d8e4342657 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 24 Jun 2012 17:54:36 +0800
-Subject: [PATCH] build for armv6j
+Subject: [PATCH] build for armv6-vfp
 
 ---
  compile.sh |    4 ++++
  1 个文件被修改，插入 4 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index 4ee4ecc..2bbef37 100755
+index 3548d3b..6cc5059 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -6,6 +6,10 @@
  
  set -e
  
-+# patched for armv6j
++# patched for armv6-vfp
 +export ANDROID_ABI=armeabi
 +export NO_NEON=1
 +
