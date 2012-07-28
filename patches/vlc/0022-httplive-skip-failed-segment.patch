@@ -1,4 +1,4 @@
-From b864e82b034583607cd4e436dac78ffe26e4d1b3 Mon Sep 17 00:00:00 2001
+From 7db24ab09c325513c541513a554249beb204afdb Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 14 Jun 2012 16:44:57 +0800
 Subject: [PATCH 22/32] httplive: skip failed segment
@@ -8,7 +8,7 @@ Subject: [PATCH 22/32] httplive: skip failed segment
  1 个文件被修改，插入 86 行(+)，删除 2 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 9ef74b0..8207b8d 100644
+index 9ef74b0..b124c39 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -127,6 +127,10 @@ struct stream_sys_t
@@ -133,7 +133,7 @@ index 9ef74b0..8207b8d 100644
 +                while (p_sys->playback.segment >= p_sys->download.segment)
 +                {
 +                    msg_Warn(s, "may stalling, wait for segment downloading");
-+                    vlc_cond_wait(&p_sys->download.wait, &p_sys->playback.lock_wait);
++                    vlc_cond_wait(&p_sys->playback.wait, &p_sys->playback.lock_wait);
 +                    if (!vlc_object_alive(s) || p_sys->b_close || p_sys->b_eof)
 +                        break;
 +                }

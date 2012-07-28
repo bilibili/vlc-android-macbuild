@@ -1,4 +1,4 @@
-From 84ce088c650a75fe4d0f8956907a0b052f6068ec Mon Sep 17 00:00:00 2001
+From 237126705d61694242a379c30a9d036b85b0f65c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 4 Jul 2012 18:27:53 +0800
 Subject: [PATCH 27/32] omxil: use pts for OMX.SEC.AVC.Decoder
