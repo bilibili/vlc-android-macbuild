@@ -1,4 +1,4 @@
-From c90a499f633eef72a62ebd99dc3b3565bac0bbfd Mon Sep 17 00:00:00 2001
+From 8168088d1f53b8c1b9e5b7489a6a11d3afd11c26 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 15:42:47 +0800
 Subject: [PATCH 04/32] core: support echo module name
@@ -54,7 +54,7 @@ index 40ec3a8..0b03ef1 100644
  
  /**
 diff --git a/lib/media_player.c b/lib/media_player.c
-index 23ebf44..8ed3aae 100644
+index bea37d1..3ce5560 100644
 --- a/lib/media_player.c
 +++ b/lib/media_player.c
 @@ -322,6 +322,15 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,

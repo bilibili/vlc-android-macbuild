@@ -1,30 +1,31 @@
-From 9889f6d9d1740e642280906029dce8b03f0577f1 Mon Sep 17 00:00:00 2001
+From 79b615e8b8e4f9bd8cf927615acedd050c5584eb Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
+Subject: [PATCH 3/4] medium-mode: configure.sh: disable modules
 
 ---
  configure.sh |    8 +++++---
  1 个文件被修改，插入 5 行(+)，删除 3 行(-)
 
 diff --git a/configure.sh b/configure.sh
-index c5dd97f..4d2082d 100755
+index 2c5cdae..c6d9f25 100755
 --- a/configure.sh
 +++ b/configure.sh
-@@ -51,8 +51,10 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+@@ -57,9 +57,11 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
                  --enable-opensles \
                  --enable-audiotrack \
                  --enable-android-surface \
 -                --enable-mkv \
 -                --enable-taglib \
-+                --enable-debug \
 +                --disable-mkv \
 +                --disable-taglib \
+                 --enable-dvbpsi \
++                --enable-debug \
 +                --disable-freetype \
                  --enable-iomx \
                  --disable-vlc --disable-shared \
                  --disable-vlm \
-@@ -88,7 +90,7 @@ sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-
+@@ -95,7 +97,7 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
                  --disable-skins2 \
                  --disable-mtp \
                  --disable-notify \

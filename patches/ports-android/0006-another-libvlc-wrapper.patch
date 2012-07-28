@@ -1,4 +1,4 @@
-From 39ea32cf96a8c90befd20b66fb884ba27df3e034 Mon Sep 17 00:00:00 2001
+From 19e46909f2565dbbae8edcfc045377d239c9e84d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 10 Jul 2012 19:41:13 +0800
 Subject: [PATCH 6/6] another libvlc wrapper
@@ -13,23 +13,20 @@ Subject: [PATCH 6/6] another libvlc wrapper
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.inc.c
 
 diff --git a/Makefile b/Makefile
-index 48e0540..1fcafed 100644
+index 9d512a6..23f41c1 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1,7 +1,12 @@
+@@ -1,12 +1,17 @@
  # Sources and objects
  
+ ARCH = $(ANDROID_ABI)
 +LIBVLCJNI_MODULE_NAME = libvlcjni.so
 +
- ifeq ($(NO_NEON),)
- ARCH = armeabi-v7a
-+else ifneq ($(TEGRA2),)
-+ARCH = armeabi-v7a
++ifneq ($(TEGRA2),)
 +LIBVLCJNI_MODULE_NAME = libvlcjni-tegra2.so
- else
- ARCH = armeabi
- endif
-@@ -10,7 +15,7 @@ SRC=vlc-android
++endif
+ 
+ SRC=vlc-android
  JAVA_SOURCES=$(SRC)/src/org/videolan/vlc/*.java
  JNI_SOURCES=$(SRC)/jni/*.c $(SRC)/jni/*.h
  LIBVLCJNI=	\

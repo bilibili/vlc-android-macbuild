@@ -1,4 +1,4 @@
-From 54381b84825744955b7961d660c64c60ae77255c Mon Sep 17 00:00:00 2001
+From 36eee059cf1d020023a58e161a7f0dd0f9e716f2 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:39 +0800
 Subject: [PATCH 07/32] core: src: add es_out_managed
@@ -8,7 +8,7 @@ Subject: [PATCH 07/32] core: src: add es_out_managed
  1 个文件被修改，插入 2 行(+)
 
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 4e1a391..3674e4a 100644
+index 7237cb5..90d0faa 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
 @@ -46,6 +46,7 @@ pluginsinclude_HEADERS = \
@@ -19,7 +19,7 @@ index 4e1a391..3674e4a 100644
  	../include/vlc_events.h \
  	../include/vlc_filter.h \
  	../include/vlc_fourcc.h \
-@@ -343,6 +344,7 @@ SOURCES_libvlc_common = \
+@@ -346,6 +347,7 @@ SOURCES_libvlc_common = \
  	input/demux.c \
  	input/es_out.c \
  	input/es_out_timeshift.c \

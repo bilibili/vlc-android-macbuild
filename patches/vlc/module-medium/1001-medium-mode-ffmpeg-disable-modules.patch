@@ -1,7 +1,7 @@
-From 794df527ccca0e7e86777d49e2194a643f9e1452 Mon Sep 17 00:00:00 2001
+From 0df53e2dc975aa714bb9436777eccb5d28ecfac3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
-Subject: [PATCH 1001/1002] lite-mode: ffmpeg: disable modules
+Subject: [PATCH 1001/1002] medium-mode: ffmpeg: disable modules
 
 ---
  contrib/src/ffmpeg/rules.mak |   48 +++++++++++++++++++++++++++++++++++++++---

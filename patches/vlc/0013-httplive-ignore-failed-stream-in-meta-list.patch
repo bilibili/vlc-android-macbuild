@@ -1,4 +1,4 @@
-From fdbafa9fc30d19e9ae9582af62d26a53046da241 Mon Sep 17 00:00:00 2001
+From d0b4d023df9efbac319684f3752fad1fe536f52c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 30 May 2012 17:41:35 +0800
 Subject: [PATCH 13/32] httplive: ignore failed stream in meta list
@@ -9,7 +9,7 @@ So we have chance to try other streams instead of just fail.
  1 个文件被修改，插入 24 行(+)，删除 1 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 8748791..00e477d 100644
+index ff93c79..deb2fc3 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -954,6 +954,8 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const

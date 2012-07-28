@@ -1,7 +1,7 @@
-From 7326d1f48d023753dbefb28ccb1a1d0c7845c364 Mon Sep 17 00:00:00 2001
+From 33b7f453f5320c0571cda0cd42b80996a34987b1 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 3 Jul 2012 18:40:11 +0800
-Subject: [PATCH 1002/1002] lite-mode: Modules.am: disable modules
+Subject: [PATCH 1002/1002] medium-mode: Modules.am: disable modules
 
 ---
  modules/access/Modules.am        |    9 ++-------

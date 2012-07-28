@@ -1,4 +1,4 @@
-From 879e17ed3b7abd0091ae6208df19a6d41a9312a7 Mon Sep 17 00:00:00 2001
+From bca4223603c97385a4e1fa138a234d1146df14a7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 5 Jul 2012 23:35:37 +0800
 Subject: [PATCH 24/32] omxil: check h264 profile and level
@@ -204,7 +204,7 @@ index 635951c..055b6bf 100644
 +OMX_VIDEO_AVCLEVELTYPE H264LevelToOmxType(int level);
 \ No newline at end of file
 diff --git a/modules/codec/omxil/utils.c b/modules/codec/omxil/utils.c
-index 3ea5861..5151b7c 100644
+index 15db2da..7671a73 100644
 --- a/modules/codec/omxil/utils.c
 +++ b/modules/codec/omxil/utils.c
 @@ -919,3 +919,93 @@ void PrintOmx(decoder_t *p_dec, OMX_HANDLETYPE omx_handle, OMX_U32 i_port)

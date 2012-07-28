@@ -1,4 +1,4 @@
-From cd1743d2bee58e8fc9e7b99bf6d6266c72d34ed0 Mon Sep 17 00:00:00 2001
+From 4e36acb14d22896f9c94f9d0c50a8199a6f05dd0 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 29 May 2012 15:05:09 +0800
 Subject: [PATCH 14/32] httplive: download segment without content-length
@@ -8,10 +8,10 @@ Subject: [PATCH 14/32] httplive: download segment without content-length
  1 个文件被修改，插入 47 行(+)，删除 8 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 00e477d..b145cc0 100644
+index deb2fc3..263c2f2 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
-@@ -1717,6 +1717,10 @@ static int Prefetch(stream_t *s, int *current)
+@@ -1714,6 +1714,10 @@ static int Prefetch(stream_t *s, int *current)
  /****************************************************************************
   *
   ****************************************************************************/
@@ -22,7 +22,7 @@ index 00e477d..b145cc0 100644
  static int hls_Download(stream_t *s, segment_t *segment)
  {
      assert(segment);
-@@ -1725,17 +1729,21 @@ static int hls_Download(stream_t *s, segment_t *segment)
+@@ -1722,17 +1726,21 @@ static int hls_Download(stream_t *s, segment_t *segment)
      if (p_ts == NULL)
          return VLC_EGENERIC;
  
@@ -48,7 +48,7 @@ index 00e477d..b145cc0 100644
  
      ssize_t length = 0, curlen = 0;
      uint64_t size;
-@@ -1746,9 +1754,9 @@ static int hls_Download(stream_t *s, segment_t *segment)
+@@ -1743,9 +1751,9 @@ static int hls_Download(stream_t *s, segment_t *segment)
           * and enlarge the segment data block if necessary.
           */
          size = stream_Size(p_ts);
@@ -60,7 +60,7 @@ index 00e477d..b145cc0 100644
              block_t *p_block = block_Realloc(segment->data, 0, size);
              if (p_block == NULL)
              {
-@@ -1759,15 +1767,46 @@ static int hls_Download(stream_t *s, segment_t *segment)
+@@ -1756,15 +1764,46 @@ static int hls_Download(stream_t *s, segment_t *segment)
              }
              segment->data = p_block;
              segment->size = size;

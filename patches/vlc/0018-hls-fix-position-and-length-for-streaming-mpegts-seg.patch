@@ -1,4 +1,4 @@
-From 1cf1a6984efa601276134178a5ec5abd1be27fe6 Mon Sep 17 00:00:00 2001
+From cd4cf9ba5fa3fdbee224fcce7df60520a503857c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
 Subject: [PATCH 18/32] hls: fix position and length for streaming mpegts
@@ -112,7 +112,7 @@ index d5583d8..254ad10 100644
              if( pid->es->p_pes && pid->es->fmt.i_cat != VIDEO_ES )
              {
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index e85ba52..23f6def 100644
+index 467cf38..f1a31bd 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1094,6 +1094,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
@@ -151,7 +151,7 @@ index e85ba52..23f6def 100644
          free(line);
      }
  
-@@ -2448,6 +2462,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2440,6 +2454,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
  
      bool b_found = false;
      uint64_t length = 0;
@@ -159,7 +159,7 @@ index e85ba52..23f6def 100644
      uint64_t size = hls->size;
      int count = vlc_array_count(hls->segments);
  
-@@ -2483,6 +2498,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2475,6 +2490,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
              vlc_mutex_unlock(&hls->lock);
              return VLC_EGENERIC;
          }
@@ -168,7 +168,7 @@ index e85ba52..23f6def 100644
      }
  
      /* */
-@@ -2495,6 +2512,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2487,6 +2504,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
      /* */
      if (b_found)
      {
