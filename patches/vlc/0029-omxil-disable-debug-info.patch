@@ -1,4 +1,4 @@
-From 804b80733cc32c708774cdf98b1e5bb342d4513e Mon Sep 17 00:00:00 2001
+From d9cd958e999213c7cb9012aa9a563f19faeef786 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 18:43:17 +0800
 Subject: [PATCH 29/32] omxil: disable debug info

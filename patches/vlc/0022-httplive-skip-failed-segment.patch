@@ -1,14 +1,14 @@
-From 7db24ab09c325513c541513a554249beb204afdb Mon Sep 17 00:00:00 2001
+From 28fc033a08b670b666ae72f7136013f8c0ec191d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 14 Jun 2012 16:44:57 +0800
 Subject: [PATCH 22/32] httplive: skip failed segment
 
 ---
- modules/stream_filter/httplive.c |   88 +++++++++++++++++++++++++++++++++++++-
- 1 个文件被修改，插入 86 行(+)，删除 2 行(-)
+ modules/stream_filter/httplive.c |  106 +++++++++++++++++++++++++++++++++++++-
+ 1 个文件被修改，插入 104 行(+)，删除 2 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 9ef74b0..b124c39 100644
+index 9ef74b0..5a172fc 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -127,6 +127,10 @@ struct stream_sys_t
@@ -30,7 +30,51 @@ index 9ef74b0..b124c39 100644
      volatile bool b_close;  /* true if Close called */
      vlc_mutex_t lock_close; /* for reload and download thread */
      vlc_cond_t  cond_close; /* for reload and download thread */
-@@ -1634,16 +1639,19 @@ static void* hls_Thread(void *p_this)
+@@ -1348,11 +1353,13 @@ static int get_HTTPLiveMetaPlaylist(stream_t *s, vlc_array_t **streams)
+ /* Reload playlist */
+ static int hls_UpdatePlaylist(stream_t *s, hls_stream_t *hls_new, hls_stream_t **hls)
+ {
++    stream_sys_t *p_sys = s->p_sys;
+     int count = vlc_array_count(hls_new->segments);
+ 
+     msg_Info(s, "updating hls stream (program-id=%d, bandwidth=%"PRIu64") has %d segments",
+              hls_new->id, hls_new->bandwidth, count);
+ 
++    bool b_append_new_segment = false;
+     for (int n = 0; n < count; n++)
+     {
+         segment_t *p = segment_GetSegment(hls_new, n);
+@@ -1420,6 +1427,13 @@ static int hls_UpdatePlaylist(stream_t *s, hls_stream_t *hls_new, hls_stream_t *
+         vlc_mutex_unlock(&(*hls)->lock);
+     }
+ 
++    if( b_append_new_segment )
++    {
++        vlc_mutex_lock( &p_sys->download.lock_wait );
++        vlc_cond_signal( &p_sys->download.wait );
++        vlc_mutex_unlock( &p_sys->download.lock_wait );
++    }
++
+     /* update meta information */
+     vlc_mutex_lock(&(*hls)->lock);
+     (*hls)->sequence = hls_new->sequence;
+@@ -1618,6 +1632,15 @@ static void* hls_Thread(void *p_this)
+                     break;
+                 if (!vlc_object_alive(s) || p_sys->b_close)
+                     break;
++
++                /* renew count */
++                vlc_mutex_unlock(&p_sys->download.lock_wait);
++
++                vlc_mutex_lock(&hls->lock);
++                count = vlc_array_count(hls->segments);
++                vlc_mutex_unlock(&hls->lock);
++
++                vlc_mutex_lock(&p_sys->download.lock_wait);
+             }
+             /* */
+             if (p_sys->download.seek >= 0)
+@@ -1634,16 +1657,19 @@ static void* hls_Thread(void *p_this)
          segment_t *segment = segment_GetSegment(hls, p_sys->download.segment);
          vlc_mutex_unlock(&hls->lock);
  
@@ -51,7 +95,7 @@ index 9ef74b0..b124c39 100644
  
              if (p_sys->b_close)
                  break;
-@@ -1661,8 +1669,22 @@ static void* hls_Thread(void *p_this)
+@@ -1661,8 +1687,22 @@ static void* hls_Thread(void *p_this)
              p_sys->download.segment++;
          vlc_cond_signal(&p_sys->download.wait);
          vlc_mutex_unlock(&p_sys->download.lock_wait);
@@ -74,7 +118,7 @@ index 9ef74b0..b124c39 100644
      vlc_restorecancel(canc);
      return NULL;
  }
-@@ -1718,6 +1740,11 @@ static void* hls_Reload(void *p_this)
+@@ -1718,6 +1758,11 @@ static void* hls_Reload(void *p_this)
          vlc_mutex_unlock(&p_sys->lock_close);
      }
  
@@ -86,7 +130,7 @@ index 9ef74b0..b124c39 100644
      vlc_restorecancel(canc);
      return NULL;
  }
-@@ -2064,6 +2091,9 @@ static int Open(vlc_object_t *p_this)
+@@ -2064,6 +2109,9 @@ static int Open(vlc_object_t *p_this)
      vlc_mutex_init(&p_sys->lock_close);
      vlc_cond_init(&p_sys->cond_close);
  
@@ -96,7 +140,7 @@ index 9ef74b0..b124c39 100644
      /* Initialize HLS live stream */
      if (p_sys->b_live)
      {
-@@ -2129,6 +2159,10 @@ static void Close(vlc_object_t *p_this)
+@@ -2129,6 +2177,10 @@ static void Close(vlc_object_t *p_this)
      vlc_cond_signal(&p_sys->cond_close);
      vlc_mutex_unlock(&p_sys->lock_close);
  
@@ -107,7 +151,7 @@ index 9ef74b0..b124c39 100644
      /* */
      if (p_sys->b_live)
          vlc_join(p_sys->reload, NULL);
-@@ -2266,12 +2300,59 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
+@@ -2266,12 +2318,59 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
  
      do
      {
@@ -168,7 +212,7 @@ index 9ef74b0..b124c39 100644
  
          vlc_mutex_lock(&segment->lock);
          if (segment->data->i_buffer == 0)
-@@ -2319,6 +2400,9 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
+@@ -2319,6 +2418,9 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
  
      } while (i_read > 0);
  

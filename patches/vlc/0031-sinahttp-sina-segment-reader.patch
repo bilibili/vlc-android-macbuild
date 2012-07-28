@@ -1,4 +1,4 @@
-From bee4cb501940b04dec616808b6ce197591c23dfe Mon Sep 17 00:00:00 2001
+From 936b56ca0c7c8b1d76df47c60d892d1589c02924 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 27 Jun 2012 16:36:35 +0800
 Subject: [PATCH 31/32] sinahttp: sina segment reader
