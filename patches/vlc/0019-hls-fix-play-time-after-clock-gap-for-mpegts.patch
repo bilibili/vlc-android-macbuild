@@ -1,7 +1,7 @@
-From f4d49bdea75b3b8e303bd0b7a41b96a28188acfd Mon Sep 17 00:00:00 2001
+From 42bb80e0bc9765ca4b8d9b1cbb6b7d418a4300b5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:27 +0800
-Subject: [PATCH 19/32] hls: fix play time after clock gap for mpegts
+Subject: [PATCH 19/33] hls: fix play time after clock gap for mpegts
 
 ---
  modules/demux/ts.c               |   28 +++++++++++++++++++--
