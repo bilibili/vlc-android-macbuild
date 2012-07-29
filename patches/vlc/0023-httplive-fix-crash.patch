@@ -1,7 +1,7 @@
 From 9eb7d737bdce332f80c2696019c7d377c8f6e1af Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 21:35:51 +0800
-Subject: [PATCH 23/33] httplive: fix crash
+Subject: [PATCH 23/34] httplive: fix crash
 
 ---
  modules/stream_filter/httplive.c |    1 +

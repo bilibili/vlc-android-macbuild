@@ -1,7 +1,7 @@
-From 091a1cf9b279acc227f1b1fbb6bd5ce9e208af98 Mon Sep 17 00:00:00 2001
+From 5a1237bbf21d6be1e8a482c002332b9abede77d9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 5 Jul 2012 23:35:37 +0800
-Subject: [PATCH 25/33] omxil: check h264 profile and level
+Subject: [PATCH 26/34] omxil: check h264 profile and level
 
 Only load omxil codec which support video profile and level.
 Tested on devices and OMX decoder below:
