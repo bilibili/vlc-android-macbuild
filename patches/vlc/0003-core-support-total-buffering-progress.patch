@@ -1,7 +1,7 @@
-From 9666600d250b0ce8a72d26ffb3200a6bd0eb9b69 Mon Sep 17 00:00:00 2001
+From 0dd7e9e19a8439ad6dead46ac9aaeeff99b4e86a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 1 Jul 2012 18:44:58 +0800
-Subject: [PATCH 03/34] core: support total buffering progress
+Subject: [PATCH 03/33] core: support total buffering progress
 
 ---
  include/vlc/libvlc_events.h |    8 +++++++-

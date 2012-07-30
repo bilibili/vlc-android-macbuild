@@ -1,0 +1,49 @@
+From e43a7b64a743841ad528789cb39df3a251bebf5a Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 28 May 2012 11:45:12 +0800
+Subject: [PATCH 5/7] lite-mode: compile.sh: disable contrib
+
+---
+ compile.sh |   19 +++++++++++++++++++
+ 1 个文件被修改，插入 19 行(+)
+
+diff --git a/compile.sh b/compile.sh
+index 53ea95e..cc65e81 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -113,6 +113,8 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
+     --disable-sdl \
+     --disable-SDL_image \
+     --disable-fontconfig \
++    --disable-ass \
++    --disable-fribidi \
+     --disable-zvbi \
+     --disable-kate \
+     --disable-caca \
+@@ -123,6 +125,23 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
+     --disable-tremor \
+     --disable-vorbis \
+     --disable-sidplay2 \
++    --disable-taglib \
++    --disable-live555 \
++    --disable-schroedinger \
++    --disable-matroska \
++    --disable-goom \
++    --disable-gsm \
++    --disable-speex \
++    --disable-speexdsp \
++    --disable-freetype2 \
++    --disable-lua \
++    --disable-flac \
++    --disable-ogg \
++    --disable-dca \
++    --disable-theora \
++    --disable-modplug \
++    --disable-png \
++    --disable-openjpg \
+     --disable-samplerate \
+     --disable-faad2 \
+     --disable-iconv
+-- 
+1.7.10.4
+

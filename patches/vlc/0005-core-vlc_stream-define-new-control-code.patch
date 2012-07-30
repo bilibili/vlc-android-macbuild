@@ -1,7 +1,7 @@
-From d60cff8889e3a644e87d70a03695b32eb270d306 Mon Sep 17 00:00:00 2001
+From feb4d62ca6d1c8c6aed571fa5a0b468454438039 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:02 +0800
-Subject: [PATCH 05/34] core: vlc_stream: define new control code
+Subject: [PATCH 05/33] core: vlc_stream: define new control code
 
 ---
  include/vlc_stream.h |    6 ++++++

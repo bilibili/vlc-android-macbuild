@@ -1,7 +1,7 @@
-From ae85ba9eef80ca1e4ae6b102aa763ec81f2eb2c6 Mon Sep 17 00:00:00 2001
+From e1c6b79571884e98fb9340b60eea8170bd58212c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
-Subject: [PATCH 28/34] omxil: sort hw codec
+Subject: [PATCH 27/33] omxil: sort hw codec
 
 ---
  modules/codec/omxil/omxil.c |   96 +++++++++++++++++++++++++++++++++++++++++++

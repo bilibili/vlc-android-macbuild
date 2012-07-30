@@ -1,19 +1,19 @@
-From 40f4f09daaa31f4ead20feacb33898e9c29dcb66 Mon Sep 17 00:00:00 2001
+From c74b440f951299362f83c823c3ed6bd8aba0baaf Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
-Subject: [PATCH 11/34] http: add http option to disable range header
+Subject: [PATCH 11/33] http: add http option to disable range header
 
 ---
  modules/access/http.c |   43 +++++++++++++++++++++++++++++++++++++++++--
  1 个文件被修改，插入 41 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index ccd416f..fc6df59 100644
+index 531b7f8..ccd1ee9 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
-@@ -99,6 +99,10 @@ static void Close( vlc_object_t * );
- #define UA_TEXT N_("User Agent")
- #define UA_LONGTEXT N_("You can use a custom User agent or use a known one")
+@@ -102,6 +102,10 @@ static void Close( vlc_object_t * );
+     "slash, e.g. FooBar/1.2.3. This option can only be specified per input " \
+     "item, not globally.")
  
 +#define HOSTS_REJECT_RANGE N_("Exclude hosts from range header detection")
 +#define HOSTS_REJECT_RANGE_LONGTEXT N_(\
@@ -22,7 +22,7 @@ index ccd416f..fc6df59 100644
  vlc_module_begin ()
      set_description( N_("HTTP input") )
      set_capability( "access", 0 )
-@@ -123,6 +127,12 @@ vlc_module_begin ()
+@@ -126,6 +130,12 @@ vlc_module_begin ()
          change_safe()
      add_bool( "http-forward-cookies", true, FORWARD_COOKIES_TEXT,
                FORWARD_COOKIES_LONGTEXT, true )
@@ -35,7 +35,7 @@ index ccd416f..fc6df59 100644
      /* 'itpc' = iTunes Podcast */
      add_shortcut( "http", "https", "unsv", "itpc", "icyx" )
      set_callbacks( Open, Close )
-@@ -145,6 +155,8 @@ struct access_sys_t
+@@ -148,6 +158,8 @@ struct access_sys_t
      char    *psz_referrer;
      http_auth_t auth;
  
@@ -44,7 +44,7 @@ index ccd416f..fc6df59 100644
      /* Proxy */
      bool b_proxy;
      vlc_url_t  proxy;
-@@ -358,6 +370,10 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
+@@ -361,6 +373,10 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
          }
      }
  
@@ -55,7 +55,7 @@ index ccd416f..fc6df59 100644
      /* HTTP referrer */
      p_sys->psz_referrer = var_InheritString( p_access, "http-referrer" );
  
-@@ -1270,8 +1286,31 @@ static int Request( access_t *p_access, uint64_t i_tell )
+@@ -1273,8 +1289,31 @@ static int Request( access_t *p_access, uint64_t i_tell )
      if( p_sys->i_version == 1 && ! p_sys->b_continuous )
      {
          p_sys->b_persist = true;

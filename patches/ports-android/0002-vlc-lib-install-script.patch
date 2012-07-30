@@ -1,0 +1,27 @@
+From d95b3f2fb4089a6117cb511421c16384ed730334 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 8 May 2012 15:23:34 +0800
+Subject: [PATCH 2/7] vlc lib install script
+
+---
+ _install_vlc.sh |    8 ++++++++
+ 1 个文件被修改，插入 8 行(+)
+ create mode 100644 _install_vlc.sh
+
+diff --git a/_install_vlc.sh b/_install_vlc.sh
+new file mode 100644
+index 0000000..7824946
+--- /dev/null
++++ b/_install_vlc.sh
+@@ -0,0 +1,8 @@
++#! /bin/sh
++
++INSTALL_PROJECT=../VlcDemo
++cp -vR vlc-android/libs/* ${INSTALL_PROJECT}/libs/
++rm ${INSTALL_PROJECT}/libs/armeabi/gdb.setup
++rm ${INSTALL_PROJECT}/libs/armeabi/gdbserver
++rm ${INSTALL_PROJECT}/libs/armeabi-v7a/gdb.setup
++rm ${INSTALL_PROJECT}/libs/armeabi-v7a/gdbserver
+-- 
+1.7.10.4
+
