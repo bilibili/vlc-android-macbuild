@@ -1,18 +1,17 @@
-From b504afe548a57ad86b6bde84ea20ab81457d575b Mon Sep 17 00:00:00 2001
+From 2666ac314f3593606882a9fb187f2d0a4f71e15e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH 2/7] modify compile.sh for MacOS build
 
 ---
- compile.sh   |    9 ++++++++-
- configure.sh |    2 +-
- 2 个文件被修改，插入 9 行(+)，删除 2 行(-)
+ compile.sh |    8 +++++++-
+ 1 个文件被修改，插入 7 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index b1de0bc..e785938 100755
+index 355da1c..27dbb98 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -31,7 +31,7 @@ If you plan to use a release build, run 'compile.sh release'
+@@ -29,7 +29,7 @@ If you plan to use a release build, run 'compile.sh release'
  EOF
  # try to detect NDK version
  REL=$(grep -o '^r[0-9]*' $ANDROID_NDK/RELEASE.TXT 2>/dev/null|cut -b2-)
@@ -21,15 +20,7 @@ index b1de0bc..e785938 100755
      echo "You need the NDKv7 or later"
      exit 1
  fi
-@@ -62,6 +62,7 @@ export PLATFORM_SHORT_ARCH
- 
- # Add the NDK toolchain to the PATH, needed both for contribs and for building
- # stub libraries
-+export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-4.4.3/prebuilt/darwin-x86/bin:${PATH}
- export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-4.4.3/prebuilt/linux-x86/bin:${PATH}
- 
- # 1/ libvlc, libvlccore and its plugins
-@@ -163,6 +164,12 @@ fi
+@@ -162,6 +162,12 @@ fi
  echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
  export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
  
@@ -42,19 +33,6 @@ index b1de0bc..e785938 100755
  make fetch
  make
  
-diff --git a/configure.sh b/configure.sh
-index 2c5cdae..71e39b4 100755
---- a/configure.sh
-+++ b/configure.sh
-@@ -36,7 +36,7 @@ CPPFLAGS="-I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/include -I${ANDROID_NDK
- LDFLAGS="$LDFLAGS -L${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/libs/${ANDROID_ABI}"
- 
- SYSROOT=$ANDROID_NDK/platforms/$ANDROID_API/arch-$PLATFORM_SHORT_ARCH
--ANDROID_BIN=$ANDROID_NDK/toolchains/${PATH_HOST}-4.4.3/prebuilt/linux-x86/bin/
-+ANDROID_BIN=$ANDROID_NDK/toolchains/${PATH_HOST}-4.4.3/prebuilt/*-x86/bin/
- CROSS_COMPILE=${ANDROID_BIN}/${TARGET_TUPLE}-
- 
- CPPFLAGS="$CPPFLAGS" \
 -- 
 1.7.10.4
 
