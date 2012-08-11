@@ -25,6 +25,7 @@ fi
 
 echo "patch "${BILI_VLC_MODULE_MODE} ${BILI_VLC_TARGET_MODE}
 cd ${BILI_VLC_ROOT}
+git am --abort
 git am ../patches/ports-android/*.patch
 git am ../patches/ports-android/${BILI_VLC_MODULE_MODE}/*.patch
 git am ../patches/ports-android/${BILI_VLC_TARGET_MODE}/*.patch
