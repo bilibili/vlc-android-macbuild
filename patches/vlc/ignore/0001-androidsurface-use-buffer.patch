@@ -1,0 +1,191 @@
+From 5d61b7e5766d8bba7b75bae801a62579795ce7f4 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 2 Aug 2012 01:24:10 +0800
+Subject: [PATCH] androidsurface: use buffer
+
+---
+ modules/video_output/androidsurface.c |  105 +++++++++++++++++++++++++--------
+ 1 个文件被修改，插入 81 行(+)，删除 24 行(-)
+
+diff --git a/modules/video_output/androidsurface.c b/modules/video_output/androidsurface.c
+index af2cdc1..0bef79d 100644
+--- a/modules/video_output/androidsurface.c
++++ b/modules/video_output/androidsurface.c
+@@ -112,8 +112,8 @@ struct picture_sys_t
+     vout_display_sys_t *sys;
+ };
+ 
+-static int  AndroidLockSurface(picture_t *);
+-static void AndroidUnlockSurface(picture_t *);
++static int  AndroidLockSurface(vout_display_t *vd, picture_t *);
++static void AndroidUnlockSurface(vout_display_t *vd, picture_t *);
+ 
+ static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
+ 
+@@ -175,7 +175,9 @@ static int Open(vlc_object_t *p_this) {
+     fmt.i_gmask  = 0x0000ff00;
+     fmt.i_bmask  = 0x00ff0000;
+     video_format_FixRgb(&fmt);
++    jni_SetAndroidSurfaceSize(fmt.i_width, fmt.i_height);
+ 
++#if 0
+     /* Create the associated picture */
+     picture_resource_t *rsc = &sys->resource;
+     rsc->p_sys = malloc(sizeof(*rsc->p_sys));
+@@ -185,27 +187,32 @@ static int Open(vlc_object_t *p_this) {
+ 
+     for (int i = 0; i < PICTURE_PLANE_MAX; i++) {
+         rsc->p[i].p_pixels = NULL;
+-        rsc->p[i].i_pitch = 0;
+-        rsc->p[i].i_lines = 0;
++        rsc->p[i].i_pitch = 4 * fmt.i_width;
++        rsc->p[i].i_lines = fmt.i_height;
++    }
++
++    picture_t *picture_array[3];
++    int picture_count = sizeof(picture_array) / sizeof(picture_t);
++    for (int k = 0; k < picture_count; ++k) {
++        picture_array[k] = picture_NewFromResource(&fmt, rsc);
++        if (!picture_array[k])
++            goto enomem;
++
++        msg_Err(vd, "alloc picture, lines: %d, pitch: %d, planes: %d, pixels: %p",
++                picture_array[k]->p->i_lines,
++                picture_array[k]->p->i_pitch,
++                picture_array[k]->i_planes,
++                picture_array[k]->p->p_pixels);
+     }
+-    picture_t *picture = picture_NewFromResource(&fmt, rsc);
+-    if (!picture)
+-        goto enomem;
+ 
+     /* Wrap it into a picture pool */
+-    picture_pool_configuration_t pool_cfg;
+-    memset(&pool_cfg, 0, sizeof(pool_cfg));
+-    pool_cfg.picture_count = 1;
+-    pool_cfg.picture       = &picture;
+-    pool_cfg.lock          = AndroidLockSurface;
+-    pool_cfg.unlock        = AndroidUnlockSurface;
+-
+-    sys->pool = picture_pool_NewExtended(&pool_cfg);
++    sys->pool = picture_pool_New(picture_count, picture_array);
+     if (!sys->pool) {
+-        picture_Release(picture);
++        //picture_Release(picture);
+         goto enomem;
+     }
+-
++#endif
++    
+     /* Setup vout_display */
+     vd->sys     = sys;
+     vd->fmt     = fmt;
+@@ -218,10 +225,12 @@ static int Open(vlc_object_t *p_this) {
+     /* Fix initial state */
+     vout_display_SendEventFullscreen(vd, false);
+ 
++    msg_Err(vd, "voud loaded");
+     return VLC_SUCCESS;
+ 
+ enomem:
+-    free(rsc->p_sys);
++    msg_Err(vd, "voud failed");
++//    free(rsc->p_sys);
+     free(sys);
+     dlclose(p_library);
+     vlc_mutex_unlock(&single_instance);
+@@ -238,18 +247,36 @@ static void Close(vlc_object_t *p_this) {
+     vlc_mutex_unlock(&single_instance);
+ }
+ 
++#if 0
+ static picture_pool_t *Pool(vout_display_t *vd, unsigned count) {
+     vout_display_sys_t *sys = vd->sys;
+     VLC_UNUSED(count);
+     return sys->pool;
+ }
++#endif
+ 
+-static int  AndroidLockSurface(picture_t *picture) {
+-    picture_sys_t *picsys = picture->p_sys;
+-    vout_display_sys_t *sys = picsys->sys;
++static picture_pool_t *Pool(vout_display_t *vd, unsigned count)
++{
++    vout_display_sys_t *sys = vd->sys;
++
++    if (!sys->pool)
++    {
++        msg_Err( vd, "Pool, alloc %d", count + 5);
++        sys->pool = picture_pool_NewFromFormat(&vd->fmt, count + 5);
++    }
++    return sys->pool;
++}
++
++static int  AndroidLockSurface(vout_display_t *vd, picture_t *picture) {
++    picture_sys_t *picsys = picture->p_sys = (picture_sys_t*) malloc( sizeof( picture_sys_t ) );
++    vout_display_sys_t *sys = vd->sys;
+     SurfaceInfo *info;
+     uint32_t sw, sh;
+     void *surf;
++    
++    //static int i = 0;
++    //if( (i++) % 2 == 0 )
++    //    return VLC_EGENERIC;
+ 
+     sw = picture->p[0].i_visible_pitch / picture->p[0].i_pixel_pitch;
+     sh = picture->p[0].i_visible_lines;
+@@ -283,18 +310,48 @@ static int  AndroidLockSurface(picture_t *picture) {
+     return VLC_SUCCESS;
+ }
+ 
+-static void AndroidUnlockSurface(picture_t *picture) {
++static void AndroidUnlockSurface(vout_display_t *vd, picture_t *picture) {
+     picture_sys_t *picsys = picture->p_sys;
+-    vout_display_sys_t *sys = picsys->sys;
++    vout_display_sys_t *sys = vd->sys;
+ 
+     if (likely(picsys->surf))
+         sys->s_unlockAndPost(picsys->surf);
+     jni_UnlockAndroidSurface();
++
++    free( picture->p_sys );
+ }
+ 
+ static void Display(vout_display_t *vd, picture_t *picture, subpicture_t *subpicture) {
+-    VLC_UNUSED(vd);
+     VLC_UNUSED(subpicture);
++
++    picture_t surface_picture;
++    memcpy( &surface_picture, picture, sizeof( picture_t ) );
++
++    int64_t t_begin = mdate();
++    static int64_t t_last_display = 0;
++    if( t_last_display != 0 )
++    {
++        //msg_Err( vd, "Display %d ms", (int)( t_begin - t_last_display ) / 1000 );
++    }
++    t_last_display = t_begin;
++
++    int i_ret = AndroidLockSurface(vd, &surface_picture);
++
++    int64_t t_after_lock = mdate();
++    //msg_Err( vd, "AndroidLockSurface %d ms", (int)( t_after_lock - t_begin ) / 1000 );
++
++    if (i_ret == VLC_SUCCESS )
++    {
++        picture_CopyPixels(&surface_picture, picture );
++        int64_t t_after_copy= mdate();
++        //msg_Err( vd, "picture_CopyPixels %d ms", (int)( t_after_copy - t_after_lock ) / 1000 );
++
++        AndroidUnlockSurface(vd, &surface_picture);
++
++        int64_t t_after_unlock= mdate();
++        //msg_Err( vd, "AndroidUnlockSurface %d ms", (int)( t_after_unlock - t_after_copy ) / 1000 );
++    }
++
+     picture_Release(picture);
+ }
+ 
+-- 
+1.7.10.4
+
