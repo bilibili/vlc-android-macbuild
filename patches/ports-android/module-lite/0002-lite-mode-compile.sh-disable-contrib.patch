@@ -1,29 +1,22 @@
-From c537989e5ad1d4051b8fb717129a6e03394c3a62 Mon Sep 17 00:00:00 2001
+From efe92fede00b63087e6affc023c0c431f0aee7e4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
 Subject: [PATCH 2/4] lite-mode: compile.sh: disable contrib
 
 ---
- compile.sh |   19 +++++++++++++++++++
- 1 个文件被修改，插入 19 行(+)
+ compile.sh |   21 ++++++++++++++++++++-
+ 1 个文件被修改，插入 20 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index 00f7549..a7a2e29 100755
+index 66c5d30..1119f90 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -110,6 +110,8 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
-     --disable-sdl \
-     --disable-SDL_image \
-     --disable-fontconfig \
-+    --disable-ass \
-+    --disable-fribidi \
-     --disable-zvbi \
-     --disable-kate \
-     --disable-caca \
-@@ -120,6 +122,23 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
+@@ -175,9 +175,28 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
      --disable-tremor \
      --disable-vorbis \
      --disable-sidplay2 \
++    --disable-ass \
++    --disable-fribidi \
 +    --disable-taglib \
 +    --disable-live555 \
 +    --disable-schroedinger \
@@ -43,7 +36,11 @@ index 00f7549..a7a2e29 100755
 +    --disable-openjpg \
      --disable-samplerate \
      --disable-faad2 \
-     --disable-iconv
+-    --enable-iconv
++    --disable-iconv
+ fi
+ 
+ # TODO: mpeg2, theora
 -- 
 1.7.10.4
 

@@ -1,26 +1,17 @@
-From 2db87dcb06850f952c1ec87e1616adcaab141c14 Mon Sep 17 00:00:00 2001
+From 5fafb888c09e1867c89b18c510a66410aa5bcae7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH 2/7] modify compile.sh for MacOS build
 
 ---
- compile.sh |    8 +++++++-
- 1 个文件被修改，插入 7 行(+)，删除 1 行(-)
+ compile.sh |    6 ++++++
+ 1 个文件被修改，插入 6 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index 4add5ae..718a1bc 100755
+index fc01a26..64fa3ae 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -26,7 +26,7 @@ If you plan to use a release build, run 'compile.sh release'
- EOF
- # try to detect NDK version
- REL=$(grep -o '^r[0-9]*' $ANDROID_NDK/RELEASE.TXT 2>/dev/null|cut -b2-)
--if [ -z $REL ]; then
-+if [ -z "$REL" ]; then
-     echo "You need the NDKv7 or later"
-     exit 1
- fi
-@@ -159,6 +159,12 @@ fi
+@@ -192,6 +192,12 @@ fi
  echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
  export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
  

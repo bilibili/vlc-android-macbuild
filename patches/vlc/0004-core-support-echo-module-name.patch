@@ -1,4 +1,4 @@
-From 7ac182ac5d545ba73e40190b05987f0620640ab1 Mon Sep 17 00:00:00 2001
+From d4a3585df04ca0b7787722e39768e34be8d17e4a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 15:42:47 +0800
 Subject: [PATCH 04/33] core: support echo module name

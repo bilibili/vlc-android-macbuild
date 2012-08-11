@@ -14,7 +14,7 @@ if [ ! -d "vlc-android" ]; then
 fi
 
 # 1/ libvlc, libvlccore and its plugins
-TESTED_HASH=31b5a1b5b6
+TESTED_HASH=9eb524d
 if [ ! -d "vlc" ]; then
     echo "VLC source not found, cloning"
     git clone git://git.videolan.org/vlc.git vlc
@@ -37,7 +37,7 @@ git am ../patches/*.patch
 if [ ${BUILD_PLATFORM} == 'darwin' ]; then
     echo "======================================="
     echo "Applying the patches for build on darwin"
-    git am ../../patches/vlc-on-macosx/*.patch
+#    git am ../../patches/vlc-on-macosx/*.patch
 fi
 
 echo "======================================="

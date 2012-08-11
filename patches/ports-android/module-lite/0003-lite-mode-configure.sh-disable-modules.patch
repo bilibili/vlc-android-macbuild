@@ -1,4 +1,4 @@
-From 6efee2cbb2854f92565f52b22628953ae45392af Mon Sep 17 00:00:00 2001
+From 2a2004dd80fa162ee7adff4bbcb9da2a65ee8946 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
 Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
@@ -8,7 +8,7 @@ Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
  1 个文件被修改，插入 7 行(+)，删除 5 行(-)
 
 diff --git a/configure.sh b/configure.sh
-index 71e39b4..cf92ed0 100755
+index 241ac59..4e294c2 100755
 --- a/configure.sh
 +++ b/configure.sh
 @@ -49,17 +49,19 @@ NM="${CROSS_COMPILE}nm" \

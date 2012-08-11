@@ -1,27 +1,27 @@
-From 1fd312057d3f9fda86a4a0f41ec6943406fd2951 Mon Sep 17 00:00:00 2001
+From 10fb0b22b11f8151bf42419f40fb744884d4ec7d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
 Subject: [PATCH 3/7] compile.sh: support fastcompile.sh
 
 ---
- compile.sh     |   16 +++++++++++++++-
+ compile.sh     |   12 ++++++++++++
  fastcompile.sh |    4 ++++
- 2 个文件被修改，插入 19 行(+)，删除 1 行(-)
+ 2 个文件被修改，插入 16 行(+)
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index 718a1bc..00f7549 100755
+index 64fa3ae..66c5d30 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -61,6 +61,7 @@ export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-4.4.3/prebuilt/darwin-x86/bin
- export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-4.4.3/prebuilt/linux-x86/bin:${PATH}
+@@ -88,6 +88,7 @@ export PLATFORM_SHORT_ARCH
+ export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-${GCCVER}/prebuilt/`uname|tr A-Z a-z`-x86/bin:${PATH}
  
  # 1/ libvlc, libvlccore and its plugins
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
- TESTED_HASH=57cace3
+ TESTED_HASH=9eb524d
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
-@@ -97,10 +98,14 @@ EOF
+@@ -124,6 +125,9 @@ EOF
          exit 1
      fi
  fi
@@ -29,6 +29,9 @@ index 718a1bc..00f7549 100755
 +    cd vlc
 +fi
  
+ if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
+     if test -z "${NO_NEON}" ; then
+@@ -156,6 +160,7 @@ EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++${CX
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
@@ -36,27 +39,15 @@ index 718a1bc..00f7549 100755
  ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout --enable-small \
      --disable-sdl \
      --disable-SDL_image \
-@@ -117,7 +122,8 @@ cd contrib/android
-     --disable-sidplay2 \
+@@ -173,6 +178,7 @@ cd contrib/android
      --disable-samplerate \
      --disable-faad2 \
--    --enable-iconv
-+    --disable-iconv
+     --enable-iconv
 +fi
  
  # TODO: mpeg2, theora
  
-@@ -128,7 +134,9 @@ if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
-         EXTRA_CFLAGS="-mfpu=vfpv3-d16 -mcpu=cortex-a9"
-     fi
-     EXTRA_CFLAGS="${EXTRA_CFLAGS} -mthumb -mfloat-abi=softfp"
-+    if [ -z "${VLC_FAST_COMPILE}" ]; then
-     echo "NOTHUMB := -marm" >> config.mak
-+    fi
- elif [ ${ANDROID_ABI} = "armeabi" ] ; then
-     export NO_NEON=1
-     if [ -n "${NO_ARMV6}" ]; then
-@@ -156,9 +164,12 @@ else
+@@ -189,9 +195,12 @@ else
      OPTS="--enable-debug"
  fi
  
@@ -69,7 +60,7 @@ index 718a1bc..00f7549 100755
  if  test -d "../../../../tarballs" ; then
      echo "fetch local tarballs"
      mkdir -p ../tarballs
-@@ -167,9 +178,11 @@ fi
+@@ -200,9 +209,11 @@ fi
  
  make fetch
  make
@@ -81,7 +72,7 @@ index 718a1bc..00f7549 100755
  if test ! -s "../configure" ; then
      echo "Bootstraping"
      ../bootstrap
-@@ -177,6 +190,7 @@ fi
+@@ -210,6 +221,7 @@ fi
  
  echo "Configuring"
  ../../configure.sh $OPTS

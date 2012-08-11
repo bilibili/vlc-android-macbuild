@@ -1,4 +1,4 @@
-From 736d74b934846b24891ad84bfce770c3dffafd37 Mon Sep 17 00:00:00 2001
+From 7fe611cb31e3ca1a1e1c3e0f0bbb1382df6189d5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 10 Jul 2012 19:41:13 +0800
 Subject: [PATCH 7/7] another libvlc wrapper
@@ -36,7 +36,7 @@ index 9d512a6..23f41c1 100644
  	$(SRC)/obj/local/$(ARCH)/libiomx-hc.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index ca3b56e..f9efd9e 100644
+index 24b7d48..3248827 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -1,9 +1,13 @@
@@ -51,9 +51,9 @@ index ca3b56e..f9efd9e 100644
  
 -LOCAL_SRC_FILES := libvlcjni.c aout.c thumbnailer.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
 +LOCAL_SRC_FILES := libvlcjni_danmaku.c aout.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
- 
- LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
- 
+ LOCAL_SRC_FILES += wchar/wcpcpy.c
+ LOCAL_SRC_FILES += wchar/wcpncpy.c
+ LOCAL_SRC_FILES += wchar/wcscasecmp.c
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
 index 0000000..a7bcdad

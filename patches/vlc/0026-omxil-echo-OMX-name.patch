@@ -1,4 +1,4 @@
-From d576dea1d4804c581aeb9e606805f22c225fd9ca Mon Sep 17 00:00:00 2001
+From 0cefbdd8d9ed3b7c7b944a62d0388de20502c4cf Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 18:21:32 +0800
 Subject: [PATCH 26/33] omxil: echo OMX name
