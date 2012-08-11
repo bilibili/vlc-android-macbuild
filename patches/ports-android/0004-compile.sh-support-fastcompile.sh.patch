@@ -1,4 +1,4 @@
-From a73c40b8654bfa8481a6d280ad00d595ada788be Mon Sep 17 00:00:00 2001
+From bd682eaaf4d594bb9901e0eb199c28dbfc961f69 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
 Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
@@ -10,7 +10,7 @@ Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index ceb3535..1f2ea1f 100755
+index 396918a..1266e03 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -90,6 +90,7 @@ CHOST=${ANDROID_BIN}/${TARGET_TUPLE}
@@ -53,7 +53,7 @@ index ceb3535..1f2ea1f 100755
  
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
  echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
- echp "CHOST= ${CHOST}" >> config.mak
+ echo "CHOST= ${CHOST}" >> config.mak
 +fi
  export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
  

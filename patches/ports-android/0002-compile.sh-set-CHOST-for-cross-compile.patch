@@ -1,4 +1,4 @@
-From c1a15f8b85d1e558764f39c2ee4970e6551e5ecb Mon Sep 17 00:00:00 2001
+From fcff90d90e57c11b8113db74fef99c123e5b871e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 11 Aug 2012 14:27:45 +0800
 Subject: [PATCH 2/8] compile.sh: set CHOST for cross compile
@@ -8,7 +8,7 @@ Subject: [PATCH 2/8] compile.sh: set CHOST for cross compile
  1 个文件被修改，插入 4 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index fc01a26..0f3af26 100755
+index fc01a26..e3b87d7 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -85,7 +85,9 @@ export PLATFORM_SHORT_ARCH
@@ -16,7 +16,7 @@ index fc01a26..0f3af26 100755
  # Add the NDK toolchain to the PATH, needed both for contribs and for building
  # stub libraries
 -export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-${GCCVER}/prebuilt/`uname|tr A-Z a-z`-x86/bin:${PATH}
-+ANDROID_BIN==${ANDROID_NDK}/toolchains/${PATH_HOST}-${GCCVER}/prebuilt/`uname|tr A-Z a-z`-x86/bin:${PATH}
++ANDROID_BIN=${ANDROID_NDK}/toolchains/${PATH_HOST}-${GCCVER}/prebuilt/`uname|tr A-Z a-z`-x86/bin
 +CHOST=${ANDROID_BIN}/${TARGET_TUPLE}
 +export PATH=${ANDROID_BIN}:${PATH}
  
@@ -26,7 +26,7 @@ index fc01a26..0f3af26 100755
  fi
  
  echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
-+echp "CHOST= ${CHOST}" >> config.mak
++echo "CHOST= ${CHOST}" >> config.mak
  export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
  
  make fetch
