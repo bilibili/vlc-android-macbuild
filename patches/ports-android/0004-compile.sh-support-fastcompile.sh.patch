@@ -1,7 +1,7 @@
-From 10fb0b22b11f8151bf42419f40fb744884d4ec7d Mon Sep 17 00:00:00 2001
+From a73c40b8654bfa8481a6d280ad00d595ada788be Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
-Subject: [PATCH 3/7] compile.sh: support fastcompile.sh
+Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
 
 ---
  compile.sh     |   12 ++++++++++++
@@ -10,18 +10,18 @@ Subject: [PATCH 3/7] compile.sh: support fastcompile.sh
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index 64fa3ae..66c5d30 100755
+index ceb3535..1f2ea1f 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -88,6 +88,7 @@ export PLATFORM_SHORT_ARCH
- export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-${GCCVER}/prebuilt/`uname|tr A-Z a-z`-x86/bin:${PATH}
+@@ -90,6 +90,7 @@ CHOST=${ANDROID_BIN}/${TARGET_TUPLE}
+ export PATH=${ANDROID_BIN}:${PATH}
  
  # 1/ libvlc, libvlccore and its plugins
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
  TESTED_HASH=9eb524d
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
-@@ -124,6 +125,9 @@ EOF
+@@ -126,6 +127,9 @@ EOF
          exit 1
      fi
  fi
@@ -31,7 +31,7 @@ index 64fa3ae..66c5d30 100755
  
  if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
      if test -z "${NO_NEON}" ; then
-@@ -156,6 +160,7 @@ EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++${CX
+@@ -158,6 +162,7 @@ EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++${CX
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
@@ -39,7 +39,7 @@ index 64fa3ae..66c5d30 100755
  ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout --enable-small \
      --disable-sdl \
      --disable-SDL_image \
-@@ -173,6 +178,7 @@ cd contrib/android
+@@ -175,6 +180,7 @@ cd contrib/android
      --disable-samplerate \
      --disable-faad2 \
      --enable-iconv
@@ -47,12 +47,13 @@ index 64fa3ae..66c5d30 100755
  
  # TODO: mpeg2, theora
  
-@@ -189,9 +195,12 @@ else
+@@ -191,10 +197,13 @@ else
      OPTS="--enable-debug"
  fi
  
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
  echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
+ echp "CHOST= ${CHOST}" >> config.mak
 +fi
  export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
  
@@ -60,7 +61,7 @@ index 64fa3ae..66c5d30 100755
  if  test -d "../../../../tarballs" ; then
      echo "fetch local tarballs"
      mkdir -p ../tarballs
-@@ -200,9 +209,11 @@ fi
+@@ -203,9 +212,11 @@ fi
  
  make fetch
  make
@@ -72,7 +73,7 @@ index 64fa3ae..66c5d30 100755
  if test ! -s "../configure" ; then
      echo "Bootstraping"
      ../bootstrap
-@@ -210,6 +221,7 @@ fi
+@@ -213,6 +224,7 @@ fi
  
  echo "Configuring"
  ../../configure.sh $OPTS

@@ -1,18 +1,18 @@
-From 5fafb888c09e1867c89b18c510a66410aa5bcae7 Mon Sep 17 00:00:00 2001
+From 6ddc025b3bdfd6ef37c9aacf8dea3d790073e08f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
-Subject: [PATCH 2/7] modify compile.sh for MacOS build
+Subject: [PATCH 3/8] compile.sh: restore saved contrib package
 
 ---
  compile.sh |    6 ++++++
  1 个文件被修改，插入 6 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index fc01a26..64fa3ae 100755
+index 0f3af26..ceb3535 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -192,6 +192,12 @@ fi
- echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
+@@ -195,6 +195,12 @@ echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
+ echp "CHOST= ${CHOST}" >> config.mak
  export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
  
 +if  test -d "../../../../tarballs" ; then

@@ -1,7 +1,7 @@
-From 7fe611cb31e3ca1a1e1c3e0f0bbb1382df6189d5 Mon Sep 17 00:00:00 2001
+From 95bd81ec3504b6e311de6332bdd5790bfbf3c7a9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 10 Jul 2012 19:41:13 +0800
-Subject: [PATCH 7/7] another libvlc wrapper
+Subject: [PATCH 8/8] another libvlc wrapper
 
 ---
  Makefile                                |    7 +-
