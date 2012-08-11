@@ -1,4 +1,4 @@
-From 191211c644355e2a271f76830f2a7194bd7b37a0 Mon Sep 17 00:00:00 2001
+From 71b18a0f730dcbf8c2dec0b652c369aee79e8351 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
 Subject: [PATCH 1/4] lite-mode: Android.mk: disable modules

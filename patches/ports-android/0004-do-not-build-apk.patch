@@ -1,4 +1,4 @@
-From b460fa58dc08e23b2877bb8f015150e3d98a6f25 Mon Sep 17 00:00:00 2001
+From 2106e0f7eb6487f69c5fbf923b303383a0c3ee14 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 11:30:23 +0800
 Subject: [PATCH 4/7] do not build apk

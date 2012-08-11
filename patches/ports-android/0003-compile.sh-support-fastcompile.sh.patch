@@ -1,4 +1,4 @@
-From 209b6f6ecc37e2a6b31b643bf5e0a2b91ac63536 Mon Sep 17 00:00:00 2001
+From 1fd312057d3f9fda86a4a0f41ec6943406fd2951 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
 Subject: [PATCH 3/7] compile.sh: support fastcompile.sh
@@ -10,10 +10,10 @@ Subject: [PATCH 3/7] compile.sh: support fastcompile.sh
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index 27dbb98..53ea95e 100755
+index 718a1bc..00f7549 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -64,6 +64,7 @@ export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-4.4.3/prebuilt/darwin-x86/bin
+@@ -61,6 +61,7 @@ export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-4.4.3/prebuilt/darwin-x86/bin
  export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-4.4.3/prebuilt/linux-x86/bin:${PATH}
  
  # 1/ libvlc, libvlccore and its plugins
@@ -21,7 +21,7 @@ index 27dbb98..53ea95e 100755
  TESTED_HASH=57cace3
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
-@@ -100,10 +101,14 @@ EOF
+@@ -97,10 +98,14 @@ EOF
          exit 1
      fi
  fi
@@ -36,7 +36,7 @@ index 27dbb98..53ea95e 100755
  ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout --enable-small \
      --disable-sdl \
      --disable-SDL_image \
-@@ -120,7 +125,8 @@ cd contrib/android
+@@ -117,7 +122,8 @@ cd contrib/android
      --disable-sidplay2 \
      --disable-samplerate \
      --disable-faad2 \
@@ -46,7 +46,7 @@ index 27dbb98..53ea95e 100755
  
  # TODO: mpeg2, theora
  
-@@ -131,7 +137,9 @@ if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
+@@ -128,7 +134,9 @@ if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
          EXTRA_CFLAGS="-mfpu=vfpv3-d16 -mcpu=cortex-a9"
      fi
      EXTRA_CFLAGS="${EXTRA_CFLAGS} -mthumb -mfloat-abi=softfp"
@@ -56,7 +56,7 @@ index 27dbb98..53ea95e 100755
  elif [ ${ANDROID_ABI} = "armeabi" ] ; then
      export NO_NEON=1
      if [ -n "${NO_ARMV6}" ]; then
-@@ -159,9 +167,12 @@ else
+@@ -156,9 +164,12 @@ else
      OPTS="--enable-debug"
  fi
  
@@ -69,7 +69,7 @@ index 27dbb98..53ea95e 100755
  if  test -d "../../../../tarballs" ; then
      echo "fetch local tarballs"
      mkdir -p ../tarballs
-@@ -170,9 +181,11 @@ fi
+@@ -167,9 +178,11 @@ fi
  
  make fetch
  make
@@ -81,7 +81,7 @@ index 27dbb98..53ea95e 100755
  if test ! -s "../configure" ; then
      echo "Bootstraping"
      ../bootstrap
-@@ -180,6 +193,7 @@ fi
+@@ -177,6 +190,7 @@ fi
  
  echo "Configuring"
  ../../configure.sh $OPTS

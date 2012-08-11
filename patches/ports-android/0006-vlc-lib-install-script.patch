@@ -1,4 +1,4 @@
-From 70f17d9a47e95918df61f93e735af836ec911a40 Mon Sep 17 00:00:00 2001
+From beabfde78cf7e28daba828fd6d5990ff99f335de Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 15:23:34 +0800
 Subject: [PATCH 6/7] vlc lib install script
