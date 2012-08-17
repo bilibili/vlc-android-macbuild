@@ -1,4 +1,4 @@
-From e62fe3cd0af277f5f59e3b7e48f44f2df5695e76 Mon Sep 17 00:00:00 2001
+From d0120b12f26114f122b889be4633cd067bfcbfb7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:11 +0800
 Subject: [PATCH 33/33] sinaxml: sina xml parser

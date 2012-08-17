@@ -1,4 +1,4 @@
-From 5d44c0ac4e9476f1ee47d8165d08594e53cb5813 Mon Sep 17 00:00:00 2001
+From 48c71f67d5017b99a96cff4d2be67c3df13d82d2 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 29 May 2012 20:42:41 +0800
 Subject: [PATCH 17/33] httplive: parse EXT-X-MEDIA-SEQUENCE only once

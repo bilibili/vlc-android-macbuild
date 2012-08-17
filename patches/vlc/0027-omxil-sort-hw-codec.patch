@@ -1,4 +1,4 @@
-From 9098f14fb5d4443c9de1f6afe68287906e77e7ac Mon Sep 17 00:00:00 2001
+From cb1528e3df02ac2f6943401f874cd48785b6c77e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
 Subject: [PATCH 27/33] omxil: sort hw codec
@@ -8,7 +8,7 @@ Subject: [PATCH 27/33] omxil: sort hw codec
  1 个文件被修改，插入 96 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 1e5e75c..e2d246f 100644
+index 1e5e75c..8b7d1fb 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -197,6 +197,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
@@ -25,9 +25,9 @@ index 1e5e75c..e2d246f 100644
 +
 +static const OMX_Codec_Weight g_omx_codec_weight_table[] =
 +{
-+    /* Tegra2 codec */
-+    { "OMX.Nvidia.h264.decode",    1 },     /* H264 Main Profile or below */
-+    { "OMX.Nvidia.h264ext.decode", 2 },     /* Extended Profile (XP) or above */
++    /* Tegra2 codec is too slow in vlc implements */
++    { "OMX.Nvidia.h264.decode",    -1 },     /* H264 Main Profile or below */
++    { "OMX.Nvidia.h264ext.decode", -1 },     /* Extended Profile (XP) or above */
 +
 +    /* 0 for codec not in table */
 +

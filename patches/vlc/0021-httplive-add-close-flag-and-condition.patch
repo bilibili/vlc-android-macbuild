@@ -1,4 +1,4 @@
-From a165a117d9de66d3bbd216dc321550b787c6ef3a Mon Sep 17 00:00:00 2001
+From f50ac7dbc43831cb6eb32cf6d81ee268f7b750a8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 13 Jun 2012 18:07:26 +0800
 Subject: [PATCH 21/33] httplive: add close flag and condition

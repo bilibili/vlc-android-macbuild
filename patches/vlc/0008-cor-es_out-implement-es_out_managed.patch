@@ -1,4 +1,4 @@
-From 9f080ba6706486726af0921f85c65caa983d3e71 Mon Sep 17 00:00:00 2001
+From d288c1613203eb5ad1df77dd2935d16011355798 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:20 +0800
 Subject: [PATCH 08/33] cor: es_out: implement es_out_managed

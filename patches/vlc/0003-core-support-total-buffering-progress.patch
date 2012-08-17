@@ -1,4 +1,4 @@
-From de02aff5287c524c37f75c41f0c31173355ac218 Mon Sep 17 00:00:00 2001
+From 9681384b1f9ce3b0df840412835807b045ebfba8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 1 Jul 2012 18:44:58 +0800
 Subject: [PATCH 03/33] core: support total buffering progress
