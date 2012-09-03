@@ -1,4 +1,4 @@
-From 290f5032473035c9a25144b31af49fa300e8fef3 Mon Sep 17 00:00:00 2001
+From 91942cfce9e5f87657774ca17c1eb1160ebf2814 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 24 Jun 2012 17:23:34 +0800
 Subject: [PATCH] build for armeabi-v7a with NEON
@@ -8,7 +8,7 @@ Subject: [PATCH] build for armeabi-v7a with NEON
  1 个文件被修改，插入 3 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index 4ee4ecc..4194ee9 100755
+index cacb237..e1382e6 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -6,6 +6,9 @@

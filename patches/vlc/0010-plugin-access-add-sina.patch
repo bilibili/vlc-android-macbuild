@@ -1,14 +1,14 @@
-From bba8e3c0fddadfb10d6a09d7ac6aca3667b74ddd Mon Sep 17 00:00:00 2001
+From 035d5818b2703d577f36d6f1ad845c95c3dfb516 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:47:39 +0800
-Subject: [PATCH 10/33] plugin: access: add sina
+Subject: [PATCH 10/32] plugin: access: add sina
 
 ---
  modules/access/Modules.am |   11 +++++++++++
  1 个文件被修改，插入 11 行(+)
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index a053f46..9e97c73 100644
+index ae61db3..d58a381 100644
 --- a/modules/access/Modules.am
 +++ b/modules/access/Modules.am
 @@ -167,6 +167,17 @@ if HAVE_XCB

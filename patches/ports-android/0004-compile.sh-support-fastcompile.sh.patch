@@ -1,4 +1,4 @@
-From bd682eaaf4d594bb9901e0eb199c28dbfc961f69 Mon Sep 17 00:00:00 2001
+From 298484397a4f3ee350aaaa44d49168fcd5a74ed6 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
 Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
@@ -10,7 +10,7 @@ Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index 396918a..1266e03 100755
+index 593cd5a..2d7af91 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -90,6 +90,7 @@ CHOST=${ANDROID_BIN}/${TARGET_TUPLE}
@@ -18,7 +18,7 @@ index 396918a..1266e03 100755
  
  # 1/ libvlc, libvlccore and its plugins
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
- TESTED_HASH=9eb524d
+ TESTED_HASH=df4da38
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
 @@ -126,6 +127,9 @@ EOF
@@ -39,15 +39,15 @@ index 396918a..1266e03 100755
  ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout --enable-small \
      --disable-sdl \
      --disable-SDL_image \
-@@ -175,6 +180,7 @@ cd contrib/android
-     --disable-samplerate \
+@@ -176,6 +181,7 @@ cd contrib/android
      --disable-faad2 \
+     --disable-harfbuzz \
      --enable-iconv
 +fi
  
  # TODO: mpeg2, theora
  
-@@ -191,10 +197,13 @@ else
+@@ -192,10 +198,13 @@ else
      OPTS="--enable-debug"
  fi
  
@@ -61,7 +61,7 @@ index 396918a..1266e03 100755
  if  test -d "../../../../tarballs" ; then
      echo "fetch local tarballs"
      mkdir -p ../tarballs
-@@ -203,9 +212,11 @@ fi
+@@ -204,9 +213,11 @@ fi
  
  make fetch
  make
@@ -73,7 +73,7 @@ index 396918a..1266e03 100755
  if test ! -s "../configure" ; then
      echo "Bootstraping"
      ../bootstrap
-@@ -213,6 +224,7 @@ fi
+@@ -214,6 +225,7 @@ fi
  
  echo "Configuring"
  ../../configure.sh $OPTS

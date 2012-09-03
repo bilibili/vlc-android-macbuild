@@ -1,17 +1,17 @@
-From 4ad97c6e5a06ac1984aac4bfd5184630062db10f Mon Sep 17 00:00:00 2001
+From fcb81503f4f8829509c30d733228b67e60e538d7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 15:20:54 +0800
-Subject: [PATCH 20/33] input: fix video delay after clock gap for youku m3u8
+Subject: [PATCH 20/32] input: fix video delay after clock gap for youku m3u8
 
 ---
  src/audio_output/input.c |    4 ++--
  1 个文件被修改，插入 2 行(+)，删除 2 行(-)
 
 diff --git a/src/audio_output/input.c b/src/audio_output/input.c
-index c7c2d7a..b8ee65e 100644
+index 1c36e64..57dc8b9 100644
 --- a/src/audio_output/input.c
 +++ b/src/audio_output/input.c
-@@ -423,7 +423,7 @@ block_t *aout_InputPlay(audio_output_t *p_aout, aout_input_t *p_input,
+@@ -391,7 +391,7 @@ block_t *aout_InputPlay(audio_output_t *p_aout, aout_input_t *p_input,
  
      mtime_t drift = start_date - p_buffer->i_pts;
  
@@ -20,7 +20,7 @@ index c7c2d7a..b8ee65e 100644
      {
          msg_Warn( p_aout, "buffer way too early (%"PRId64"), clearing queue",
                    drift );
-@@ -437,7 +437,7 @@ block_t *aout_InputPlay(audio_output_t *p_aout, aout_input_t *p_input,
+@@ -405,7 +405,7 @@ block_t *aout_InputPlay(audio_output_t *p_aout, aout_input_t *p_input,
          drift = 0;
      }
      else

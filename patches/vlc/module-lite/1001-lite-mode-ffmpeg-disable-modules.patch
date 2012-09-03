@@ -1,4 +1,4 @@
-From bbc2dc5701574422c1a91eb46d8d4008af7b2384 Mon Sep 17 00:00:00 2001
+From e944e78164a5b7ddbf7a8bbfd7d0b52a42093f3d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
 Subject: [PATCH 1001/1002] lite-mode: ffmpeg: disable modules
@@ -8,7 +8,7 @@ Subject: [PATCH 1001/1002] lite-mode: ffmpeg: disable modules
  1 个文件被修改，插入 35 行(+)，删除 3 行(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index ed6d8e8..5ce4e12 100644
+index 15aabaf..da4524b 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
 @@ -6,10 +6,42 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=HEAD;sf=tgz

@@ -1,14 +1,14 @@
-From 84d44d77e33f0edf05071c3ecd1dd866cd0ad882 Mon Sep 17 00:00:00 2001
+From 67da91314ebe01124007186a6bed488692593735 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:02 +0800
-Subject: [PATCH 05/33] core: vlc_stream: define new control code
+Subject: [PATCH 05/32] core: vlc_stream: define new control code
 
 ---
  include/vlc_stream.h |    6 ++++++
  1 个文件被修改，插入 6 行(+)
 
 diff --git a/include/vlc_stream.h b/include/vlc_stream.h
-index c929836..62892b2 100644
+index 24dc14a..7df7674 100644
 --- a/include/vlc_stream.h
 +++ b/include/vlc_stream.h
 @@ -111,6 +111,12 @@ enum stream_query_e

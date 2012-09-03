@@ -1,7 +1,7 @@
-From efd802e7cfb86ba1673331ef1c7c39a7592651d7 Mon Sep 17 00:00:00 2001
+From e6913164c5a10374eca60c1060578b6a044cf3fa Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH 18/33] hls: fix position and length for streaming mpegts
+Subject: [PATCH 18/32] hls: fix position and length for streaming mpegts
  segments hls
 
 ---

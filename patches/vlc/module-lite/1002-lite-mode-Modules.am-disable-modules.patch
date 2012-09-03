@@ -1,4 +1,4 @@
-From 28dfe4429560858884853a80e20874d8c70ec72e Mon Sep 17 00:00:00 2001
+From 15d297fb1494f18436559facf7e17a748184ec03 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 3 Jul 2012 18:40:11 +0800
 Subject: [PATCH 1002/1002] lite-mode: Modules.am: disable modules
@@ -11,7 +11,7 @@ Subject: [PATCH 1002/1002] lite-mode: Modules.am: disable modules
  4 个文件被修改，插入 4 行(+)，删除 11 行(-)
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index b2b7503..62703f7 100644
+index fa9eb8b..ae61db3 100644
 --- a/modules/access/Modules.am
 +++ b/modules/access/Modules.am
 @@ -3,14 +3,9 @@

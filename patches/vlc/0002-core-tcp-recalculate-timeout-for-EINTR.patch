@@ -1,14 +1,14 @@
-From a028c6bf2d3b029cfeff2da42da7ccf957306368 Mon Sep 17 00:00:00 2001
+From 13c9562ce05dadac5f6cf3ff1821ef098cde67ed Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 11:20:15 +0800
-Subject: [PATCH 02/33] core: tcp: recalculate timeout for EINTR
+Subject: [PATCH 02/32] core: tcp: recalculate timeout for EINTR
 
 ---
  src/network/tcp.c |   52 ++++++++++++++++++++++++++++++++++++++++++++++++----
  1 个文件被修改，插入 48 行(+)，删除 4 行(-)
 
 diff --git a/src/network/tcp.c b/src/network/tcp.c
-index 9e0442c..f0a71a3 100644
+index a3a8eab..e94eb6a 100644
 --- a/src/network/tcp.c
 +++ b/src/network/tcp.c
 @@ -151,6 +151,7 @@ int net_Connect( vlc_object_t *p_this, const char *psz_host, int i_port,
@@ -16,7 +16,7 @@ index 9e0442c..f0a71a3 100644
          timeout = -1;
  
 +    msg_Dbg( p_this, "net: ipv4-timeout %d", timeout );
-     for( ptr = res; ptr != NULL; ptr = ptr->ai_next )
+     for (struct addrinfo *ptr = res; ptr != NULL; ptr = ptr->ai_next)
      {
          int fd = net_Socket( p_this, ptr->ai_family,
 @@ -176,10 +177,53 @@ int net_Connect( vlc_object_t *p_this, const char *psz_host, int i_port,

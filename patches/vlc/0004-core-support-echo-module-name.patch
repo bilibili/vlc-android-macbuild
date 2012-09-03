@@ -1,7 +1,7 @@
-From 7224dff6aca78acb0824bdb6bb72e2d837f111cd Mon Sep 17 00:00:00 2001
+From 67b94b149c89e2e2cb89bd366f661a612152a39a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 15:42:47 +0800
-Subject: [PATCH 04/33] core: support echo module name
+Subject: [PATCH 04/32] core: support echo module name
 
 ---
  include/vlc/libvlc_events.h |    8 ++++++++
@@ -54,7 +54,7 @@ index 40ec3a8..0b03ef1 100644
  
  /**
 diff --git a/lib/media_player.c b/lib/media_player.c
-index bea37d1..3ce5560 100644
+index 3bdb1b4..9a86cdb 100644
 --- a/lib/media_player.c
 +++ b/lib/media_player.c
 @@ -322,6 +322,15 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
@@ -73,7 +73,7 @@ index bea37d1..3ce5560 100644
      else if( newval.i_int == INPUT_EVENT_VOUT )
      {
          vout_thread_t **pp_vout;
-@@ -529,6 +538,7 @@ libvlc_media_player_new( libvlc_instance_t *instance )
+@@ -530,6 +539,7 @@ libvlc_media_player_new( libvlc_instance_t *instance )
      register_event(mp, MediaChanged);
  
      register_event(mp, BufferingTotal);
