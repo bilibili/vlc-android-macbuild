@@ -1,4 +1,4 @@
-From 07a514e8afd369bcf4a19a2860686675da1faadc Mon Sep 17 00:00:00 2001
+From e95d9238ef543b77008bc93ced322fa023de952e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH 3/8] compile.sh: restore saved contrib package

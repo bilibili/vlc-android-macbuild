@@ -1,4 +1,4 @@
-From 91942cfce9e5f87657774ca17c1eb1160ebf2814 Mon Sep 17 00:00:00 2001
+From eeebd8700994f0f04bc1dd8afa1533d468fa96f2 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 24 Jun 2012 17:23:34 +0800
 Subject: [PATCH] build for armeabi-v7a with NEON

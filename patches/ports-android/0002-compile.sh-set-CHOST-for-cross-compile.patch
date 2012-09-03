@@ -1,4 +1,4 @@
-From 791ffa8dca2da820c849b10a8db85829faa959ed Mon Sep 17 00:00:00 2001
+From 6b2e1f0517d66675f818ffa82833eaa10d340d5b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 11 Aug 2012 14:27:45 +0800
 Subject: [PATCH 2/8] compile.sh: set CHOST for cross compile
