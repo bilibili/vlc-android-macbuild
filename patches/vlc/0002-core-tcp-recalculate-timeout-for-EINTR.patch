@@ -1,7 +1,7 @@
 From 13c9562ce05dadac5f6cf3ff1821ef098cde67ed Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 11:20:15 +0800
-Subject: [PATCH 02/32] core: tcp: recalculate timeout for EINTR
+Subject: [PATCH 02/36] core: tcp: recalculate timeout for EINTR
 
 ---
  src/network/tcp.c |   52 ++++++++++++++++++++++++++++++++++++++++++++++++----

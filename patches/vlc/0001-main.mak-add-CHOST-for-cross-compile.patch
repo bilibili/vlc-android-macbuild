@@ -1,7 +1,7 @@
 From c5bf9f7ac4da1759abe352d6a66e89c5b1ec335e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 11 Aug 2012 13:07:07 +0800
-Subject: [PATCH 01/32] main.mak: add CHOST for cross-compile
+Subject: [PATCH 01/36] main.mak: add CHOST for cross-compile
 
 ---
  contrib/src/main.mak |    1 +
