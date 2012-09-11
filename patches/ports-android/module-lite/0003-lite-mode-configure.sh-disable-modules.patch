@@ -1,4 +1,4 @@
-From 6df591998237a49ce30ab89620b15c2eb67c5164 Mon Sep 17 00:00:00 2001
+From 9608718e0f2494fe1383664b051c15110c6247e0 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
 Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
