@@ -1,4 +1,4 @@
-From 647f7432ec6de2a2fa84fd3f4fb6de9c6ada0c3a Mon Sep 17 00:00:00 2001
+From 7ae828f16c8227427ff8ed01fb712d088bdc922e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 14 Jun 2012 16:44:57 +0800
 Subject: [PATCH 24/36] httplive: skip failed segment

@@ -1,4 +1,4 @@
-From 43e2b1816b0a70c4045c29b3acc4eed8c99a6991 Mon Sep 17 00:00:00 2001
+From 966b84566c41497954fc2d51d3a242411f508274 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 24 May 2012 16:35:29 +0800
 Subject: [PATCH 17/36] httplive: work with absolute path in play list

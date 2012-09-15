@@ -1,4 +1,4 @@
-From 3a22fe2f57b84ca9c2c9c15995ab914282a3b123 Mon Sep 17 00:00:00 2001
+From 608578b5bc5edc4cc625b77d0403858b24ffcf44 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 5 Jul 2012 23:35:37 +0800
 Subject: [PATCH 27/36] omxil: check h264 profile and level

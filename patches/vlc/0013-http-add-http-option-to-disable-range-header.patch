@@ -1,14 +1,14 @@
-From 81cfb7525c4dadd802c93295f39d2a7bd4d79595 Mon Sep 17 00:00:00 2001
+From 1ca0860893a8b1f9bc51e50e09eb784c5f7a23ba Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
 Subject: [PATCH 13/36] http: add http option to disable range header
 
 ---
- modules/access/http.c |   43 +++++++++++++++++++++++++++++++++++++++++--
- 1 个文件被修改，插入 41 行(+)，删除 2 行(-)
+ modules/access/http.c |   49 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 个文件被修改，插入 47 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index 531b7f8..ccd1ee9 100644
+index 531b7f8..57c4f50 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
 @@ -102,6 +102,10 @@ static void Close( vlc_object_t * );
@@ -44,44 +44,50 @@ index 531b7f8..ccd1ee9 100644
      /* Proxy */
      bool b_proxy;
      vlc_url_t  proxy;
-@@ -361,6 +373,10 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
+@@ -361,6 +373,13 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
          }
      }
  
 +    p_sys->psz_hosts_reject_range = var_InheritString( p_access, "http-hosts-reject-range" );
-+    msg_Dbg( p_access, "http-hosts-reject-range" );
-+    msg_Dbg( p_access, p_sys->psz_hosts_reject_range );
++    if( p_sys->psz_hosts_reject_range )
++    {
++        msg_Dbg( p_access, "http-hosts-reject-range" );
++        msg_Dbg( p_access, p_sys->psz_hosts_reject_range );
++    }
 +
      /* HTTP referrer */
      p_sys->psz_referrer = var_InheritString( p_access, "http-referrer" );
  
-@@ -1273,8 +1289,31 @@ static int Request( access_t *p_access, uint64_t i_tell )
+@@ -1273,8 +1292,34 @@ static int Request( access_t *p_access, uint64_t i_tell )
      if( p_sys->i_version == 1 && ! p_sys->b_continuous )
      {
          p_sys->b_persist = true;
 -        net_Printf( p_access, p_sys->fd, pvs,
 -                    "Range: bytes=%"PRIu64"-\r\n", i_tell );
 +
-+        if ( p_sys->url.psz_host && *p_sys->url.psz_host &&
-+             p_sys->psz_hosts_reject_range && *p_sys->psz_hosts_reject_range) {
++        if ( p_sys->url.psz_host && *p_sys->url.psz_host ) {
 +            bool b_reject_range = false;
-+            int i_host_len = strlen( p_sys->url.psz_host );
++            if( p_sys->psz_hosts_reject_range && *p_sys->psz_hosts_reject_range )
++            {
++                int i_host_len = strlen( p_sys->url.psz_host );
 +
-+            const char* p_host = p_sys->psz_hosts_reject_range;
-+            while ( p_host && *p_host ) {
-+                if ( !strncasecmp(p_host, p_sys->url.psz_host, i_host_len )) {
-+                    b_reject_range = true;
-+                    break;
++                const char* p_host = p_sys->psz_hosts_reject_range;
++                while ( p_host && *p_host ) {
++                    if ( !strncasecmp(p_host, p_sys->url.psz_host, i_host_len )) {
++                        b_reject_range = true;
++                        break;
++                    }
++
++                    p_host = strstr( p_host, "," );
++                    if ( p_host )
++                        p_host++;
 +                }
-+
-+                p_host = strstr( p_host, "," );
-+                if ( p_host )
-+                    p_host++;
 +            }
 +
 +            if (b_reject_range) {
 +                msg_Dbg( p_access, "disable range header detection" );
 +            } else {
++                msg_Dbg( p_access, "Range: bytes=%"PRIu64"-\r\n", i_tell );
 +                net_Printf( p_access, p_sys->fd, pvs,
 +                "Range: bytes=%"PRIu64"-\r\n", i_tell );
 +            }

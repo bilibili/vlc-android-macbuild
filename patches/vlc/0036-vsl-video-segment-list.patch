@@ -1,14 +1,14 @@
-From 7bcafb62974237e73b0dbaf042277302ca66fc15 Mon Sep 17 00:00:00 2001
+From 9ff6a01edc7c53b50007d059a6d08000ab0ce165 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
 Subject: [PATCH 36/36] vsl: video segment list
 
 ---
  modules/access/vsl/index.c   |  877 ++++++++++++++++++++++++++++++++++++++++++
- modules/access/vsl/segment.c |  607 +++++++++++++++++++++++++++++
+ modules/access/vsl/segment.c |  758 ++++++++++++++++++++++++++++++++++++
  modules/access/vsl/vsl.c     |  189 ++++-----
  modules/access/vsl/vsl.h     |   60 +--
- 4 个文件被修改，插入 1586 行(+)，删除 147 行(-)
+ 4 个文件被修改，插入 1737 行(+)，删除 147 行(-)
  create mode 100644 modules/access/vsl/index.c
  create mode 100644 modules/access/vsl/segment.c
 
@@ -898,10 +898,10 @@ index 0000000..836d354
 \ No newline at end of file
 diff --git a/modules/access/vsl/segment.c b/modules/access/vsl/segment.c
 new file mode 100644
-index 0000000..98f2c38
+index 0000000..5d502aa
 --- /dev/null
 +++ b/modules/access/vsl/segment.c
-@@ -0,0 +1,607 @@
+@@ -0,0 +1,758 @@
 +/*****************************************************************************
 + * segment.c: video segment list segment access
 + *****************************************************************************
@@ -998,6 +998,8 @@ index 0000000..98f2c38
 +{
 +    vsl_cb_t    cb;
 +    int         i_order;
++    int64_t     i_duration_milli;
++    int64_t     i_bytes_per_second;
 +
 +    char        *psz_url;
 +
@@ -1013,6 +1015,7 @@ index 0000000..98f2c38
 +
 +static stream_t *stream_vslNewSeek( access_t* p_access, uint64_t i_pos );
 +static stream_t *stream_vslNewSinaSeek( access_t* p_access, uint64_t i_pos );
++static stream_t *stream_vslNewYoukuSeek( access_t* p_access, uint64_t i_pos );
 +
 +/*****************************************************************************
 + * Open/Close
@@ -1066,6 +1069,7 @@ index 0000000..98f2c38
 +        msg_Err( p_access, "vsl empty url for segment %d", p_sys->i_order );
 +        goto EXIT_ERROR;
 +    }
++    p_sys->i_duration_milli = vsl_cbGetDuration( &p_sys->cb, p_sys->i_order );
 +
 +    var_Create( p_access, "http-continuous", VLC_VAR_BOOL );
 +    var_SetBool( p_access, "http-continuous", true );
@@ -1081,14 +1085,28 @@ index 0000000..98f2c38
 +        goto EXIT_ERROR;
 +    }
 +
++    if( p_sys->i_duration_milli > 0 )
++    {
++        p_sys->i_bytes_per_second = p_access->info.i_size / ( p_sys->i_duration_milli / 1000 );
++    }
++
++    /* at least 50kbps */
++    if( p_sys->i_bytes_per_second < 50000 )
++        p_sys->i_bytes_per_second = 50000;
++    msg_Info( p_access, "segment: %"PRId64"kbps", (int64_t)p_sys->i_bytes_per_second );
++
 +    if( 0 == strcmp( p_access->psz_access, ACCESS_SINA_SEGMENT ) )
 +    {
 +        msg_Dbg( p_access, "segment: sina seek" );
 +        p_sys->pfn_new_seekd_stream = stream_vslNewSinaSeek;
 +    }
-+    else
++    else if( 0 == strcmp( p_access->psz_access, ACCESS_YOUKU_SEGMENT ) )
 +    {
-+        msg_Dbg( p_access, "segment: normal seek" );
++        msg_Dbg( p_access, "segment: youku seek" );
++        p_sys->pfn_new_seekd_stream = stream_vslNewYoukuSeek;
++    }
++    else {
++        msg_Dbg( p_access, "segment: vsl seek" );
 +        p_sys->pfn_new_seekd_stream = stream_vslNewSeek;
 +    }
 +
@@ -1168,8 +1186,45 @@ index 0000000..98f2c38
 +    return i_read_ret;
 +}
 +
++static int SkipSeekedUnknownHeader( access_t *p_access, stream_t *p_stream, uint64_t i_seek_pos )
++{
++    if( i_seek_pos > p_access->info.i_size )
++        return -1;
++
++    if( i_seek_pos == p_access->info.i_size )
++        return 0;
++
++    int64_t i_stream_len = stream_Size( p_stream );
++    if( i_stream_len < 0 )
++        return -1;
++
++    int64_t i_whole_remain = p_access->info.i_size - i_seek_pos;
++    if( i_stream_len < i_whole_remain )
++    {
++        msg_Err( p_access, "flvhead: too small seeked size: %"PRId64" < %"PRId64,
++                 i_stream_len,
++                 i_whole_remain);
++        return -1;
++    }
++
++    int64_t i_align_diff = i_stream_len - i_whole_remain;
++    msg_Dbg( p_access, "flvhead: align diff %"PRId64, i_align_diff );
++
++    int64_t i_skipped = 0;
++    while( i_skipped < i_align_diff )
++    {
++        int i_skip_ret = stream_Read( p_stream, NULL, i_align_diff - i_skipped );
++        if( i_skip_ret <= 0 )
++            return -1;
++
++        i_skipped += i_skip_ret;
++    }
++
++    return i_skipped;
++}
++
 +/* return skipped bytes */
-+static int SkipSinaSeekedHeader( access_t *p_access, stream_t *p_stream, uint64_t i_seek_pos )
++static int SkipSeekedFlvHeader( access_t *p_access, stream_t *p_stream, uint64_t i_seek_pos )
 +{
 +    if( i_seek_pos >= p_access->info.i_size )
 +        return -1;
@@ -1177,33 +1232,6 @@ index 0000000..98f2c38
 +    uint64_t i_stream_len = stream_Size( p_stream );
 +    if( i_stream_len < sizeof( flv_header_t ) + 4 )
 +        return -1;
-+
-+    /* Simple align */
-+#if 0
-+    uint64_t i_whole_remain = p_access->info.i_size - i_seek_pos;
-+    if( i_stream_len < i_whole_remain )
-+    {
-+        msg_Err( p_access, "sinahttp: too small seeked size: %"PRId64" < %"PRId64,
-+                i_stream_len,
-+                i_whole_remain);
-+        return -1;
-+    }
-+
-+    uint64_t i_align_diff = i_stream_len - i_whole_remain;
-+    msg_Dbg( p_access, "sinahttp: align diff %"PRId64, i_align_diff );
-+
-+    uint64_t i_skipped = 0;
-+    while( i_skipped < i_align_diff )
-+    {
-+        int i_skip_ret = stream_Read( p_stream, NULL, i_align_diff - i_skipped );
-+        if( i_skip_ret <= 0 )
-+            return -1;
-+        
-+        i_skipped += i_skip_ret;
-+    }
-+
-+    return i_skipped;
-+#endif
 +
 +    /* Simple align with header check */
 +#if 1
@@ -1219,21 +1247,21 @@ index 0000000..98f2c38
 +    flv_header_t* p_header = (flv_header_t *) p_peek;
 +    if( 0 != memcmp( p_header->signature, "FLV", 3 ) )
 +    {
-+        msg_Warn( p_access, "sinahttp: not a valid flv stream" );
++        msg_Warn( p_access, "flvhead: not a valid flv stream" );
 +        return -1;
 +    }
 +
 +    uint64_t i_whole_remain = p_access->info.i_size - i_seek_pos;
 +    if( i_stream_len < i_whole_remain )
 +    {
-+        msg_Err( p_access, "sinahttp: too small seeked size: %"PRId64" < %"PRId64,
++        msg_Err( p_access, "flvhead: too small seeked size: %"PRId64" < %"PRId64,
 +                i_stream_len,
 +                i_whole_remain);
 +        return -1;
 +    }
 +
 +    uint64_t i_align_diff = i_stream_len - i_whole_remain;
-+    msg_Dbg( p_access, "sinahttp: align diff %"PRId64, i_align_diff );
++    msg_Dbg( p_access, "flvhead: align diff %"PRId64, i_align_diff );
 +
 +    uint64_t i_skipped = 0;
 +    while( i_skipped < i_align_diff )
@@ -1259,7 +1287,7 @@ index 0000000..98f2c38
 +    flv_header_t* p_header = (flv_header_t *) p_peek;
 +    if( 0 != memcmp( p_header->signature, "FLV", 3 ) )
 +    {
-+        msg_Warn( p_access, "segment: sina: not a valid flv stream" );
++        msg_Warn( p_access, "flvhead: not a valid flv stream" );
 +        return -1;
 +    }
 +
@@ -1270,28 +1298,28 @@ index 0000000..98f2c38
 +    bool b_video_tag_skipped = false;
 +    bool b_meta_tag_skipped = false;
 +    int i_scan = sizeof( flv_header_t ) + 4;
-+    msg_Dbg( p_access, "segment: sina: skip flv_header %d", i_scan );
++    msg_Dbg( p_access, "flvhead: skip flv_header %d", i_scan );
 +    for( int i = 0; i < 2; ++i )
 +    {
 +        flv_tag_t* p_tag = (flv_tag_t *) ( p_peek + i_scan );
 +        if( p_tag->type == FLV_TAG_AUDIO)
 +        {
 +            b_audio_tag_skipped = true;
-+            msg_Dbg( p_access, "segment: sina: seeked audio tag skipped");
++            msg_Dbg( p_access, "flvhead: seeked audio tag skipped");
 +        }
 +        else if( p_tag->type == FLV_TAG_VIDEO )
 +        {
 +            b_video_tag_skipped = true;
-+            msg_Dbg( p_access, "segment: sina: seeked video tag skipped");
++            msg_Dbg( p_access, "flvhead: seeked video tag skipped");
 +        }
 +        else if( p_tag->type == FLV_TAG_META )
 +        {
 +            b_meta_tag_skipped = true;
-+            msg_Dbg( p_access, "segment: sina: seeked meta tag skipped");
++            msg_Dbg( p_access, "flvhead: seeked meta tag skipped");
 +        }
 +        else
 +        {
-+            msg_Dbg( p_access, "segment: sina: seeked unknown tag %x", (int) p_tag->type);
++            msg_Dbg( p_access, "flvhead: seeked unknown tag %x", (int) p_tag->type);
 +            break;
 +        }
 +    
@@ -1308,7 +1336,7 @@ index 0000000..98f2c38
 +        ( ( (uint32_t) p_previous_tag_size[3] ) );
 +
 +        int tag_size = sizeof( flv_tag_t ) + i_body_len + 4;
-+        msg_Dbg( p_access, "segment: sina: skip flv_tag %d=%d+%d+4, (%d) now at %d",
++        msg_Dbg( p_access, "flvhead: skip flv_tag %d=%d+%d+4, (%d) now at %d",
 +                tag_size, (int) sizeof( flv_tag_t ), i_body_len,
 +                i_previous_tag_size,
 +                i_scan + tag_size );
@@ -1319,15 +1347,15 @@ index 0000000..98f2c38
 +    }
 +
 +    if( !b_audio_tag_skipped )
-+        msg_Dbg( p_access, "segment: sina: seeked audio tag not found");
++        msg_Dbg( p_access, "flvhead: seeked audio tag not found");
 +
 +    if( !b_audio_tag_skipped )
-+        msg_Dbg( p_access, "segment: sina: seeked audio tag not found");
++        msg_Dbg( p_access, "flvhead: seeked audio tag not found");
 +
 +    if( !b_audio_tag_skipped )
-+        msg_Dbg( p_access, "segment: sina: seeked audio tag not found");
++        msg_Dbg( p_access, "flvhead: seeked audio tag not found");
 +
-+    msg_Dbg( p_access, "segment: sina: skip %d bytes", i_scan );
++    msg_Dbg( p_access, "flvhead: skip %d bytes", i_scan );
 +    int i_skip_ret = stream_Read( p_stream, NULL, i_scan );
 +    return i_skip_ret;
 +#endif
@@ -1347,15 +1375,15 @@ index 0000000..98f2c38
 +    p_stream = stream_UrlNew( p_access, p_seek_url );
 +    if( !p_sys->p_stream )
 +    {
-+        msg_Err( p_access, "segment: sina: failed to open stream %s", p_seek_url );
++        msg_Err( p_access, "segment: sina: seek: failed to open stream %s", p_seek_url );
 +        goto EXIT_FAIL;
 +    }
 +
 +    /* Sina add extra flv header and flv tag after seeked */
-+    int i_skip_ret = SkipSinaSeekedHeader( p_access, p_stream, i_pos );
++    int i_skip_ret = SkipSeekedFlvHeader( p_access, p_stream, i_pos );
 +    if( i_skip_ret <= 0 )
 +    {
-+        msg_Err( p_access, "sinahttp: failed to skip sina flv header" );
++        msg_Err( p_access, "segment: sina: seek: failed to skip sina flv header" );
 +        goto EXIT_FAIL;
 +    }
 +
@@ -1370,6 +1398,129 @@ index 0000000..98f2c38
 +
 +    VSL_SAFE_FREE( p_seek_url );
 +
++    return NULL;
++}
++
++static stream_t *stream_vslNewYoukuSeek( access_t* p_access, uint64_t i_pos )
++{
++    access_sys_t *p_sys = p_access->p_sys;
++    char* p_seek_url = NULL;
++    stream_t *p_stream = NULL;
++    bool b_seeked_forward = false;
++
++    int64_t i_seek_to_second = 0;
++
++    if( p_access->info.i_size <= 0 )
++    {
++        msg_Err( p_access, "segment: youku: seek: invalid info.i_size < 0" );
++        goto EXIT_FAIL;
++    }
++
++    i_seek_to_second = i_pos / p_sys->i_bytes_per_second;
++    if( i_seek_to_second >= 15 )
++        i_seek_to_second -= 15;
++    else
++        i_seek_to_second = 0;
++
++    do {
++        if( p_stream != NULL )
++        {
++            stream_Delete( p_stream );
++            p_stream = NULL;
++        }
++        VSL_SAFE_FREE( p_seek_url );
++
++        /* */
++        i_last_seeked_second = i_seek_to_second;
++        msg_Info( p_access, "segment: youku: seek to %"PRId64" seconds", i_seek_to_second );
++        const char* p_prefix = strchr( p_sys->psz_url, '?' ) ? "&" : "?";
++        if( i_seek_to_second > 0 )
++        {
++            if( asprintf( &p_seek_url, "%s%sstart=%"PRId64, p_sys->psz_url, p_prefix, i_seek_to_second ) < 0)
++                goto EXIT_FAIL;
++        }
++        else
++        {
++            p_seek_url = strdup( p_sys->psz_url );
++        }
++
++        p_stream = stream_UrlNew( p_access, p_seek_url );
++        if( !p_sys->p_stream )
++        {
++            msg_Err( p_access, "segment: youku: seek: failed to open stream %s", p_seek_url );
++            goto EXIT_FAIL;
++        }
++
++        uint64_t i_stream_len = stream_Size( p_stream );
++        if( i_stream_len <= 0 )
++        {
++            msg_Err( p_access, "segment: youku: seek: invalid stream size" );
++            goto EXIT_FAIL;
++        }
++
++        int64_t i_seeked = p_access->info.i_size - i_stream_len;
++        if( i_seeked < 0 )
++        {
++            msg_Err( p_access, "segment: youku: seek: seeked before stream start?" );
++            goto EXIT_FAIL; 
++        }
++        else if( i_seeked > (int64_t) i_pos )
++        {
++            int64_t i_diff_bytes = i_seeked - i_pos;
++            msg_Warn( p_access, "segment: youku: seek: after seeking pos %"PRId64" > %"PRId64", need reseeking",
++                    i_seeked,
++                    i_pos);
++            int64_t i_diff_seconds = i_diff_bytes / p_sys->i_bytes_per_second;
++
++            /* seek to 5 seconds before guessed seek point */
++            if( i_seek_to_second > i_diff_seconds )
++                i_seek_to_second = i_seek_to_second - i_diff_seconds - 5;
++            else
++                i_seek_to_second = 0;
++
++            continue;
++        }
++        else if( !b_seeked_forward && i_seeked + 1000 * 1000 > (int64_t) i_pos )
++        {
++            int64_t i_diff_bytes = i_pos - i_seeked;
++            msg_Warn( p_access, "segment: youku: seeked too far before seeking pos %"PRId64" < %"PRId64", need reseeking",
++                     i_seeked,
++                     i_pos);
++            int64_t i_diff_seconds = ( i_diff_bytes - 500 * 1000 ) / p_sys->i_bytes_per_second;
++            if( i_seek_to_second + i_diff_seconds > i_last_seeked_second )
++            {
++                /* there is no sense to seek after last seeked second */
++                break;
++            }
++
++            i_seek_to_second += i_diff_seconds;
++        }
++
++        break;
++    } while( i_seek_to_second > 5 );
++
++    if( !p_stream )
++        goto EXIT_FAIL;
++
++    /* Youku seeked by seconds, should align to stream seek position */
++    int i_skip_ret = SkipSeekedUnknownHeader( p_access, p_stream, i_pos );
++    if( i_skip_ret < 0 )
++    {
++        msg_Err( p_access, "segment: youku: seek: failed to skip sina flv header" );
++        goto EXIT_FAIL;
++    }
++
++    VSL_SAFE_FREE( p_seek_url );
++    return p_stream;
++
++EXIT_FAIL:
++    if( p_stream != NULL )
++    {
++        stream_Delete( p_stream );
++        p_stream = NULL;
++    }
++
++    VSL_SAFE_FREE( p_seek_url );
 +    return NULL;
 +}
 +
