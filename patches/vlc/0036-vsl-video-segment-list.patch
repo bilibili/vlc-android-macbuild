@@ -1,23 +1,23 @@
-From 9ff6a01edc7c53b50007d059a6d08000ab0ce165 Mon Sep 17 00:00:00 2001
+From 43b19ce98a6a0aa60de21ee46f839a42b8467257 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
 Subject: [PATCH 36/36] vsl: video segment list
 
 ---
- modules/access/vsl/index.c   |  877 ++++++++++++++++++++++++++++++++++++++++++
- modules/access/vsl/segment.c |  758 ++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/index.c   |  878 ++++++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/segment.c |  800 ++++++++++++++++++++++++++++++++++++++
  modules/access/vsl/vsl.c     |  189 ++++-----
- modules/access/vsl/vsl.h     |   60 +--
- 4 个文件被修改，插入 1737 行(+)，删除 147 行(-)
+ modules/access/vsl/vsl.h     |   63 +--
+ 4 个文件被修改，插入 1783 行(+)，删除 147 行(-)
  create mode 100644 modules/access/vsl/index.c
  create mode 100644 modules/access/vsl/segment.c
 
 diff --git a/modules/access/vsl/index.c b/modules/access/vsl/index.c
 new file mode 100644
-index 0000000..836d354
+index 0000000..f38dcad
 --- /dev/null
 +++ b/modules/access/vsl/index.c
-@@ -0,0 +1,877 @@
+@@ -0,0 +1,878 @@
 +/*****************************************************************************
 + * index.c: video segment list index access
 + *****************************************************************************
@@ -78,7 +78,8 @@ index 0000000..836d354
 +    set_category( CAT_INPUT )
 +    set_subcategory( SUBCAT_INPUT_ACCESS )
 +    set_capability( "access_demux", 100 )
-+    add_shortcut( ACCESS_VSL_INDEX, ACCESS_SINA_INDEX, ACCESS_YOUKU_INDEX )
++    add_shortcut( ACCESS_VSL_INDEX, ACCESS_SINA_INDEX,
++                  ACCESS_YOUKU_INDEX, ACCESS_CNTV_INDEX )
 +    set_callbacks( Open, Close )
 +vlc_module_end ()
 +
@@ -898,10 +899,10 @@ index 0000000..836d354
 \ No newline at end of file
 diff --git a/modules/access/vsl/segment.c b/modules/access/vsl/segment.c
 new file mode 100644
-index 0000000..5d502aa
+index 0000000..20d00e5
 --- /dev/null
 +++ b/modules/access/vsl/segment.c
-@@ -0,0 +1,758 @@
+@@ -0,0 +1,800 @@
 +/*****************************************************************************
 + * segment.c: video segment list segment access
 + *****************************************************************************
@@ -952,7 +953,8 @@ index 0000000..5d502aa
 +    set_category( CAT_INPUT )
 +    set_subcategory( SUBCAT_INPUT_ACCESS )
 +    set_capability( "access", 1 )
-+    add_shortcut( ACCESS_VSL_SEGMENT, ACCESS_SINA_SEGMENT, ACCESS_YOUKU_SEGMENT )
++    add_shortcut( ACCESS_VSL_SEGMENT, ACCESS_SINA_SEGMENT,
++                  ACCESS_YOUKU_SEGMENT, ACCESS_CNTV_SEGMENT )
 +    set_callbacks( Open, Close )
 +vlc_module_end ()
 +
@@ -1000,6 +1002,8 @@ index 0000000..5d502aa
 +    int         i_order;
 +    int64_t     i_duration_milli;
 +    int64_t     i_bytes_per_second;
++    
++    bool        b_seekable;
 +
 +    char        *psz_url;
 +
@@ -1081,8 +1085,13 @@ index 0000000..5d502aa
 +    p_access->info.i_size = stream_Size( p_sys->p_stream );
 +    if( p_access->info.i_size <= 0 )
 +    {
-+        msg_Err( p_access, "segment: unknown stream size" );
-+        goto EXIT_ERROR;
++        msg_Warn( p_access, "segment: stream_Size <= 0, try cbGetBytes" );
++        p_access->info.i_size = vsl_cbGetBytes( &p_sys->cb, p_sys->i_order );
++        if( p_access->info.i_size <= 0 )
++        {
++            msg_Warn( p_access, "segment: vsl_cbGetBytes <= 0, unknown size" );
++            goto EXIT_ERROR;
++        }
 +    }
 +
 +    if( p_sys->i_duration_milli > 0 )
@@ -1090,11 +1099,15 @@ index 0000000..5d502aa
 +        p_sys->i_bytes_per_second = p_access->info.i_size / ( p_sys->i_duration_milli / 1000 );
 +    }
 +
-+    /* at least 50kbps */
-+    if( p_sys->i_bytes_per_second < 50000 )
-+        p_sys->i_bytes_per_second = 50000;
-+    msg_Info( p_access, "segment: %"PRId64"kbps", (int64_t)p_sys->i_bytes_per_second );
++    /* at least 25KBps ~= 200kbps */
++    if( p_sys->i_bytes_per_second < 25000 )
++        p_sys->i_bytes_per_second = 25000;
++    msg_Info( p_access, "segment: %"PRId64"KB/s = %"PRId64"KB / %"PRId64" sec",
++              (int64_t)p_sys->i_bytes_per_second / 1000,
++               p_access->info.i_size / 1000,
++               p_sys->i_duration_milli / 1000 );
 +
++    p_sys->b_seekable = true;
 +    if( 0 == strcmp( p_access->psz_access, ACCESS_SINA_SEGMENT ) )
 +    {
 +        msg_Dbg( p_access, "segment: sina seek" );
@@ -1104,6 +1117,12 @@ index 0000000..5d502aa
 +    {
 +        msg_Dbg( p_access, "segment: youku seek" );
 +        p_sys->pfn_new_seekd_stream = stream_vslNewYoukuSeek;
++    }
++    else if( 0 == strcmp( p_access->psz_access, ACCESS_CNTV_SEGMENT ) )
++    {
++        msg_Dbg( p_access, "segment: cntv not seekable" );
++        p_sys->pfn_new_seekd_stream = stream_vslNewYoukuSeek;
++        p_sys->b_seekable = false;
 +    }
 +    else {
 +        msg_Dbg( p_access, "segment: vsl seek" );
@@ -1186,6 +1205,27 @@ index 0000000..5d502aa
 +    return i_read_ret;
 +}
 +
++static int stream_ReadSeek( stream_t *p_stream, uint64_t i_seek_forward_bytes ) {
++    int i_skipped = 0;
++    
++    while( (uint64_t) i_skipped < i_seek_forward_bytes )
++    {
++        char buf[4096];
++        int i_to_read = sizeof( buf );
++        int64_t i_unread = i_seek_forward_bytes - i_skipped;
++        if( i_to_read > i_unread )
++            i_to_read = i_unread;
++
++        int i_skip_ret = stream_Read( p_stream, buf, i_to_read );
++        if( i_skip_ret <= 0 )
++            return -1;
++        
++        i_skipped += i_skip_ret;
++    }
++
++    return i_skipped;
++}
++
 +static int SkipSeekedUnknownHeader( access_t *p_access, stream_t *p_stream, uint64_t i_seek_pos )
 +{
 +    if( i_seek_pos > p_access->info.i_size )
@@ -1213,7 +1253,7 @@ index 0000000..5d502aa
 +    int64_t i_skipped = 0;
 +    while( i_skipped < i_align_diff )
 +    {
-+        int i_skip_ret = stream_Read( p_stream, NULL, i_align_diff - i_skipped );
++        int i_skip_ret = stream_ReadSeek( p_stream, i_align_diff - i_skipped );
 +        if( i_skip_ret <= 0 )
 +            return -1;
 +
@@ -1266,7 +1306,7 @@ index 0000000..5d502aa
 +    uint64_t i_skipped = 0;
 +    while( i_skipped < i_align_diff )
 +    {
-+        int i_skip_ret = stream_Read( p_stream, NULL, i_align_diff - i_skipped );
++        int i_skip_ret = stream_ReadSeek( p_stream, i_align_diff - i_skipped );
 +        if( i_skip_ret <= 0 )
 +            return -1;
 +        
@@ -1356,7 +1396,7 @@ index 0000000..5d502aa
 +        msg_Dbg( p_access, "flvhead: seeked audio tag not found");
 +
 +    msg_Dbg( p_access, "flvhead: skip %d bytes", i_scan );
-+    int i_skip_ret = stream_Read( p_stream, NULL, i_scan );
++    int i_skip_ret = stream_ReadSeek( p_stream, i_scan );
 +    return i_skip_ret;
 +#endif
 +}
@@ -1409,6 +1449,7 @@ index 0000000..5d502aa
 +    bool b_seeked_forward = false;
 +
 +    int64_t i_seek_to_second = 0;
++    int64_t i_last_backward_seeked_second = p_sys->i_duration_milli / 1000;
 +
 +    if( p_access->info.i_size <= 0 )
 +    {
@@ -1431,7 +1472,6 @@ index 0000000..5d502aa
 +        VSL_SAFE_FREE( p_seek_url );
 +
 +        /* */
-+        i_last_seeked_second = i_seek_to_second;
 +        msg_Info( p_access, "segment: youku: seek to %"PRId64" seconds", i_seek_to_second );
 +        const char* p_prefix = strchr( p_sys->psz_url, '?' ) ? "&" : "?";
 +        if( i_seek_to_second > 0 )
@@ -1478,6 +1518,7 @@ index 0000000..5d502aa
 +            else
 +                i_seek_to_second = 0;
 +
++            i_last_backward_seeked_second = i_seek_to_second;
 +            continue;
 +        }
 +        else if( !b_seeked_forward && i_seeked + 1000 * 1000 > (int64_t) i_pos )
@@ -1487,7 +1528,7 @@ index 0000000..5d502aa
 +                     i_seeked,
 +                     i_pos);
 +            int64_t i_diff_seconds = ( i_diff_bytes - 500 * 1000 ) / p_sys->i_bytes_per_second;
-+            if( i_seek_to_second + i_diff_seconds > i_last_seeked_second )
++            if( i_seek_to_second + i_diff_seconds > i_last_backward_seeked_second )
 +            {
 +                /* there is no sense to seek after last seeked second */
 +                break;
@@ -1578,7 +1619,7 @@ index 0000000..5d502aa
 +        i_pos < p_access->info.i_pos + 128 * 1024 )
 +    {
 +        int i_seek_forward = p_access->info.i_pos - i_pos;
-+        int i_seek_ret = stream_Read( p_sys->p_stream, NULL, i_seek_forward );
++        int i_seek_ret = stream_ReadSeek( p_sys->p_stream, i_seek_forward );
 +        if( i_seek_ret <= 0 )
 +            goto EXIT_FAIL;
 +        
@@ -1621,7 +1662,7 @@ index 0000000..5d502aa
 +    {
 +            /* */
 +        case ACCESS_CAN_SEEK:
-+            *(bool*)va_arg( args, bool* ) = true;
++            *(bool*)va_arg( args, bool* ) = false;
 +            return VLC_SUCCESS;
 +
 +        case ACCESS_CAN_FASTSEEK:
@@ -1629,6 +1670,8 @@ index 0000000..5d502aa
 +            return VLC_SUCCESS;
 +
 +        case ACCESS_CAN_PAUSE:
++            *(bool*)va_arg( args, bool* ) = p_sys->b_seekable;
++            return VLC_SUCCESS;
 +        case ACCESS_CAN_CONTROL_PACE:
 +            *(bool*)va_arg( args, bool* ) = true;
 +            return VLC_SUCCESS;
@@ -1888,7 +1931,7 @@ index aca9b01..e7efab8 100644
 +    return p_vsl_cb->pfn_get_bytes( p_vsl_cb->p_cb_data, i_order );
 +}
 diff --git a/modules/access/vsl/vsl.h b/modules/access/vsl/vsl.h
-index de188ac..d4811b1 100644
+index de188ac..45c766c 100644
 --- a/modules/access/vsl/vsl.h
 +++ b/modules/access/vsl/vsl.h
 @@ -1,22 +1,23 @@
@@ -1924,8 +1967,13 @@ index de188ac..d4811b1 100644
   *****************************************************************************/
  
  /*****************************************************************************
-@@ -37,26 +38,29 @@
+@@ -35,28 +36,34 @@
+ #define ACCESS_YOUKU_INDEX      "youkuindex"
+ #define ACCESS_YOUKU_SEGMENT    "youkusegment"
  
++#define ACCESS_CNTV_INDEX       "cntvindex"
++#define ACCESS_CNTV_SEGMENT     "cntvsegment"
++
  #define VSL_SAFE_FREE( x__ ) do { free( x__ ); ( x__ ) = NULL; } while( 0 )
  
 -typedef libvlc_segment_list_t *(*libvlc_segment_list_resolve_cb)( const char *p_mrl );
@@ -1941,6 +1989,18 @@ index de188ac..d4811b1 100644
 -    char    *p_index_mrl;
 -    char    *p_index_url;
 -    char    *p_pseudo_segment_access;       /* vslsegment */
+-
+-    char    *p_real_access;                 /* http */
+-    char    *p_real_access_tag;             /* mp4 */
+-
+-    int     i_order;                        /* -1 for index */
+-
+-    libvlc_segment_list_resolve_cb  pfn_resolve;
+-    libvlc_segment_list_release_cb  pfn_release;
+-} vsl_info_t;
+-
+-void free_VslInfo( vsl_info_t *p_index_info );
+-vsl_info_t *vsl_ResolveInfo( demux_t *p_demux );
 +    void                        *p_cb_data;
 +    libvlc_vsl_load_cb          pfn_load;
 +    libvlc_vsl_get_count_cb     pfn_get_count;
@@ -1950,8 +2010,7 @@ index de188ac..d4811b1 100644
 +    libvlc_vsl_get_bytes_cb     pfn_get_bytes;
 +} vsl_cb_t;
  
--    char    *p_real_access;                 /* http */
--    char    *p_real_access_tag;             /* mp4 */
+-libvlc_segment_list_t *vsl_ResolveSegmentList( demux_t *p_demux, vsl_info_t *p_vsl_info );
 +int vsl_cbGetCallbacks( vlc_object_t *p_this, vsl_cb_t *p_vsl_cb );
 +int vsl_cbLoad( vsl_cb_t *p_vsl_cb, bool b_force_reload );
 +int vsl_cbGetCount( vsl_cb_t *p_vsl_cb );
@@ -1960,17 +2019,6 @@ index de188ac..d4811b1 100644
 +int vsl_cbGetDuration( vsl_cb_t *p_vsl_cb, int i_order );
 +int64_t vsl_cbGetBytes( vsl_cb_t *p_vsl_cb, int i_order );
  
--    int     i_order;                        /* -1 for index */
--
--    libvlc_segment_list_resolve_cb  pfn_resolve;
--    libvlc_segment_list_release_cb  pfn_release;
--} vsl_info_t;
--
--void free_VslInfo( vsl_info_t *p_index_info );
--vsl_info_t *vsl_ResolveInfo( demux_t *p_demux );
--
--libvlc_segment_list_t *vsl_ResolveSegmentList( demux_t *p_demux, vsl_info_t *p_vsl_info );
--
 -#endif
 \ No newline at end of file
 +#endif
