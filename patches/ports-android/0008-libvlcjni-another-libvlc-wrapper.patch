@@ -1,11 +1,10 @@
-From 713b5aaa501cc20466362ebefb7211dc7eb9cb00 Mon Sep 17 00:00:00 2001
+From fbaa15424a43f82e3b98f9068c8bde6a72d9e2e8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 10 Jul 2012 19:41:13 +0800
 Subject: [PATCH 8/8] libvlcjni: another libvlc wrapper
 
 ---
  Makefile                                           |    7 +-
- pt                                                 |    1 +
  vlc-android/jni/Android.mk                         |    7 +-
  vlc-android/jni/jni_bundle.c                       |  150 +++
  vlc-android/jni/jni_bundle.h                       |   61 +
@@ -18,8 +17,7 @@ Subject: [PATCH 8/8] libvlcjni: another libvlc wrapper
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |   65 ++
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |   61 +
  .../jni/libvlcjni_danmaku_readMediaEx.inc.c        |  108 ++
- 14 个文件被修改，插入 2090 行(+)，删除 2 行(-)
- create mode 120000 pt
+ 13 个文件被修改，插入 2089 行(+)，删除 2 行(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.h
@@ -55,16 +53,8 @@ index 9d512a6..23f41c1 100644
  	$(SRC)/obj/local/$(ARCH)/libiomx-ics.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-hc.so \
  	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
-diff --git a/pt b/pt
-new file mode 120000
-index 0000000..4fdceaf
---- /dev/null
-+++ b/pt
-@@ -0,0 +1 @@
-+../patches/ports-android/
-\ No newline at end of file
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 24b7d48..72e82ea 100644
+index 0e59fe8..a86afc4 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -1,9 +1,14 @@
@@ -80,9 +70,9 @@ index 24b7d48..72e82ea 100644
 -LOCAL_SRC_FILES := libvlcjni.c aout.c thumbnailer.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
 +LOCAL_SRC_FILES := libvlcjni_danmaku.c aout.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
 +LOCAL_SRC_FILES += jni_bundle.c jni_libvlcevent.c jni_vsl.c
+ LOCAL_SRC_FILES += pipe2.c
  LOCAL_SRC_FILES += wchar/wcpcpy.c
  LOCAL_SRC_FILES += wchar/wcpncpy.c
- LOCAL_SRC_FILES += wchar/wcscasecmp.c
 diff --git a/vlc-android/jni/jni_bundle.c b/vlc-android/jni/jni_bundle.c
 new file mode 100644
 index 0000000..a99751e

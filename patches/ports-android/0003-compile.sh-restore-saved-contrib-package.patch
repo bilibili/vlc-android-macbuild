@@ -1,4 +1,4 @@
-From e95d9238ef543b77008bc93ced322fa023de952e Mon Sep 17 00:00:00 2001
+From 5b90f9f3b4a8a4956488f468e909c87ae1ea310a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH 3/8] compile.sh: restore saved contrib package
@@ -8,7 +8,7 @@ Subject: [PATCH 3/8] compile.sh: restore saved contrib package
  1 个文件被修改，插入 6 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index 83a58dc..593cd5a 100755
+index 4f34713..7c44d26 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -196,6 +196,12 @@ echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak

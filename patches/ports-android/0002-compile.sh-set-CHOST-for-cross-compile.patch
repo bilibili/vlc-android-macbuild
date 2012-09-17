@@ -1,4 +1,4 @@
-From 6b2e1f0517d66675f818ffa82833eaa10d340d5b Mon Sep 17 00:00:00 2001
+From 889fd93dbd1430f99f5a89b29c645f6c7319bc47 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 11 Aug 2012 14:27:45 +0800
 Subject: [PATCH 2/8] compile.sh: set CHOST for cross compile
@@ -8,7 +8,7 @@ Subject: [PATCH 2/8] compile.sh: set CHOST for cross compile
  1 个文件被修改，插入 4 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index 6c12172..83a58dc 100755
+index 1c62733..4f34713 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -85,7 +85,9 @@ export PLATFORM_SHORT_ARCH
@@ -21,7 +21,7 @@ index 6c12172..83a58dc 100755
 +export PATH=${ANDROID_BIN}:${PATH}
  
  # 1/ libvlc, libvlccore and its plugins
- TESTED_HASH=df4da38
+ TESTED_HASH=eeaa3b9ef3
 @@ -191,6 +193,7 @@ else
  fi
  
