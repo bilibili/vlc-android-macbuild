@@ -1,66 +1,341 @@
-From 15d297fb1494f18436559facf7e17a748184ec03 Mon Sep 17 00:00:00 2001
+From a0999c46fa05a4b8c7edf33cc33633e7ac7d5bc5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
-Date: Tue, 3 Jul 2012 18:40:11 +0800
+Date: Mon, 17 Sep 2012 19:02:41 +0800
 Subject: [PATCH 1002/1002] lite-mode: Modules.am: disable modules
 
 ---
- modules/access/Modules.am        |    9 ++-------
- modules/codec/Modules.am         |    2 +-
- modules/demux/Modules.am         |    2 +-
- modules/stream_filter/Modules.am |    2 --
- 4 个文件被修改，插入 4 行(+)，删除 11 行(-)
+ modules/access/Modules.am        |   61 --------------------------
+ modules/codec/Modules.am         |   36 ----------------
+ modules/demux/Modules.am         |   57 -------------------------
+ modules/stream_filter/Modules.am |   87 --------------------------------------
+ 4 个文件被修改，删除 241 行(-)
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index fa9eb8b..ae61db3 100644
+index 84fafa8..2117e12 100644
 --- a/modules/access/Modules.am
 +++ b/modules/access/Modules.am
-@@ -3,14 +3,9 @@
- # obviously does not. Here is a fix for that.
- LIBTOOL=@LIBTOOL@ --tag=CC
+@@ -144,67 +144,6 @@ if HAVE_V4L2
+ libvlc_LTLIBRARIES += libv4l2_plugin.la
+ endif
  
--BASE_SUBDIRS = bd mms rtp rtsp screen vcd vcdx zip
--EXTRA_SUBDIRS = dshow
-+BASE_SUBDIRS = rtp rtsp zip
- SUBDIRS = $(BASE_SUBDIRS)
--DIST_SUBDIRS = $(BASE_SUBDIRS) $(EXTRA_SUBDIRS)
--
+-libdshow_plugin_la_SOURCES = dshow/vlc_dshow.h dshow/dshow.cpp dshow/access.h \
+-	dshow/filter.cpp dshow/filter.h dshow/crossbar.cpp
+-libdshow_plugin_la_CFLAGS = $(AM_CFLAGS)
+-libdshow_plugin_la_LIBADD = $(AM_LIBADD) -lole32 -loleaut32 -luuid -lstrmiids -lksuser
 -if HAVE_WIN32
--SUBDIRS += dshow
+-libvlc_LTLIBRARIES += libdshow_plugin.la
 -endif
-+DIST_SUBDIRS = $(BASE_SUBDIRS)
+-
+-
+-### Screen grab ###
+-
+-libxcb_screen_plugin_la_SOURCES = screen/xcb.c
+-libxcb_screen_plugin_la_CFLAGS = $(AM_CFLAGS) \
+-	$(XCB_CFLAGS) $(XCB_COMPOSITE_CFLAGS)
+-libxcb_screen_plugin_la_LIBADD = $(AM_LIBADD) \
+-	$(XCB_LIBS) $(XCB_COMPOSITE_LIBS)
+-if HAVE_XCB
+-libvlc_LTLIBRARIES += libxcb_screen_plugin.la
+-endif
+-
+-libscreen_plugin_la_SOURCES = screen/screen.c screen/screen.h
+-libscreen_plugin_la_CFLAGS = $(AM_CFLAGS)
+-libscreen_plugin_la_LIBADD = $(AM_LIBADD)
+-if HAVE_WIN32
+-libscreen_plugin_la_SOURCES += screen/win32.c
+-libscreen_plugin_la_LIBADD += -lgdi32
+-libvlc_LTLIBRARIES += libscreen_plugin.la
+-endif
+-if HAVE_DARWIN
+-libscreen_plugin_la_SOURCES += screen/mac.c
+-libscreen_plugin_la_LDFLAGS = $(AM_LDFLAGS)
+-libscreen_plugin_la_LDFLAGS += "-Wl,-framework,OpenGL,-framework,ApplicationServices"
+-endif
+-
+-
+-### Optical media ###
+-
+-SOURCES_cdda = \
+-        cdda.c \
+-        vcd/cdrom.c \
+-        vcd/cdrom.h \
+-        vcd/cdrom_internals.h
+-SOURCES_vcd = \
+-	vcd/vcd.c \
+-	vcd/cdrom.c \
+-	vcd/cdrom.h \
+-	vcd/cdrom_internals.h
+-SOURCES_vcdx = \
+-	vcdx/access.h vcdx/access.c \
+-	vcdx/vcd.c vcdx/vcd.h \
+-	vcdx/vcdplayer.h vcdx/vcdplayer.c \
+-	vcdx/info.c vcdx/info.h
+-
+-SOURCES_dvdnav = dvdnav.c
+-SOURCES_dvdread = dvdread.c
+-
+-libaccess_bd_plugin_la_SOURCES = bd/bd.c bd/mpls.c bd/mpls.h bd/clpi.c bd/clpi.h
+-libaccess_bd_plugin_la_CFLAGS = $(AM_CFLAGS)
+-libaccess_bd_plugin_la_LIBADD = $(AM_LIBADD)
+-libvlc_LTLIBRARIES += libaccess_bd_plugin.la
+-
  
- libfilesystem_plugin_la_SOURCES = \
- 	fs.h \
+ ### Digital TV ###
+ 
 diff --git a/modules/codec/Modules.am b/modules/codec/Modules.am
-index 6f0fddd..a1e1efd 100644
+index bcda85b..8ebd70b 100644
 --- a/modules/codec/Modules.am
 +++ b/modules/codec/Modules.am
-@@ -1,4 +1,4 @@
--SUBDIRS = loader dmo avcodec shine spudec wmafixed omxil
-+SUBDIRS = avcodec wmafixed omxil
- SOURCES_a52 = a52.c a52.h
- SOURCES_dts = dts.c
- SOURCES_flac = flac.c
+@@ -13,8 +13,6 @@ SOURCES_adpcm = adpcm.c
+ SOURCES_opus = opus.c opus_header.c opus_header.h
+ SOURCES_uleaddvaudio = uleaddvaudio.c
+ SOURCES_mpeg_audio = mpeg_audio.c
+-SOURCES_shine = shine/shine_mod.c shine/enc_base.h
+-EXTRA_DIST += shine/shine.c
+ SOURCES_wma_fixed = \
+ 	wmafixed/asf.h wmafixed/bswap.h \
+ 	wmafixed/fft.c wmafixed/fft.h \
+@@ -50,9 +48,7 @@ SOURCES_subsdec = subsdec.c substext.h
+ SOURCES_subsusf = subsusf.c
+ SOURCES_t140 = t140.c
+ SOURCES_crystalhd = crystalhd.c h264_nal.h
+-SOURCES_spudec = spudec/spudec.c spudec/parse.c spudec/spudec.h
+ SOURCES_stl = stl.c
+-SOURCES_dmo = dmo/dmo.c dmo/dmo.h dmo/buffer.c
+ SOURCES_ddummy = ddummy.c
+ SOURCES_edummy = edummy.c
+ 
+@@ -145,35 +141,3 @@ libiomx_plugin_la_LIBADD = $(libomxil_plugin_la_LIBADD)
+ 
+ libvlc_LTLIBRARIES += $(LTLIBomxil) $(LTLIBiomx)
+ EXTRA_LTLIBRARIES += libomxil_plugin.la libiomx_plugin.la
+-
+-### Windows DLL loader ###
+-
+-# TODO: real check for vsscanf() and <sys/mmap.h>
+-noinst_HEADERS += loader/com.h loader/driver.h loader/ext.h loader/ldt_keeper.h
+-	loader/loader.h loader/registry.h \
+-	loader/win32.h loader/wineacm.h loader/wrapper.h \
+-	loader/qtx/qtxsdk/components.h \
+-	loader/wine/avifmt.h loader/wine/basetsd.h loader/wine/debugtools.h \
+-	loader/wine/driver.h loader/wine/heap.h loader/wine/mmreg.h \
+-	loader/wine/module.h loader/wine/msacmdrv.h loader/wine/msacm.h \
+-	loader/wine/pe_image.h loader/wine/poppack.h loader/wine/pshpack1.h \
+-	loader/wine/pshpack2.h loader/wine/vfw.h loader/wine/winbase.h \
+-	loader/wine/windef.h loader/wine/winerror.h \
+-	loaeder/wine/winestring.h loader/wine/winnt.h loader/wine/winreg.h \
+-	loader/wine/winuser.h
+-
+-libloader_la_CPPFLAGS = -D__WINE__ -DHAVE_SYS_MMAN_H=1 -DHAVE_VSSCANF=1 \
+-	-DWIN32_PATH=\"\" -DTRACE\(...\)=\(void\)0
+-libloader_la_CFLAGS = -fno-PIC -U_FILE_OFFSET_BITS \
+-	-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer
+-libloader_la_SOURCES = loader/ldt_keeper.c loader/pe_image.c loader/module.c \
+-	loader/ext.c loader/win32.c loader/driver.c loader/pe_resource.c \
+-	loader/resource.c loader/registry.c loader/afl.c loader/vfl.c \
+-	loader/wrapper.S loader/stubs.s loader/kludge.c
+-libloader_la_LIBADD = -lpthread
+-libloader_la_LDFLAGS = -static
+-if LOADER
+-noinst_LTLIBRARIES = libloader.la
+-libdmo_plugin_la_DEPENDENCIES = libloader.la
+-libquicktime_plugin_la_DEPENDENCIES = libloader.la
+-endif
 diff --git a/modules/demux/Modules.am b/modules/demux/Modules.am
-index 45d2b45..517b4b7 100644
+index 2b7ee6e..c64d6ff 100644
 --- a/modules/demux/Modules.am
 +++ b/modules/demux/Modules.am
-@@ -1,4 +1,4 @@
--SUBDIRS = asf avformat avi mkv mp4 mpeg playlist
-+SUBDIRS = avformat mp4 mpeg
- SOURCES_flacsys = flac.c
- SOURCES_ogg = ogg.c ogg.h oggseek.c oggseek.h vorbis.h kate_categories.c \
- 	kate_categories.h xiph.h
+@@ -33,14 +33,6 @@ SOURCES_dirac = dirac.c
+ SOURCES_image = image.c mxpeg_helper.h
+ SOURCES_demux_stl = stl.c
+ 
+-libasf_plugin_la_SOURCES = asf/asf.c asf/libasf.c asf/libasf.h asf/libasf_guid.h
+-libasf_plugin_la_CFLAGS = $(AM_CFLAGS)
+-libasf_plugin_la_LIBADD = $(AM_LIBADD)
+-
+-libavi_plugin_la_SOURCES = avi/avi.c avi/libavi.c avi/libavi.h
+-libavi_plugin_la_CFLAGS = $(AM_CFLAGS)
+-libavi_plugin_la_LIBADD = $(AM_LIBADD)
+-
+ libavformat_plugin_la_SOURCES = avformat/demux.c \
+ 	../codec/avcodec/fourcc.c \
+ 	../codec/avcodec/chroma.c \
+@@ -72,30 +64,6 @@ libh264_plugin_la_SOURCES = mpeg/h264.c
+ libh264_plugin_la_CFLAGS = $(AM_CFLAGS)
+ libh264_plugin_la_LIBADD = $(AM_LIBADD)
+ 
+-libmkv_plugin_la_SOURCES = \
+-	mkv/util.hpp mkv/util.cpp \
+-	mkv/virtual_segment.hpp mkv/virtual_segment.cpp \
+-	mkv/matroska_segment.hpp mkv/matroska_segment.cpp \
+-	mkv/matroska_segment_parse.cpp \
+-	mkv/demux.hpp mkv/demux.cpp \
+-	mkv/Ebml_parser.hpp mkv/Ebml_parser.cpp \
+-	mkv/chapters.hpp mkv/chapters.cpp \
+-	mkv/chapter_command.hpp mkv/chapter_command.cpp \
+-	mkv/stream_io_callback.hpp mkv/stream_io_callback.cpp \
+-	mp4/libmp4.c vobsub.h \
+-	mkv/mkv.hpp mkv/mkv.cpp
+-libmkv_plugin_la_CPPFLAGS = $(AM_CPPFLAGS)
+-libmkv_plugin_la_LIBADD = $(AM_LIBADD) $(LIBS_mkv)
+-libmkv_plugin_la_LDFLAGS = $(AM_LDFLAGS)
+-if HAVE_ZLIB
+-libmkv_plugin_la_LIBADD += -lz
+-endif
+-if HAVE_DARWIN
+-libmkv_plugin_la_LDFLAGS += -Wl,-framework,IOKit,-framework,CoreFoundation
+-endif
+-libvlc_LTLIBRARIES += $(LTLIBmkv)
+-EXTRA_LTLIBRARIES += libmkv_plugin.la
+-
+ libmp4_plugin_la_SOURCES = mp4/mp4.c mp4/libmp4.c mp4/libmp4.h mp4/id3genres.h
+ libmp4_plugin_la_CFLAGS = $(AM_CFLAGS)
+ libmp4_plugin_la_LIBADD = $(AM_LIBADD) $(LIBM)
+@@ -111,28 +79,6 @@ libmpgv_plugin_la_SOURCES = mpeg/mpgv.c
+ libmpgv_plugin_la_CFLAGS = $(AM_CFLAGS)
+ libmpgv_plugin_la_LIBADD = $(AM_LIBADD)
+ 
+-libplaylist_plugin_la_SOURCES = \
+-	playlist/asx.c \
+-	playlist/b4s.c \
+-	playlist/dvb.c \
+-	playlist/gvp.c \
+-	playlist/ifo.c \
+-	playlist/itml.c \
+-	playlist/itml.h \
+-	playlist/m3u.c \
+-	playlist/pls.c \
+-	playlist/podcast.c \
+-	playlist/qtl.c \
+-	playlist/ram.c \
+-	playlist/sgimb.c \
+-	playlist/shoutcast.c \
+-	playlist/wpl.c \
+-	playlist/xspf.c \
+-	playlist/zpl.c \
+-	playlist/playlist.c playlist/playlist.h
+-libplaylist_plugin_la_CFLAGS = $(AM_CFLAGS)
+-libplaylist_plugin_la_LIBADD = $(AM_LIBADD)
+-
+ libts_plugin_la_SOURCES = ts.c ../mux/mpeg/csa.c dvb-text.h
+ libts_plugin_la_CFLAGS = $(AM_CFLAGS) $(DVBPSI_CFLAGS)
+ libts_plugin_la_LIBADD = $(AM_LIBADD) $(DVBPSI_LIBS) $(SOCKET_LIBS)
+@@ -142,9 +88,7 @@ endif
+ 
+ libvlc_LTLIBRARIES += \
+ 	libaiff_plugin.la \
+-	libasf_plugin.la \
+ 	libau_plugin.la \
+-	libavi_plugin.la \
+ 	librawaud_plugin.la \
+ 	libdirac_plugin.la \
+ 	libdemux_cdg_plugin.la \
+@@ -158,7 +102,6 @@ libvlc_LTLIBRARIES += \
+ 	libnsc_plugin.la \
+ 	libnsv_plugin.la \
+ 	libnuv_plugin.la \
+-	libplaylist_plugin.la \
+ 	libpva_plugin.la \
+ 	libps_plugin.la \
+ 	librawdv_plugin.la \
 diff --git a/modules/stream_filter/Modules.am b/modules/stream_filter/Modules.am
-index 78efb7d..55b22ae 100644
+index f8a537b..d800cb0 100644
 --- a/modules/stream_filter/Modules.am
 +++ b/modules/stream_filter/Modules.am
-@@ -1,5 +1,3 @@
--SUBDIRS = dash
--
- SOURCES_decomp = decomp.c
- SOURCES_stream_filter_record = record.c
+@@ -5,93 +5,6 @@ if !HAVE_WIN32
+ libvlc_LTLIBRARIES += libdecomp_plugin.la
+ endif
  
+-libdash_plugin_la_SOURCES = \
+-    dash/adaptationlogic/AbstractAdaptationLogic.cpp \
+-    dash/adaptationlogic/AbstractAdaptationLogic.h \
+-    dash/adaptationlogic/AdaptationLogicFactory.cpp \
+-    dash/adaptationlogic/AdaptationLogicFactory.h \
+-    dash/adaptationlogic/AlwaysBestAdaptationLogic.cpp \
+-    dash/adaptationlogic/AlwaysBestAdaptationLogic.h \
+-    dash/adaptationlogic/IAdaptationLogic.h \
+-    dash/adaptationlogic/IDownloadRateObserver.h \
+-    dash/adaptationlogic/RateBasedAdaptationLogic.h \
+-    dash/adaptationlogic/RateBasedAdaptationLogic.cpp \
+-    dash/buffer/BlockBuffer.cpp \
+-    dash/buffer/BlockBuffer.h \
+-    dash/buffer/IBufferObserver.h \
+-    dash/http/Chunk.cpp \
+-    dash/http/Chunk.h \
+-    dash/http/HTTPConnection.cpp \
+-    dash/http/HTTPConnection.h \
+-    dash/http/HTTPConnectionManager.cpp \
+-    dash/http/HTTPConnectionManager.h \
+-    dash/http/IHTTPConnection.h \
+-    dash/http/PersistentConnection.cpp \
+-    dash/http/PersistentConnection.h \
+-    dash/mpd/AdaptationSet.cpp \
+-    dash/mpd/AdaptationSet.h \
+-    dash/mpd/BaseUrl.h \
+-    dash/mpd/BasicCMManager.cpp \
+-    dash/mpd/BasicCMManager.h \
+-    dash/mpd/BasicCMParser.cpp \
+-    dash/mpd/BasicCMParser.h \
+-    dash/mpd/CommonAttributesElements.cpp \
+-    dash/mpd/CommonAttributesElements.h \
+-    dash/mpd/ContentDescription.cpp \
+-    dash/mpd/ContentDescription.h \
+-    dash/mpd/IMPDManager.h \
+-    dash/mpd/IMPDParser.h \
+-    dash/mpd/IsoffMainParser.cpp \
+-    dash/mpd/IsoffMainParser.h \
+-    dash/mpd/IsoffMainManager.cpp \
+-    dash/mpd/IsoffMainManager.h \
+-    dash/mpd/MPD.cpp \
+-    dash/mpd/MPD.h \
+-    dash/mpd/MPDFactory.cpp \
+-    dash/mpd/MPDFactory.h \
+-    dash/mpd/MPDManagerFactory.cpp \
+-    dash/mpd/MPDManagerFactory.h \
+-    dash/mpd/Period.cpp \
+-    dash/mpd/Period.h \
+-    dash/mpd/ProgramInformation.cpp \
+-    dash/mpd/ProgramInformation.h \
+-    dash/mpd/Representation.cpp \
+-    dash/mpd/Representation.h \
+-    dash/mpd/Segment.cpp \
+-    dash/mpd/Segment.h \
+-    dash/mpd/SegmentBase.cpp \
+-    dash/mpd/SegmentBase.h \
+-    dash/mpd/SegmentInfo.cpp \
+-    dash/mpd/SegmentInfo.h \
+-    dash/mpd/SegmentInfoCommon.cpp \
+-    dash/mpd/SegmentInfoCommon.h \
+-    dash/mpd/SegmentInfoDefault.cpp \
+-    dash/mpd/SegmentInfoDefault.h \
+-    dash/mpd/SegmentList.cpp \
+-    dash/mpd/SegmentList.h \
+-    dash/mpd/SegmentTemplate.cpp \
+-    dash/mpd/SegmentTemplate.h \
+-    dash/mpd/SegmentTimeline.cpp \
+-    dash/mpd/SegmentTimeline.h \
+-    dash/mpd/TrickModeType.cpp \
+-    dash/mpd/TrickModeType.h \
+-    dash/xml/DOMHelper.cpp \
+-    dash/xml/DOMHelper.h \
+-    dash/xml/DOMParser.cpp \
+-    dash/xml/DOMParser.h \
+-    dash/xml/Node.cpp \
+-    dash/xml/Node.h \
+-    dash/dash.cpp \
+-    dash/DASHDownloader.cpp \
+-    dash/DASHDownloader.h \
+-    dash/DASHManager.cpp \
+-    dash/DASHManager.h \
+-    dash/Helper.cpp \
+-    dash/Helper.h
+-libdash_plugin_la_CXXFLAGS = $(AM_CFLAGS) -I$(srcdir)/dash
+-libdash_plugin_la_LIBADD = $(AM_LIBADD) $(SOCKET_LIBS)
+-libvlc_LTLIBRARIES += libdash_plugin.la
+-
+ libhttplive_plugin_la_SOURCES = httplive.c
+ libhttplive_plugin_la_CFLAGS = $(AM_CFLAGS) $(GCRYPT_CFLAGS)
+ libhttplive_plugin_la_LIBADD = $(AM_LIBADD) $(GCRYPT_LIBS) -lgpg-error
 -- 
 1.7.10.4
 
