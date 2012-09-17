@@ -1,23 +1,23 @@
-From 43b19ce98a6a0aa60de21ee46f839a42b8467257 Mon Sep 17 00:00:00 2001
+From 93a8f897ed0fed3e0622a9677cce182126ee6628 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
 Subject: [PATCH 36/36] vsl: video segment list
 
 ---
- modules/access/vsl/index.c   |  878 ++++++++++++++++++++++++++++++++++++++++++
- modules/access/vsl/segment.c |  800 ++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/index.c   |  879 ++++++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/segment.c |  814 ++++++++++++++++++++++++++++++++++++++
  modules/access/vsl/vsl.c     |  189 ++++-----
- modules/access/vsl/vsl.h     |   63 +--
- 4 个文件被修改，插入 1783 行(+)，删除 147 行(-)
+ modules/access/vsl/vsl.h     |   66 ++--
+ 4 个文件被修改，插入 1801 行(+)，删除 147 行(-)
  create mode 100644 modules/access/vsl/index.c
  create mode 100644 modules/access/vsl/segment.c
 
 diff --git a/modules/access/vsl/index.c b/modules/access/vsl/index.c
 new file mode 100644
-index 0000000..f38dcad
+index 0000000..8a61d3d
 --- /dev/null
 +++ b/modules/access/vsl/index.c
-@@ -0,0 +1,878 @@
+@@ -0,0 +1,879 @@
 +/*****************************************************************************
 + * index.c: video segment list index access
 + *****************************************************************************
@@ -79,7 +79,8 @@ index 0000000..f38dcad
 +    set_subcategory( SUBCAT_INPUT_ACCESS )
 +    set_capability( "access_demux", 100 )
 +    add_shortcut( ACCESS_VSL_INDEX, ACCESS_SINA_INDEX,
-+                  ACCESS_YOUKU_INDEX, ACCESS_CNTV_INDEX )
++                  ACCESS_YOUKU_INDEX, ACCESS_CNTV_INDEX,
++                  ACCESS_SOHU_INDEX )
 +    set_callbacks( Open, Close )
 +vlc_module_end ()
 +
@@ -899,10 +900,10 @@ index 0000000..f38dcad
 \ No newline at end of file
 diff --git a/modules/access/vsl/segment.c b/modules/access/vsl/segment.c
 new file mode 100644
-index 0000000..20d00e5
+index 0000000..96ab7d3
 --- /dev/null
 +++ b/modules/access/vsl/segment.c
-@@ -0,0 +1,800 @@
+@@ -0,0 +1,814 @@
 +/*****************************************************************************
 + * segment.c: video segment list segment access
 + *****************************************************************************
@@ -954,7 +955,8 @@ index 0000000..20d00e5
 +    set_subcategory( SUBCAT_INPUT_ACCESS )
 +    set_capability( "access", 1 )
 +    add_shortcut( ACCESS_VSL_SEGMENT, ACCESS_SINA_SEGMENT,
-+                  ACCESS_YOUKU_SEGMENT, ACCESS_CNTV_SEGMENT )
++                  ACCESS_YOUKU_SEGMENT, ACCESS_CNTV_SEGMENT,
++                  ACCESS_SOHU_SEGMENT )
 +    set_callbacks( Open, Close )
 +vlc_module_end ()
 +
@@ -1120,9 +1122,15 @@ index 0000000..20d00e5
 +    }
 +    else if( 0 == strcmp( p_access->psz_access, ACCESS_CNTV_SEGMENT ) )
 +    {
++        // cntv is similar to youku
 +        msg_Dbg( p_access, "segment: cntv not seekable" );
 +        p_sys->pfn_new_seekd_stream = stream_vslNewYoukuSeek;
 +        p_sys->b_seekable = false;
++    }
++    else if( 0 == strcmp( p_access->psz_access, ACCESS_SOHU_SEGMENT ) )
++    {
++        msg_Dbg( p_access, "segment: vsl seek (sohu) " );
++        p_sys->pfn_new_seekd_stream = stream_vslNewSeek;
 +    }
 +    else {
 +        msg_Dbg( p_access, "segment: vsl seek" );
@@ -1407,13 +1415,15 @@ index 0000000..20d00e5
 +    char* p_seek_url = NULL;
 +    stream_t *p_stream = NULL;
 +
++    msg_Info( p_access, "segment: sina: seek to %"PRId64, i_pos );
++
 +    /* */
 +    const char* p_prefix = strchr( p_sys->psz_url, '?' ) ? "&" : "?";
 +    if( asprintf( &p_seek_url, "%s%sstart=%"PRId64, p_sys->psz_url, p_prefix, i_pos ) < 0)
 +        goto EXIT_FAIL;
 +
 +    p_stream = stream_UrlNew( p_access, p_seek_url );
-+    if( !p_sys->p_stream )
++    if( !p_stream )
 +    {
 +        msg_Err( p_access, "segment: sina: seek: failed to open stream %s", p_seek_url );
 +        goto EXIT_FAIL;
@@ -1423,7 +1433,7 @@ index 0000000..20d00e5
 +    int i_skip_ret = SkipSeekedFlvHeader( p_access, p_stream, i_pos );
 +    if( i_skip_ret <= 0 )
 +    {
-+        msg_Err( p_access, "segment: sina: seek: failed to skip sina flv header" );
++        msg_Err( p_access, "segment: sina: seek: failed to skip flv header" );
 +        goto EXIT_FAIL;
 +    }
 +
@@ -1451,6 +1461,7 @@ index 0000000..20d00e5
 +    int64_t i_seek_to_second = 0;
 +    int64_t i_last_backward_seeked_second = p_sys->i_duration_milli / 1000;
 +
++    msg_Info( p_access, "segment: youku: seek to %"PRId64, i_pos );
 +    if( p_access->info.i_size <= 0 )
 +    {
 +        msg_Err( p_access, "segment: youku: seek: invalid info.i_size < 0" );
@@ -1485,7 +1496,7 @@ index 0000000..20d00e5
 +        }
 +
 +        p_stream = stream_UrlNew( p_access, p_seek_url );
-+        if( !p_sys->p_stream )
++        if( !p_stream )
 +        {
 +            msg_Err( p_access, "segment: youku: seek: failed to open stream %s", p_seek_url );
 +            goto EXIT_FAIL;
@@ -1547,7 +1558,7 @@ index 0000000..20d00e5
 +    int i_skip_ret = SkipSeekedUnknownHeader( p_access, p_stream, i_pos );
 +    if( i_skip_ret < 0 )
 +    {
-+        msg_Err( p_access, "segment: youku: seek: failed to skip sina flv header" );
++        msg_Err( p_access, "segment: youku: seek: failed to skip unknown header" );
 +        goto EXIT_FAIL;
 +    }
 +
@@ -1568,15 +1579,17 @@ index 0000000..20d00e5
 +static stream_t *stream_vslNewSeek( access_t* p_access, uint64_t i_pos )
 +{
 +    access_sys_t *p_sys = p_access->p_sys;
++
++    msg_Info( p_access, "segment: vsk: seek to %"PRId64, i_pos );
 +    stream_t *p_stream = stream_UrlNew( p_access, p_sys->psz_url);
-+    if( !p_sys->p_stream )
++    if( !p_stream )
 +    {
 +        msg_Err( p_access, "segment: failed to open stream %s", p_sys->psz_url );
 +        goto EXIT_FAIL;
 +    }
 +
 +    int i_ret = stream_Seek( p_stream, i_pos );
-+    if( i_ret <= 0 )
++    if( i_ret < 0 )
 +    {
 +        msg_Err( p_access, "segment: failed to seek" );
 +        goto EXIT_FAIL;
@@ -1628,16 +1641,20 @@ index 0000000..20d00e5
 +        return VLC_SUCCESS;
 +    }
 +
++    /* close previous stream first */
++    if( p_sys->p_stream )
++    { 
++        stream_Delete( p_sys->p_stream );
++        p_sys->p_stream = NULL;
++    }
++
 +    /* */
 +    p_stream = p_sys->pfn_new_seekd_stream( p_access, i_pos );
-+    if( !p_sys->p_stream )
++    if( !p_stream )
 +    {
 +        msg_Err( p_access, "segment: failed to open seeked stream %s", p_sys->psz_url );
 +        goto EXIT_FAIL;
 +    }
-+
-+    if( p_sys->p_stream )
-+        stream_Delete( p_sys->p_stream );
 +
 +    p_sys->p_stream = p_stream;
 +
@@ -1662,7 +1679,7 @@ index 0000000..20d00e5
 +    {
 +            /* */
 +        case ACCESS_CAN_SEEK:
-+            *(bool*)va_arg( args, bool* ) = false;
++            *(bool*)va_arg( args, bool* ) = p_sys->b_seekable;
 +            return VLC_SUCCESS;
 +
 +        case ACCESS_CAN_FASTSEEK:
@@ -1670,8 +1687,6 @@ index 0000000..20d00e5
 +            return VLC_SUCCESS;
 +
 +        case ACCESS_CAN_PAUSE:
-+            *(bool*)va_arg( args, bool* ) = p_sys->b_seekable;
-+            return VLC_SUCCESS;
 +        case ACCESS_CAN_CONTROL_PACE:
 +            *(bool*)va_arg( args, bool* ) = true;
 +            return VLC_SUCCESS;
@@ -1931,7 +1946,7 @@ index aca9b01..e7efab8 100644
 +    return p_vsl_cb->pfn_get_bytes( p_vsl_cb->p_cb_data, i_order );
 +}
 diff --git a/modules/access/vsl/vsl.h b/modules/access/vsl/vsl.h
-index de188ac..45c766c 100644
+index de188ac..3605fb6 100644
 --- a/modules/access/vsl/vsl.h
 +++ b/modules/access/vsl/vsl.h
 @@ -1,22 +1,23 @@
@@ -1967,17 +1982,33 @@ index de188ac..45c766c 100644
   *****************************************************************************/
  
  /*****************************************************************************
-@@ -35,28 +36,34 @@
+@@ -35,28 +36,37 @@
  #define ACCESS_YOUKU_INDEX      "youkuindex"
  #define ACCESS_YOUKU_SEGMENT    "youkusegment"
  
-+#define ACCESS_CNTV_INDEX       "cntvindex"
-+#define ACCESS_CNTV_SEGMENT     "cntvsegment"
-+
- #define VSL_SAFE_FREE( x__ ) do { free( x__ ); ( x__ ) = NULL; } while( 0 )
- 
+-#define VSL_SAFE_FREE( x__ ) do { free( x__ ); ( x__ ) = NULL; } while( 0 )
+-
 -typedef libvlc_segment_list_t *(*libvlc_segment_list_resolve_cb)( const char *p_mrl );
 -typedef void (*libvlc_segment_list_release_cb)( libvlc_segment_list_t *p_segment_lst );
+-
+-typedef struct {
+-    char    *p_index_mrl;
+-    char    *p_index_url;
+-    char    *p_pseudo_segment_access;       /* vslsegment */
++#define ACCESS_CNTV_INDEX       "cntvindex"
++#define ACCESS_CNTV_SEGMENT     "cntvsegment"
+ 
+-    char    *p_real_access;                 /* http */
+-    char    *p_real_access_tag;             /* mp4 */
++#define ACCESS_SOHU_INDEX       "sohuindex"
++#define ACCESS_SOHU_SEGMENT     "sohusegment"
+ 
+-    int     i_order;                        /* -1 for index */
++#define VSL_SAFE_FREE( x__ ) do { free( x__ ); ( x__ ) = NULL; } while( 0 )
+ 
+-    libvlc_segment_list_resolve_cb  pfn_resolve;
+-    libvlc_segment_list_release_cb  pfn_release;
+-} vsl_info_t;
 +typedef int (*libvlc_vsl_load_cb)( void *p_cb_data, bool b_force_reload );
 +typedef int (*libvlc_vsl_get_count_cb)( void *p_cb_data );
 +typedef char *(*libvlc_vsl_get_mrl_cb)( void *p_cb_data, int i_order );
@@ -1985,22 +2016,9 @@ index de188ac..45c766c 100644
 +typedef int (*libvlc_vsl_get_duration_cb)( void *p_cb_data, int i_order );
 +typedef int64_t (*libvlc_vsl_get_bytes_cb)( void *p_cb_data, int i_order );
  
- typedef struct {
--    char    *p_index_mrl;
--    char    *p_index_url;
--    char    *p_pseudo_segment_access;       /* vslsegment */
--
--    char    *p_real_access;                 /* http */
--    char    *p_real_access_tag;             /* mp4 */
--
--    int     i_order;                        /* -1 for index */
--
--    libvlc_segment_list_resolve_cb  pfn_resolve;
--    libvlc_segment_list_release_cb  pfn_release;
--} vsl_info_t;
--
 -void free_VslInfo( vsl_info_t *p_index_info );
 -vsl_info_t *vsl_ResolveInfo( demux_t *p_demux );
++typedef struct {
 +    void                        *p_cb_data;
 +    libvlc_vsl_load_cb          pfn_load;
 +    libvlc_vsl_get_count_cb     pfn_get_count;
