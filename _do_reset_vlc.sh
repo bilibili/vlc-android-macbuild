@@ -14,7 +14,7 @@ if [ ! -d "vlc-android" ]; then
 fi
 
 # 1/ libvlc, libvlccore and its plugins
-TESTED_HASH=df4da38
+TESTED_HASH=eeaa3b9ef3
 if [ ! -d "vlc" ]; then
     echo "VLC source not found, cloning"
     git clone git://git.videolan.org/vlc.git vlc
