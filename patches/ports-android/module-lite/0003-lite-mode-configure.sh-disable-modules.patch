@@ -1,14 +1,14 @@
-From f9cf404a35598b953a5de4d8cc882f9e1a6626d0 Mon Sep 17 00:00:00 2001
+From 90d08de9eb0c662eb46016c2e313927478f9507e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
 Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
 
 ---
- configure.sh |   14 ++++++++------
- 1 个文件被修改，插入 8 行(+)，删除 6 行(-)
+ configure.sh |   16 +++++++++-------
+ 1 个文件被修改，插入 9 行(+)，删除 7 行(-)
 
 diff --git a/configure.sh b/configure.sh
-index 2383cf7..8175c69 100755
+index 2383cf7..538aae0 100755
 --- a/configure.sh
 +++ b/configure.sh
 @@ -49,18 +49,20 @@ NM="${CROSS_COMPILE}nm" \
@@ -37,7 +37,7 @@ index 2383cf7..8175c69 100755
                  --enable-iomx \
                  --disable-vlc --disable-shared \
                  --disable-vlm \
-@@ -96,7 +98,7 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+@@ -96,11 +98,11 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
                  --disable-skins2 \
                  --disable-mtp \
                  --disable-notify \
@@ -46,6 +46,11 @@ index 2383cf7..8175c69 100755
                  --disable-svg \
                  --disable-sqlite \
                  --disable-udev \
+-                --enable-libxml2 \
++                --disable-libxml2 \
+                 --disable-caca \
+                 --disable-glx \
+                 --disable-egl \
 -- 
 1.7.10.4
 

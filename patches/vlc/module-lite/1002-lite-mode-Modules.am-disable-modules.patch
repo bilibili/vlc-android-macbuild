@@ -1,14 +1,14 @@
-From a0999c46fa05a4b8c7edf33cc33633e7ac7d5bc5 Mon Sep 17 00:00:00 2001
+From e953d6d4bc5dca89040201a59f0bb447556f24bf Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 17 Sep 2012 19:02:41 +0800
 Subject: [PATCH 1002/1002] lite-mode: Modules.am: disable modules
 
 ---
  modules/access/Modules.am        |   61 --------------------------
- modules/codec/Modules.am         |   36 ----------------
+ modules/codec/Modules.am         |   37 ----------------
  modules/demux/Modules.am         |   57 -------------------------
  modules/stream_filter/Modules.am |   87 --------------------------------------
- 4 个文件被修改，删除 241 行(-)
+ 4 个文件被修改，删除 242 行(-)
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
 index 84fafa8..2117e12 100644
@@ -83,7 +83,7 @@ index 84fafa8..2117e12 100644
  ### Digital TV ###
  
 diff --git a/modules/codec/Modules.am b/modules/codec/Modules.am
-index bcda85b..8ebd70b 100644
+index bcda85b..4538a83 100644
 --- a/modules/codec/Modules.am
 +++ b/modules/codec/Modules.am
 @@ -13,8 +13,6 @@ SOURCES_adpcm = adpcm.c
@@ -105,7 +105,15 @@ index bcda85b..8ebd70b 100644
  SOURCES_ddummy = ddummy.c
  SOURCES_edummy = edummy.c
  
-@@ -145,35 +141,3 @@ libiomx_plugin_la_LIBADD = $(libomxil_plugin_la_LIBADD)
+@@ -72,7 +68,6 @@ libvlc_LTLIBRARIES += \
+ 	liblpcm_plugin.la \
+ 	libmpeg_audio_plugin.la \
+ 	librawvideo_plugin.la \
+-	libspudec_plugin.la \
+ 	libsvcdsub_plugin.la \
+ 	libsubsdec_plugin.la \
+ 	libsubsusf_plugin.la \
+@@ -145,35 +140,3 @@ libiomx_plugin_la_LIBADD = $(libomxil_plugin_la_LIBADD)
  
  libvlc_LTLIBRARIES += $(LTLIBomxil) $(LTLIBiomx)
  EXTRA_LTLIBRARIES += libomxil_plugin.la libiomx_plugin.la
