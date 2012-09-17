@@ -1,14 +1,14 @@
-From 2df9aec1be18a9b967f223fe003d69bc6829708b Mon Sep 17 00:00:00 2001
+From 349036e7fe9c1f46431caecc459032c5c06eb05f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
-Subject: [PATCH 29/36] omxil: sort hw codec
+Subject: [PATCH 28/33] omxil: sort hw codec
 
 ---
  modules/codec/omxil/omxil.c |   96 +++++++++++++++++++++++++++++++++++++++++++
  1 个文件被修改，插入 96 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 1e5e75c..8b7d1fb 100644
+index a169ce1..4964abc 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -197,6 +197,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
@@ -109,7 +109,7 @@ index 1e5e75c..8b7d1fb 100644
   * ImplementationSpecificWorkarounds: place-holder for implementation
   * specific workarounds
   *****************************************************************************/
-@@ -1078,6 +1169,8 @@ loaded:
+@@ -1079,6 +1170,8 @@ loaded:
          return VLC_EGENERIC;
      }
  
@@ -118,7 +118,7 @@ index 1e5e75c..8b7d1fb 100644
      /* Try to load and initialise a component */
      omx_error = OMX_ErrorUndefined;
      for(i = 0; i < p_sys->components; i++)
-@@ -1097,6 +1190,9 @@ loaded:
+@@ -1098,6 +1191,9 @@ loaded:
          /* Some nVidia codec with DRM */
          if (!strncmp(p_sys->ppsz_components[i], "OMX.Nvidia.h264.decode.secure", 29))
              continue;

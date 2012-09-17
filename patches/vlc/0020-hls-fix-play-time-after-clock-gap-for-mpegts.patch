@@ -1,7 +1,7 @@
-From 3406e9ab597144d79b3d3c92ea8580e7c45ce0d6 Mon Sep 17 00:00:00 2001
+From afa9cc28c868200f791c013c8fb18716fb73944f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:27 +0800
-Subject: [PATCH 21/36] hls: fix play time after clock gap for mpegts
+Subject: [PATCH 20/33] hls: fix play time after clock gap for mpegts
 
 ---
  modules/demux/ts.c               |   28 +++++++++++++++++++--
@@ -58,7 +58,7 @@ index 254ad10..fd55692 100644
          }
  
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 4868652..72e46af 100644
+index f39a56c..6b183d0 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -64,6 +64,7 @@ vlc_module_end()

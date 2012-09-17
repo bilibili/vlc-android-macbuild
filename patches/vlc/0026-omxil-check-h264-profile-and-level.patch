@@ -1,7 +1,7 @@
-From 608578b5bc5edc4cc625b77d0403858b24ffcf44 Mon Sep 17 00:00:00 2001
+From c7cfddb5ca2d7885093256692b48e56f59d886e0 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 5 Jul 2012 23:35:37 +0800
-Subject: [PATCH 27/36] omxil: check h264 profile and level
+Subject: [PATCH 26/33] omxil: check h264 profile and level
 
 Only load omxil codec which support video profile and level.
 Tested on devices and OMX decoder below:
@@ -40,7 +40,7 @@ index a45a781..89c3d96 100644
          return 0;
      }
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index bd3962d..785e6c4 100644
+index 0e54611..1345884 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -239,6 +239,115 @@ static OMX_ERRORTYPE ImplementationSpecificWorkarounds(decoder_t *p_dec,
@@ -159,7 +159,7 @@ index bd3962d..785e6c4 100644
      if(!strcmp(p_sys->psz_component, "OMX.TI.Video.Decoder"))
      {
          if(p_fmt->i_cat == VIDEO_ES && def->eDir == OMX_DirInput &&
-@@ -937,7 +1046,10 @@ loaded:
+@@ -938,7 +1047,10 @@ loaded:
      p_sys->p_ports = &p_sys->in;
      p_sys->b_use_pts = 0;
  

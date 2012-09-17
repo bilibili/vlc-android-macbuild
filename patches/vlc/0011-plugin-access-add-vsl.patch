@@ -1,7 +1,7 @@
-From 30263a08e4c80414d26997cadf3f44919a31308d Mon Sep 17 00:00:00 2001
+From 03969328f5f6c6f4ff8678426ff28177a1c96dff Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:53:11 +0800
-Subject: [PATCH 12/36] plugin: access: add vsl
+Subject: [PATCH 11/33] plugin: access: add vsl
 
 ---
  modules/access/Modules.am |   12 ++++
@@ -12,12 +12,12 @@ Subject: [PATCH 12/36] plugin: access: add vsl
  create mode 100644 modules/access/vsl/vsl.h
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index d58a381..0b10743 100644
+index 2117e12..f21f369 100644
 --- a/modules/access/Modules.am
 +++ b/modules/access/Modules.am
-@@ -179,6 +179,18 @@ libaccess_sinaxml_plugin_la_LIBADD = $(AM_LIBADD) $(LIBXML2_LIBS)
- libaccess_sinaxml_plugin_la_DEPENDENCIES =
- libvlc_LTLIBRARIES += libaccess_sinaxml_plugin.la
+@@ -145,6 +145,18 @@ libvlc_LTLIBRARIES += libv4l2_plugin.la
+ endif
+ 
  
 +libaccess_vslindex_plugin_la_SOURCES = vsl/index.c vsl/vsl.c
 +libaccess_vslindex_plugin_la_CFLAGS = $(AM_CFLAGS)

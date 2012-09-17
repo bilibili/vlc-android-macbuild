@@ -1,7 +1,7 @@
-From 2d4a5f03ed5a321d5c8d43dfb41b38d2b1b5b9a6 Mon Sep 17 00:00:00 2001
+From e4ecbb7d3f01d82397b2dfbcf401837e0e1d6bc0 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:20 +0800
-Subject: [PATCH 08/36] core: es_out: implement es_out_managed
+Subject: [PATCH 08/33] core: es_out: implement es_out_managed
 
 ---
  include/vlc_es_out.h         |    3 +
@@ -265,7 +265,7 @@ index 0000000..d74058b
 +}
 \ No newline at end of file
 diff --git a/src/input/es_out_timeshift.c b/src/input/es_out_timeshift.c
-index 9a8b82d..1c537ae 100644
+index 4f5db4f..a7a3e15 100644
 --- a/src/input/es_out_timeshift.c
 +++ b/src/input/es_out_timeshift.c
 @@ -608,6 +608,7 @@ static int ControlLocked( es_out_t *p_out, int i_query, va_list args )

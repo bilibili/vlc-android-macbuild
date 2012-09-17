@@ -1,17 +1,17 @@
-From 7b2f5e259e920eafdd1daedb37a6c4a6528f7060 Mon Sep 17 00:00:00 2001
+From 1ed1198c05c5d5fb7139e1d13cd523397a62e7d4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 18:21:32 +0800
-Subject: [PATCH 28/36] omxil: echo OMX name
+Subject: [PATCH 27/33] omxil: echo OMX name
 
 ---
  modules/codec/omxil/omxil.c |    6 ++++++
  1 个文件被修改，插入 6 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 785e6c4..1e5e75c 100644
+index 1345884..a169ce1 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -1199,6 +1199,12 @@ loaded:
+@@ -1200,6 +1200,12 @@ loaded:
      p_dec->b_need_packetized = true;
      if (!strcmp(p_sys->psz_component, "OMX.TI.DUCATI1.VIDEO.DECODER"))
          p_sys->b_use_pts = 1;

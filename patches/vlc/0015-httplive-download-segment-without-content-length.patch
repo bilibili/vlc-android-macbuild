@@ -1,14 +1,14 @@
-From 984ac17179831c8ec20c267b2090257468e7138f Mon Sep 17 00:00:00 2001
+From 812aa00fd2c0aa53af5e47d90036ae08663268e1 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 29 May 2012 15:05:09 +0800
-Subject: [PATCH 16/36] httplive: download segment without content-length
+Subject: [PATCH 15/33] httplive: download segment without content-length
 
 ---
  modules/stream_filter/httplive.c |   55 ++++++++++++++++++++++++++++++++------
  1 个文件被修改，插入 47 行(+)，删除 8 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 1399142..7891cb3 100644
+index f1788d3..3c50039 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1715,6 +1715,10 @@ static int Prefetch(stream_t *s, int *current)

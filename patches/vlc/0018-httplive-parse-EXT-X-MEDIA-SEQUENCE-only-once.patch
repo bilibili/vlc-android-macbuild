@@ -1,14 +1,14 @@
-From 80cf3b829a1135bafa625608ac9ae9c65e4bc2dc Mon Sep 17 00:00:00 2001
+From 0c3ae26db518be00a35e9b1528f9e2085e886ad6 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 29 May 2012 20:42:41 +0800
-Subject: [PATCH 19/36] httplive: parse EXT-X-MEDIA-SEQUENCE only once
+Subject: [PATCH 18/33] httplive: parse EXT-X-MEDIA-SEQUENCE only once
 
 ---
  modules/stream_filter/httplive.c |   11 ++++++++++-
  1 个文件被修改，插入 10 行(+)，删除 1 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 1fc1ae7..d5c36b4 100644
+index 4f8d300..bedb95c 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1092,6 +1092,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const

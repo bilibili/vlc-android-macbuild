@@ -1,7 +1,7 @@
-From b4810a05b4ac9cd12878d6d11d7431e4536b56fe Mon Sep 17 00:00:00 2001
+From 2d2c1763851840a247d124507cc9cc7f94c5ada7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 14:43:15 +0800
-Subject: [PATCH 09/36] core: add segment resolve api
+Subject: [PATCH 09/33] core: add segment resolve api
 
 ---
  include/vlc/libvlc_media_player.h |   10 ++++++++++
@@ -35,7 +35,7 @@ index aefef02..13ecc5c 100644
  
  # ifdef __cplusplus
 diff --git a/include/vlc/libvlc_structures.h b/include/vlc/libvlc_structures.h
-index ad602c0..54277f8 100644
+index ad602c0..8d3217a 100644
 --- a/include/vlc/libvlc_structures.h
 +++ b/include/vlc/libvlc_structures.h
 @@ -30,6 +30,7 @@
@@ -57,7 +57,7 @@ index ad602c0..54277f8 100644
 +typedef char *(*libvlc_vsl_get_url_cb)( void *p_cb_data, int i_order );
 +typedef int (*libvlc_vsl_get_duration_cb)( void *p_cb_data, int i_order );
 +typedef int64_t (*libvlc_vsl_get_bytes_cb)( void *p_cb_data, int i_order );
-+    
++
  /**@} */
  
  # ifdef __cplusplus

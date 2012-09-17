@@ -1,14 +1,14 @@
-From 1ca0860893a8b1f9bc51e50e09eb784c5f7a23ba Mon Sep 17 00:00:00 2001
+From f4ac1562e1c0abdee04f31ccb8329ea108f7e233 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
-Subject: [PATCH 13/36] http: add http option to disable range header
+Subject: [PATCH 12/33] http: add http option to disable range header
 
 ---
  modules/access/http.c |   49 +++++++++++++++++++++++++++++++++++++++++++++++--
  1 个文件被修改，插入 47 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index 531b7f8..57c4f50 100644
+index f9a3dff..f71a4b2 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
 @@ -102,6 +102,10 @@ static void Close( vlc_object_t * );
@@ -58,7 +58,7 @@ index 531b7f8..57c4f50 100644
      /* HTTP referrer */
      p_sys->psz_referrer = var_InheritString( p_access, "http-referrer" );
  
-@@ -1273,8 +1292,34 @@ static int Request( access_t *p_access, uint64_t i_tell )
+@@ -1274,8 +1293,34 @@ static int Request( access_t *p_access, uint64_t i_tell )
      if( p_sys->i_version == 1 && ! p_sys->b_continuous )
      {
          p_sys->b_persist = true;

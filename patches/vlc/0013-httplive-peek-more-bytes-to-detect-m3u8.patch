@@ -1,14 +1,14 @@
-From 85e8bcb1ee0fce734b492ce5009eeaecc66416ce Mon Sep 17 00:00:00 2001
+From 3041b9376cc38bbacf56dbe644ec1d1fb36fbe69 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 11 Jul 2012 14:50:38 +0800
-Subject: [PATCH 14/36] httplive: peek more bytes to detect m3u8
+Subject: [PATCH 13/33] httplive: peek more bytes to detect m3u8
 
 ---
  modules/stream_filter/httplive.c |    2 +-
  1 个文件被修改，插入 1 行(+)，删除 1 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 6297b1f..d6e8923 100644
+index 62bfd99..5a7e291 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -169,7 +169,7 @@ static bool isHTTPLiveStreaming(stream_t *s)

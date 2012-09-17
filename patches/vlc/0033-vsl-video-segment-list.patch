@@ -1,7 +1,7 @@
-From 93a8f897ed0fed3e0622a9677cce182126ee6628 Mon Sep 17 00:00:00 2001
+From 29af5d0c0cbb2cd2ef93a5512361375090bc47fc Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
-Subject: [PATCH 36/36] vsl: video segment list
+Subject: [PATCH 33/33] vsl: video segment list
 
 ---
  modules/access/vsl/index.c   |  879 ++++++++++++++++++++++++++++++++++++++++++
@@ -14,7 +14,7 @@ Subject: [PATCH 36/36] vsl: video segment list
 
 diff --git a/modules/access/vsl/index.c b/modules/access/vsl/index.c
 new file mode 100644
-index 0000000..8a61d3d
+index 0000000..39de4e3
 --- /dev/null
 +++ b/modules/access/vsl/index.c
 @@ -0,0 +1,879 @@
@@ -883,14 +883,14 @@ index 0000000..8a61d3d
 +        {
 +            int64_t *p_pts_delay = va_arg( args, int64_t * );
 +            *p_pts_delay = INT64_C(1000) * var_InheritInteger( p_demux, "network-caching" );
-+            
++
 +            return VLC_SUCCESS;
 +        }
 +        default:
 +        {
 +            if( p_sys->p_segment && p_sys->p_segment->p_demux )
 +                return demux_vaControl( p_sys->p_segment->p_demux, i_query, args );
-+            
++
 +            return VLC_EGENERIC;
 +        }
 +    }
@@ -900,7 +900,7 @@ index 0000000..8a61d3d
 \ No newline at end of file
 diff --git a/modules/access/vsl/segment.c b/modules/access/vsl/segment.c
 new file mode 100644
-index 0000000..96ab7d3
+index 0000000..1f0e8f5
 --- /dev/null
 +++ b/modules/access/vsl/segment.c
 @@ -0,0 +1,814 @@
@@ -1004,7 +1004,7 @@ index 0000000..96ab7d3
 +    int         i_order;
 +    int64_t     i_duration_milli;
 +    int64_t     i_bytes_per_second;
-+    
++
 +    bool        b_seekable;
 +
 +    char        *psz_url;
@@ -1215,7 +1215,7 @@ index 0000000..96ab7d3
 +
 +static int stream_ReadSeek( stream_t *p_stream, uint64_t i_seek_forward_bytes ) {
 +    int i_skipped = 0;
-+    
++
 +    while( (uint64_t) i_skipped < i_seek_forward_bytes )
 +    {
 +        char buf[4096];
@@ -1227,7 +1227,7 @@ index 0000000..96ab7d3
 +        int i_skip_ret = stream_Read( p_stream, buf, i_to_read );
 +        if( i_skip_ret <= 0 )
 +            return -1;
-+        
++
 +        i_skipped += i_skip_ret;
 +    }
 +
@@ -1317,7 +1317,7 @@ index 0000000..96ab7d3
 +        int i_skip_ret = stream_ReadSeek( p_stream, i_align_diff - i_skipped );
 +        if( i_skip_ret <= 0 )
 +            return -1;
-+        
++
 +        i_skipped += i_skip_ret;
 +    }
 +
@@ -1370,12 +1370,12 @@ index 0000000..96ab7d3
 +            msg_Dbg( p_access, "flvhead: seeked unknown tag %x", (int) p_tag->type);
 +            break;
 +        }
-+    
++
 +        int i_body_len =
 +        ( ( (uint32_t) p_tag->be_body_length[0] ) << 16 ) |
 +        ( ( (uint32_t) p_tag->be_body_length[1] ) << 8 ) |
 +        ( ( (uint32_t) p_tag->be_body_length[2] ) );
-+    
++
 +        const uint8_t *p_previous_tag_size = p_peek + i_scan + sizeof( flv_tag_t ) + i_body_len;
 +        int i_previous_tag_size =
 +        ( ( (uint32_t) p_previous_tag_size[0] ) << 24 ) |
@@ -1513,7 +1513,7 @@ index 0000000..96ab7d3
 +        if( i_seeked < 0 )
 +        {
 +            msg_Err( p_access, "segment: youku: seek: seeked before stream start?" );
-+            goto EXIT_FAIL; 
++            goto EXIT_FAIL;
 +        }
 +        else if( i_seeked > (int64_t) i_pos )
 +        {
@@ -1635,7 +1635,7 @@ index 0000000..96ab7d3
 +        int i_seek_ret = stream_ReadSeek( p_sys->p_stream, i_seek_forward );
 +        if( i_seek_ret <= 0 )
 +            goto EXIT_FAIL;
-+        
++
 +        p_access->info.i_pos += i_seek_ret;
 +        p_access->info.b_eof = ( p_access->info.i_pos >= p_access->info.i_size );
 +        return VLC_SUCCESS;
@@ -1643,7 +1643,7 @@ index 0000000..96ab7d3
 +
 +    /* close previous stream first */
 +    if( p_sys->p_stream )
-+    { 
++    {
 +        stream_Delete( p_sys->p_stream );
 +        p_sys->p_stream = NULL;
 +    }
@@ -1720,7 +1720,7 @@ index 0000000..96ab7d3
 +}
 \ No newline at end of file
 diff --git a/modules/access/vsl/vsl.c b/modules/access/vsl/vsl.c
-index aca9b01..e7efab8 100644
+index aca9b01..58fa855 100644
 --- a/modules/access/vsl/vsl.c
 +++ b/modules/access/vsl/vsl.c
 @@ -1,22 +1,23 @@
@@ -1898,7 +1898,7 @@ index aca9b01..e7efab8 100644
 -    }
 +    assert( p_vsl_cb->p_cb_data );
 +    assert( p_vsl_cb->pfn_get_count );
-+    return p_vsl_cb->pfn_get_count( p_vsl_cb->p_cb_data );    
++    return p_vsl_cb->pfn_get_count( p_vsl_cb->p_cb_data );
 +}
  
 -    /* save index url */
@@ -1932,7 +1932,7 @@ index aca9b01..e7efab8 100644
 +{
 +    assert( p_vsl_cb->p_cb_data );
 +    assert( p_vsl_cb->pfn_get_duration );
-+    return p_vsl_cb->pfn_get_duration( p_vsl_cb->p_cb_data, i_order );    
++    return p_vsl_cb->pfn_get_duration( p_vsl_cb->p_cb_data, i_order );
  }
  
 -libvlc_segment_list_t *vsl_ResolveSegmentList( demux_t *p_demux, vsl_info_t *p_vsl_info )
