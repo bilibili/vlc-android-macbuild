@@ -1,17 +1,17 @@
-From 9608718e0f2494fe1383664b051c15110c6247e0 Mon Sep 17 00:00:00 2001
+From f9cf404a35598b953a5de4d8cc882f9e1a6626d0 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
 Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
 
 ---
- configure.sh |   12 +++++++-----
- 1 个文件被修改，插入 7 行(+)，删除 5 行(-)
+ configure.sh |   14 ++++++++------
+ 1 个文件被修改，插入 8 行(+)，删除 6 行(-)
 
 diff --git a/configure.sh b/configure.sh
-index 241ac59..4e294c2 100755
+index 2383cf7..8175c69 100755
 --- a/configure.sh
 +++ b/configure.sh
-@@ -49,17 +49,19 @@ NM="${CROSS_COMPILE}nm" \
+@@ -49,18 +49,20 @@ NM="${CROSS_COMPILE}nm" \
  STRIP="${CROSS_COMPILE}strip" \
  RANLIB="${CROSS_COMPILE}ranlib" \
  AR="${CROSS_COMPILE}ar" \
@@ -22,6 +22,8 @@ index 241ac59..4e294c2 100755
                  --enable-avformat \
                  --enable-swscale \
                  --enable-avcodec \
+-                --enable-opus \
++                --disable-opus \
                  --enable-opensles \
                  --enable-audiotrack \
                  --enable-android-surface \
@@ -35,7 +37,7 @@ index 241ac59..4e294c2 100755
                  --enable-iomx \
                  --disable-vlc --disable-shared \
                  --disable-vlm \
-@@ -95,7 +97,7 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+@@ -96,7 +98,7 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
                  --disable-skins2 \
                  --disable-mtp \
                  --disable-notify \

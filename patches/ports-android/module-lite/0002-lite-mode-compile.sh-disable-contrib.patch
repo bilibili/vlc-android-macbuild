@@ -1,4 +1,4 @@
-From 8bccdef544224d648126ee1f1f51dc6a1ece3e6e Mon Sep 17 00:00:00 2001
+From d45513878eb88675e8a7d7b9705920335617af92 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
 Subject: [PATCH 2/4] lite-mode: compile.sh: disable contrib
@@ -8,7 +8,7 @@ Subject: [PATCH 2/4] lite-mode: compile.sh: disable contrib
  1 个文件被修改，插入 20 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index 2d7af91..cacb237 100755
+index 6c02091..6c49eb7 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -177,10 +177,29 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
