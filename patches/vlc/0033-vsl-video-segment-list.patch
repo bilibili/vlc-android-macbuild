@@ -1,14 +1,14 @@
-From 2f7b2f0334e433f6a1915ed5a55f26e7ac76cfdb Mon Sep 17 00:00:00 2001
+From abae2807f0c2da0908f83fcd0a513a39ac38b2a8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
 Subject: [PATCH 33/33] vsl: video segment list
 
 ---
  modules/access/vsl/index.c   |  879 ++++++++++++++++++++++++++++++++++++++++++
- modules/access/vsl/segment.c |  814 ++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/segment.c |  815 +++++++++++++++++++++++++++++++++++++++
  modules/access/vsl/vsl.c     |  189 ++++-----
  modules/access/vsl/vsl.h     |   66 ++--
- 4 个文件被修改，插入 1801 行(+)，删除 147 行(-)
+ 4 个文件被修改，插入 1802 行(+)，删除 147 行(-)
  create mode 100644 modules/access/vsl/index.c
  create mode 100644 modules/access/vsl/segment.c
 
@@ -900,10 +900,10 @@ index 0000000..39de4e3
 \ No newline at end of file
 diff --git a/modules/access/vsl/segment.c b/modules/access/vsl/segment.c
 new file mode 100644
-index 0000000..1f0e8f5
+index 0000000..ef9d668
 --- /dev/null
 +++ b/modules/access/vsl/segment.c
-@@ -0,0 +1,814 @@
+@@ -0,0 +1,815 @@
 +/*****************************************************************************
 + * segment.c: video segment list segment access
 + *****************************************************************************
@@ -1131,6 +1131,7 @@ index 0000000..1f0e8f5
 +    {
 +        msg_Dbg( p_access, "segment: vsl seek (sohu) " );
 +        p_sys->pfn_new_seekd_stream = stream_vslNewSeek;
++        p_sys->b_seekable = false;
 +    }
 +    else {
 +        msg_Dbg( p_access, "segment: vsl seek" );

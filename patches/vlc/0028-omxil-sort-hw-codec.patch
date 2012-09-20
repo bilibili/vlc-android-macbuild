@@ -1,4 +1,4 @@
-From 5b79a62a98b35133b25af0f81172446e44adfc00 Mon Sep 17 00:00:00 2001
+From 06a795fd248c5855378b3186b594adf76eb03f50 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
 Subject: [PATCH 28/33] omxil: sort hw codec
