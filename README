@@ -2,9 +2,9 @@
  0. Requirements (AFAIK)
   * MacOS or Linux (tested on CentOS)
   * ADK
-  * NDK-r7c
+  * NDK-r7c ~ r8b
 
-  * MacPorts >= 2.0.1 (for MacOS to upgrade tools)
+  * MacPorts (for MacOS to upgrade tools)
    * sudo port -vd install wget
    * sudo port -vd install xz
    * sudo port -vd install git-core
@@ -13,6 +13,7 @@
    * sudo port -vd install autoconf
    * sudo port -vd install libtool
    * sudo port -vd install pkgconfig
+   * sudo port -vd install yasm
 
   * Install automake 1.11.x (for MacOS)
    # contrib can not be built with automake 1.10 or 1.12
