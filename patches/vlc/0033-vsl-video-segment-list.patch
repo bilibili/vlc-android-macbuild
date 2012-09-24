@@ -1,23 +1,23 @@
-From 6b615b10b734b1549ec92cb9d8ddfd69c37aa94f Mon Sep 17 00:00:00 2001
+From 0186feb1c9649ab78b0b670c965450570bdb0ccc Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
 Subject: [PATCH 33/33] vsl: video segment list
 
 ---
- modules/access/vsl/index.c   |  879 ++++++++++++++++++++++++++++++++++++++++++
- modules/access/vsl/segment.c |  827 +++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/index.c   |  889 ++++++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/segment.c |  867 ++++++++++++++++++++++++++++++++++++++++
  modules/access/vsl/vsl.c     |  189 ++++-----
  modules/access/vsl/vsl.h     |   67 ++--
- 4 个文件被修改，插入 1816 行(+)，删除 146 行(-)
+ 4 个文件被修改，插入 1866 行(+)，删除 146 行(-)
  create mode 100644 modules/access/vsl/index.c
  create mode 100644 modules/access/vsl/segment.c
 
 diff --git a/modules/access/vsl/index.c b/modules/access/vsl/index.c
 new file mode 100644
-index 0000000..63718d4
+index 0000000..bcaf219
 --- /dev/null
 +++ b/modules/access/vsl/index.c
-@@ -0,0 +1,879 @@
+@@ -0,0 +1,889 @@
 +/*****************************************************************************
 + * index.c: video segment list index access
 + *****************************************************************************
@@ -169,8 +169,18 @@ index 0000000..63718d4
 +        goto EXIT_ERROR;
 +
 +    msg_Dbg( p_demux, "Open:vsl_OpenIndex" );
-+    p_sys->p_index = vsl_OpenIndex( p_demux, p_sys );
-+    if( !p_sys->p_index )
++    for( int i = 0; i < 3; ++i )
++    {
++        p_sys->p_index = vsl_OpenIndex( p_demux, p_sys );
++        if( !p_sys->p_index )
++        {
++            msg_Warn( p_demux, "vsl failed to open index, waiting retry" );
++            continue;
++        }
++        
++        break;
++    }
++    if( p_sys->p_index == NULL )
 +    {
 +        msg_Err( p_demux, "vsl failed to open index" );
 +        goto EXIT_ERROR;
@@ -326,7 +336,7 @@ index 0000000..63718d4
 +    int i_count = 0;
 +
 +    msg_Dbg( p_demux, "vsl_cbLoad" );
-+    if( VLC_SUCCESS != vsl_cbLoad( p_cb, true ) )
++    if( VLC_SUCCESS != vsl_cbLoad( p_cb, false ) )
 +    {
 +        msg_Err( p_demux, "vsl_cbLoad: failed" );
 +        goto EXIT_ERROR;
@@ -900,10 +910,10 @@ index 0000000..63718d4
 \ No newline at end of file
 diff --git a/modules/access/vsl/segment.c b/modules/access/vsl/segment.c
 new file mode 100644
-index 0000000..51d1ddc
+index 0000000..f9795c4
 --- /dev/null
 +++ b/modules/access/vsl/segment.c
-@@ -0,0 +1,827 @@
+@@ -0,0 +1,867 @@
 +/*****************************************************************************
 + * segment.c: video segment list segment access
 + *****************************************************************************
@@ -1007,6 +1017,9 @@ index 0000000..51d1ddc
 +
 +    bool        b_seekable;
 +    bool        b_continuous;
++    bool        b_retry_for_broken_stream;  /* sina cdn may broke file */
++    bool        b_require_content_length;   /* to detect broken file */
++    bool        b_reload_index_when_retry;  /* try to get good file */
 +
 +    char        *psz_url;
 +
@@ -1053,66 +1066,15 @@ index 0000000..51d1ddc
 +    p_access->info.i_pos  = 0;
 +    p_access->info.b_eof  = false;
 +
-+    p_sys->i_order = atoi( p_access->psz_location );
-+    if( p_sys->i_order < 0 )
-+    {
-+        msg_Err( p_access, "vsl invalid order %s", p_access->psz_location );
-+        goto EXIT_ERROR;
-+    }
-+
-+    if( VLC_SUCCESS != vsl_cbGetCallbacks( VLC_OBJECT( p_access ), &p_sys->cb ) )
-+        goto EXIT_ERROR;
-+
-+    int i_count = vsl_cbGetCount( &p_sys->cb );
-+    if( p_sys->i_order >= i_count )
-+    {
-+        msg_Err( p_access, "vsl order %d is out of range %d", p_sys->i_order, i_count );
-+        goto EXIT_ERROR;
-+    }
-+
-+    p_sys->psz_url = vsl_cbGetUrl( &p_sys->cb, p_sys->i_order );
-+    if( !p_sys->psz_url || !*p_sys->psz_url )
-+    {
-+        msg_Err( p_access, "vsl empty url for segment %d", p_sys->i_order );
-+        goto EXIT_ERROR;
-+    }
-+    p_sys->i_duration_milli = vsl_cbGetDurationMilli( &p_sys->cb, p_sys->i_order );
-+
-+    p_sys->p_stream = stream_UrlNew( p_access, p_sys->psz_url );
-+    if( !p_sys->p_stream )
-+        goto EXIT_ERROR;
-+
-+    p_access->info.i_size = stream_Size( p_sys->p_stream );
-+    if( p_access->info.i_size <= 0 )
-+    {
-+        msg_Warn( p_access, "segment: stream_Size <= 0, try cbGetBytes" );
-+        p_access->info.i_size = vsl_cbGetBytes( &p_sys->cb, p_sys->i_order );
-+        if( p_access->info.i_size <= 0 )
-+        {
-+            msg_Warn( p_access, "segment: vsl_cbGetBytes <= 0, unknown size" );
-+            goto EXIT_ERROR;
-+        }
-+    }
-+
-+    if( p_sys->i_duration_milli > 0 )
-+    {
-+        p_sys->i_bytes_per_second = p_access->info.i_size / ( p_sys->i_duration_milli / 1000 );
-+    }
-+
-+    /* at least 25KBps ~= 200kbps */
-+    if( p_sys->i_bytes_per_second < 25000 )
-+        p_sys->i_bytes_per_second = 25000;
-+    msg_Info( p_access, "segment: %"PRId64"KB/s = %"PRId64"KB / %"PRId64" sec",
-+              (int64_t)p_sys->i_bytes_per_second / 1000,
-+               p_access->info.i_size / 1000,
-+               p_sys->i_duration_milli / 1000 );
-+
 +    p_sys->b_seekable = true;
 +    p_sys->b_continuous = true;
 +    if( 0 == strcmp( p_access->psz_access, ACCESS_SINA_SEGMENT ) )
 +    {
 +        msg_Dbg( p_access, "segment: sina seek" );
 +        p_sys->pfn_new_seekd_stream = stream_vslNewSinaSeek;
++        /* sina cdn may broke file */
++        p_sys->b_retry_for_broken_stream = true;
++        p_sys->b_require_content_length = true;
 +    }
 +    else if( 0 == strcmp( p_access->psz_access, ACCESS_YOUKU_SEGMENT ) )
 +    {
@@ -1142,6 +1104,94 @@ index 0000000..51d1ddc
 +        msg_Dbg( p_access, "segment: vsl seek" );
 +        p_sys->pfn_new_seekd_stream = stream_vslNewSeek;
 +    }
++
++    p_sys->i_order = atoi( p_access->psz_location );
++    if( p_sys->i_order < 0 )
++    {
++        msg_Err( p_access, "vsl invalid order %s", p_access->psz_location );
++        goto EXIT_ERROR;
++    }
++
++    if( VLC_SUCCESS != vsl_cbGetCallbacks( VLC_OBJECT( p_access ), &p_sys->cb ) )
++        goto EXIT_ERROR;
++
++    int i_count = vsl_cbGetCount( &p_sys->cb );
++    if( p_sys->i_order >= i_count )
++    {
++        msg_Err( p_access, "vsl order %d is out of range %d", p_sys->i_order, i_count );
++        goto EXIT_ERROR;
++    }
++
++    for( int i = 0; i < 3; ++i )
++    {
++        if( i > 0 && p_sys->b_reload_index_when_retry )
++        {
++            msg_Warn( p_access, "retry vsl_cbLoad" );
++            if( VLC_SUCCESS != vsl_cbLoad( &p_sys->cb, true ) )
++            {
++                msg_Err( p_access, "retry vsl_cbLoad: failed" );
++                goto STREAM_OPEN_ERROR;
++            }
++        }
++
++        p_sys->psz_url = vsl_cbGetUrl( &p_sys->cb, p_sys->i_order );
++        if( !p_sys->psz_url || !*p_sys->psz_url )
++        {
++            msg_Err( p_access, "vsl empty url for segment %d", p_sys->i_order );
++            goto EXIT_ERROR;
++        }
++        p_sys->i_duration_milli = vsl_cbGetDurationMilli( &p_sys->cb, p_sys->i_order );
++
++        p_sys->p_stream = stream_UrlNew( p_access, p_sys->psz_url );
++        if( !p_sys->p_stream )
++            goto STREAM_OPEN_ERROR;
++
++        p_access->info.i_size = stream_Size( p_sys->p_stream );
++        if( p_access->info.i_size <= 0 )
++        {
++            if( p_sys->b_require_content_length )
++            {
++                msg_Warn( p_access, "segment: stream_Size <= 0, require content length" );                
++                goto STREAM_OPEN_ERROR;
++            }
++
++            msg_Warn( p_access, "segment: stream_Size <= 0, try cbGetBytes" );
++            p_access->info.i_size = vsl_cbGetBytes( &p_sys->cb, p_sys->i_order );
++            if( p_access->info.i_size <= 0 )
++            {
++                msg_Warn( p_access, "segment: vsl_cbGetBytes <= 0, unknown size" );
++                goto EXIT_ERROR;
++            }
++        } else if( p_sys->b_retry_for_broken_stream ) {
++            if( p_access->info.i_size < 64 * 1000 && p_sys->i_duration_milli > 10 * 1000 )
++            {
++                msg_Err( p_access, "possible 6-min cursor, retry" );
++                goto STREAM_OPEN_ERROR;
++            }
++        }
++
++        /* Succeeded */
++        break;
++STREAM_OPEN_ERROR:
++        if( p_sys->psz_url )
++            VSL_SAFE_FREE( p_sys->psz_url );
++
++        if( p_sys->p_stream )
++            stream_Delete( p_sys->p_stream );
++    }
++
++    if( p_sys->i_duration_milli > 0 )
++    {
++        p_sys->i_bytes_per_second = p_access->info.i_size / ( p_sys->i_duration_milli / 1000 );
++    }
++
++    /* at least 25KBps ~= 200kbps */
++    if( p_sys->i_bytes_per_second < 25000 )
++        p_sys->i_bytes_per_second = 25000;
++    msg_Info( p_access, "segment: %"PRId64"KB/s = %"PRId64"KB / %"PRId64" sec",
++              (int64_t)p_sys->i_bytes_per_second / 1000,
++               p_access->info.i_size / 1000,
++               p_sys->i_duration_milli / 1000 );
 +
 +    if( p_sys->b_continuous )
 +    {
