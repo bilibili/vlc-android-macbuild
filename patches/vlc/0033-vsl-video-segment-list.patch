@@ -1,4 +1,4 @@
-From 352b51c1aff777ad69a6080cd4daddd905709936 Mon Sep 17 00:00:00 2001
+From ab97d9cb5c31ad1f377e6eb949361cacbe783d60 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
 Subject: [PATCH 33/33] vsl: video segment list
@@ -14,7 +14,7 @@ Subject: [PATCH 33/33] vsl: video segment list
 
 diff --git a/modules/access/vsl/index.c b/modules/access/vsl/index.c
 new file mode 100644
-index 0000000..bcaf219
+index 0000000..65ed6a7
 --- /dev/null
 +++ b/modules/access/vsl/index.c
 @@ -0,0 +1,889 @@
@@ -177,7 +177,7 @@ index 0000000..bcaf219
 +            msg_Warn( p_demux, "vsl failed to open index, waiting retry" );
 +            continue;
 +        }
-+        
++
 +        break;
 +    }
 +    if( p_sys->p_index == NULL )
@@ -910,7 +910,7 @@ index 0000000..bcaf219
 \ No newline at end of file
 diff --git a/modules/access/vsl/segment.c b/modules/access/vsl/segment.c
 new file mode 100644
-index 0000000..f9795c4
+index 0000000..2b156d2
 --- /dev/null
 +++ b/modules/access/vsl/segment.c
 @@ -0,0 +1,867 @@
@@ -1151,7 +1151,7 @@ index 0000000..f9795c4
 +        {
 +            if( p_sys->b_require_content_length )
 +            {
-+                msg_Warn( p_access, "segment: stream_Size <= 0, require content length" );                
++                msg_Warn( p_access, "segment: stream_Size <= 0, require content length" );
 +                goto STREAM_OPEN_ERROR;
 +            }
 +
