@@ -33,7 +33,7 @@ git am --abort
 
 echo "======================================="
 echo "Applying the patches"
-sleep 1
+sleep 3
 git am ../patches/*.patch
 
 if [ ${BUILD_PLATFORM} == 'darwin' ]; then
@@ -44,13 +44,13 @@ fi
 
 echo "======================================="
 echo "Applying the patches for libvlc_danmaku"
-sleep 1
+sleep 3
 git am ../../patches/vlc/000*.patch
-sleep 1
+sleep 3
 git am ../../patches/vlc/001*.patch
-sleep 1
+sleep 3
 git am ../../patches/vlc/002*.patch
-sleep 1
+sleep 3
 git am ../../patches/vlc/003*.patch
 
 echo "======================================="
