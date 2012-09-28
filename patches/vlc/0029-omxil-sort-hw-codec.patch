@@ -1,0 +1,133 @@
+From a6cdcdb528efa29782a2b5f0a62368f7b65f411c Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sat, 16 Jun 2012 20:13:48 +0800
+Subject: [PATCH 29/34] omxil: sort hw codec
+
+---
+ modules/codec/omxil/omxil.c |   96 +++++++++++++++++++++++++++++++++++++++++++
+ 1 个文件被修改，插入 96 行(+)
+
+diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
+index d6af7a3..aac9398 100644
+--- a/modules/codec/omxil/omxil.c
++++ b/modules/codec/omxil/omxil.c
+@@ -197,6 +197,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
+ }
+ 
+ /*****************************************************************************
++ * Sort component list: place-holder for choosing from multiple codec share same role
++ *****************************************************************************/
++typedef struct
++{
++    const char  *p_codec_name;
++    int         i_weight;
++} OMX_Codec_Weight;
++
++static const OMX_Codec_Weight g_omx_codec_weight_table[] =
++{
++    /* Tegra2 codec is too slow in vlc implements */
++    { "OMX.Nvidia.h264.decode",    -1 },     /* H264 Main Profile or below */
++    { "OMX.Nvidia.h264ext.decode", -1 },     /* Extended Profile (XP) or above */
++
++    /* 0 for codec not in table */
++
++    /* -1 for codec not working */
++    { "OMX.google.aac.decoder.secure", -1},
++    { "OMX.qcom.audio.decoder.aac", -1},
++    { "OMX.qcom.audio.decoder.multiaac", -1},
++};
++
++static int GetOmxCodecWeight(const char* codec_name)
++{
++    size_t count = sizeof(g_omx_codec_weight_table) / sizeof(OMX_Codec_Weight);
++    for(size_t i = 0; i < count; ++i)
++    {
++        const OMX_Codec_Weight* p_codec = &g_omx_codec_weight_table[i];
++        if(!strcmp(codec_name, p_codec->p_codec_name))
++           return p_codec->i_weight;
++    }
++
++    return 0;
++}
++
++typedef struct
++{
++    char    *p_codec_name;
++    int     i_weight;
++} OMX_Codec_Sort_Entry;
++
++static void SortComponentList(decoder_t *p_dec)
++{
++    decoder_sys_t *p_sys = p_dec->p_sys;
++    int count = p_sys->components;
++    if (p_sys->components > MAX_COMPONENTS_LIST_SIZE)
++        count = MAX_COMPONENTS_LIST_SIZE;
++
++    /* no need to sort */
++    if (count <= 1)
++        return;
++
++    /* weight components */
++    OMX_Codec_Sort_Entry sort_index[MAX_COMPONENTS_LIST_SIZE];
++    bool b_need_sort = false;
++    for (int i = 0; i < count; ++i)
++    {
++        OMX_Codec_Sort_Entry *p_codec = &sort_index[i];
++        p_codec->p_codec_name = p_sys->ppsz_components[i];
++        p_codec->i_weight = GetOmxCodecWeight(p_codec->p_codec_name);
++        if (p_codec->i_weight > 0)
++            b_need_sort = true;
++    }
++
++    if (!b_need_sort)
++        return;
++
++    /* stable sort, greater weight first */
++    for (int i = 0; i < count; ++i)
++    {
++        for (int j = i + 1; j < count; ++j)
++        {
++            OMX_Codec_Sort_Entry *p_left_codec = &sort_index[i];
++            OMX_Codec_Sort_Entry *p_right_codec = &sort_index[j];
++            if (p_left_codec->i_weight < p_right_codec->i_weight)
++            {
++                /* swap content */
++                int temp = p_left_codec->i_weight;
++                p_left_codec->i_weight = p_right_codec->i_weight;
++                p_right_codec->i_weight = temp;
++
++                char temp_buf[OMX_MAX_STRINGNAME_SIZE];
++                strncpy(temp_buf, p_left_codec->p_codec_name, OMX_MAX_STRINGNAME_SIZE - 1);
++                strncpy(p_left_codec->p_codec_name, p_right_codec->p_codec_name, OMX_MAX_STRINGNAME_SIZE - 1);
++                strncpy(p_right_codec->p_codec_name, temp_buf, OMX_MAX_STRINGNAME_SIZE - 1);
++            }
++        }
++    }
++}
++
++/*****************************************************************************
+  * ImplementationSpecificWorkarounds: place-holder for implementation
+  * specific workarounds
+  *****************************************************************************/
+@@ -1100,6 +1191,8 @@ loaded:
+         return VLC_EGENERIC;
+     }
+ 
++    SortComponentList(p_dec);
++
+     /* Try to load and initialise a component */
+     omx_error = OMX_ErrorUndefined;
+     for(i = 0; i < p_sys->components; i++)
+@@ -1119,6 +1212,9 @@ loaded:
+         /* Some nVidia codec with DRM */
+         if (!strncmp(p_sys->ppsz_components[i], "OMX.Nvidia.h264.decode.secure", 29))
+             continue;
++        /* Codec in black list */
++        if (GetOmxCodecWeight( p_sys->ppsz_components[i] ) < 0)
++            continue;
+ #endif
+         omx_error = InitialiseComponent(p_dec, p_sys->ppsz_components[i],
+                                         &p_sys->omx_handle);
+-- 
+1.7.10.4
+

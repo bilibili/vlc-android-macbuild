@@ -1,4 +1,4 @@
-From 932f874238497e3f294bd0501a0630487810fac5 Mon Sep 17 00:00:00 2001
+From c5c39dac503bb3690d1deccd796bbd5649c6986e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 11:30:23 +0800
 Subject: [PATCH 5/8] do not build apk

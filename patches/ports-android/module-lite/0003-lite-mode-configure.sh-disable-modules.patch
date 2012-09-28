@@ -1,22 +1,23 @@
-From 450a36d34813294b6d2f7f787900e607b6a0b0ac Mon Sep 17 00:00:00 2001
+From 351c91325402c846055732e47ec301c482e9a981 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
 Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
 
 ---
- configure.sh |   16 +++++++++-------
- 1 个文件被修改，插入 9 行(+)，删除 7 行(-)
+ configure.sh |   17 ++++++++++-------
+ 1 个文件被修改，插入 10 行(+)，删除 7 行(-)
 
 diff --git a/configure.sh b/configure.sh
-index 2383cf7..538aae0 100755
+index 2383cf7..49121c6 100755
 --- a/configure.sh
 +++ b/configure.sh
-@@ -49,18 +49,20 @@ NM="${CROSS_COMPILE}nm" \
+@@ -49,18 +49,21 @@ NM="${CROSS_COMPILE}nm" \
  STRIP="${CROSS_COMPILE}strip" \
  RANLIB="${CROSS_COMPILE}ranlib" \
  AR="${CROSS_COMPILE}ar" \
 -sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $EXTRA_PARAMS \
 -                --enable-live555 --enable-realrtsp \
++MODULE_LITE=1 \
 +sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-linux $EXTRA_PARAMS \
 +                --disable-live555 --disable-realrtsp \
                  --enable-avformat \
@@ -37,7 +38,7 @@ index 2383cf7..538aae0 100755
                  --enable-iomx \
                  --disable-vlc --disable-shared \
                  --disable-vlm \
-@@ -96,11 +98,11 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+@@ -96,11 +99,11 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
                  --disable-skins2 \
                  --disable-mtp \
                  --disable-notify \

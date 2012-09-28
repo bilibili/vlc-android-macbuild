@@ -1,0 +1,34 @@
+From f99a44b85d867ae4e320e52132807c64f9550d4d Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 8 May 2012 15:20:54 +0800
+Subject: [PATCH 22/34] input: fix video delay after clock gap for youku m3u8
+
+---
+ src/audio_output/input.c |    4 ++--
+ 1 个文件被修改，插入 2 行(+)，删除 2 行(-)
+
+diff --git a/src/audio_output/input.c b/src/audio_output/input.c
+index 1c36e64..57dc8b9 100644
+--- a/src/audio_output/input.c
++++ b/src/audio_output/input.c
+@@ -391,7 +391,7 @@ block_t *aout_InputPlay(audio_output_t *p_aout, aout_input_t *p_input,
+ 
+     mtime_t drift = start_date - p_buffer->i_pts;
+ 
+-    if( drift < -i_input_rate * 3 * AOUT_MAX_PTS_ADVANCE / INPUT_RATE_DEFAULT )
++    if( drift < -i_input_rate * 3 * AOUT_MAX_PTS_ADVANCE * 30 / INPUT_RATE_DEFAULT )
+     {
+         msg_Warn( p_aout, "buffer way too early (%"PRId64"), clearing queue",
+                   drift );
+@@ -405,7 +405,7 @@ block_t *aout_InputPlay(audio_output_t *p_aout, aout_input_t *p_input,
+         drift = 0;
+     }
+     else
+-    if( drift > +i_input_rate * 3 * AOUT_MAX_PTS_DELAY / INPUT_RATE_DEFAULT )
++    if( drift > +i_input_rate * 3 * AOUT_MAX_PTS_DELAY * 30 / INPUT_RATE_DEFAULT )
+     {
+         msg_Warn( p_aout, "buffer way too late (%"PRId64"), dropping buffer",
+                   drift );
+-- 
+1.7.10.4
+

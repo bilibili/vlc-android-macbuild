@@ -1,0 +1,145 @@
+From 93240e669c307d21ddebe847e64e252f7b4ba5cc Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Fri, 28 Sep 2012 17:41:16 +0800
+Subject: [PATCH 01/34] autoreconf: config unused modules
+
+---
+ configure.ac                     |    1 +
+ modules/access/Modules.am        |    2 ++
+ modules/codec/Modules.am         |    7 ++++++-
+ modules/demux/Modules.am         |   13 ++++++++++---
+ modules/stream_filter/Modules.am |    4 ++++
+ 5 个文件被修改，插入 23 行(+)，删除 4 行(-)
+
+diff --git a/configure.ac b/configure.ac
+index 8b4567a..41f31c6 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -274,6 +274,7 @@ AM_CONDITIONAL(HAVE_OS2,     test "${SYS}" = "os2")
+ AM_CONDITIONAL(HAVE_WIN32,   test "${SYS}" = "mingw32")
+ AM_CONDITIONAL(HAVE_WIN64,   test "${HAVE_WIN64}" = "1")
+ AM_CONDITIONAL(HAVE_SYMBIAN, test "${SYS}" = "symbian")
++AM_CONDITIONAL(MODULE_LITE,  test "${MODULE_LITE}" = "1")
+ 
+ dnl
+ dnl Sadly autoconf does not think about testing foo.exe when ask to test
+diff --git a/modules/access/Modules.am b/modules/access/Modules.am
+index 5665477..ebbad03 100644
+--- a/modules/access/Modules.am
++++ b/modules/access/Modules.am
+@@ -128,6 +128,7 @@ libvlc_LTLIBRARIES += libshm_plugin.la
+ endif
+ endif
+ 
++if !MODULE_LITE
+ libv4l2_plugin_la_SOURCES = \
+ 	v4l2/videodev2.h \
+ 	v4l2/v4l2.c \
+@@ -204,6 +205,7 @@ libaccess_bd_plugin_la_SOURCES = bd/bd.c bd/mpls.c bd/mpls.h bd/clpi.c bd/clpi.h
+ libaccess_bd_plugin_la_CFLAGS = $(AM_CFLAGS)
+ libaccess_bd_plugin_la_LIBADD = $(AM_LIBADD)
+ libvlc_LTLIBRARIES += libaccess_bd_plugin.la
++endif
+ 
+ 
+ ### Digital TV ###
+diff --git a/modules/codec/Modules.am b/modules/codec/Modules.am
+index bcda85b..a8aa02e 100644
+--- a/modules/codec/Modules.am
++++ b/modules/codec/Modules.am
+@@ -72,7 +72,6 @@ libvlc_LTLIBRARIES += \
+ 	liblpcm_plugin.la \
+ 	libmpeg_audio_plugin.la \
+ 	librawvideo_plugin.la \
+-	libspudec_plugin.la \
+ 	libsvcdsub_plugin.la \
+ 	libsubsdec_plugin.la \
+ 	libsubsusf_plugin.la \
+@@ -80,6 +79,12 @@ libvlc_LTLIBRARIES += \
+ 	libstl_plugin.la \
+ 	$(NULL)
+ 
++if !MODULE_LITE
++libvlc_LTLIBRARIES += \
++	libspudec_plugin.la \
++	$(NULL)
++endif
++
+ ### FFmpeg/libav ###
+ libavcodec_plugin_la_SOURCES = \
+ 	avcodec/avcommon.h \
+diff --git a/modules/demux/Modules.am b/modules/demux/Modules.am
+index 2b7ee6e..7fec8f7 100644
+--- a/modules/demux/Modules.am
++++ b/modules/demux/Modules.am
+@@ -93,8 +93,10 @@ endif
+ if HAVE_DARWIN
+ libmkv_plugin_la_LDFLAGS += -Wl,-framework,IOKit,-framework,CoreFoundation
+ endif
++if !MODULE_LITE
+ libvlc_LTLIBRARIES += $(LTLIBmkv)
+ EXTRA_LTLIBRARIES += libmkv_plugin.la
++endif
+ 
+ libmp4_plugin_la_SOURCES = mp4/mp4.c mp4/libmp4.c mp4/libmp4.h mp4/id3genres.h
+ libmp4_plugin_la_CFLAGS = $(AM_CFLAGS)
+@@ -142,9 +144,7 @@ endif
+ 
+ libvlc_LTLIBRARIES += \
+ 	libaiff_plugin.la \
+-	libasf_plugin.la \
+ 	libau_plugin.la \
+-	libavi_plugin.la \
+ 	librawaud_plugin.la \
+ 	libdirac_plugin.la \
+ 	libdemux_cdg_plugin.la \
+@@ -158,7 +158,6 @@ libvlc_LTLIBRARIES += \
+ 	libnsc_plugin.la \
+ 	libnsv_plugin.la \
+ 	libnuv_plugin.la \
+-	libplaylist_plugin.la \
+ 	libpva_plugin.la \
+ 	libps_plugin.la \
+ 	librawdv_plugin.la \
+@@ -177,6 +176,14 @@ libvlc_LTLIBRARIES += \
+ 	libdemux_stl_plugin.la \
+ 	$(NULL)
+ 
++if !MODULE_LITE
++libvlc_LTLIBRARIES += \
++	libasf_plugin.la \
++	libavi_plugin.la \
++	libplaylist_plugin.la \
++	$(NULL)
++endif
++
+ BUILT_SOURCES += dummy.cpp
+ 
+ dummy.cpp:
+diff --git a/modules/stream_filter/Modules.am b/modules/stream_filter/Modules.am
+index 805670e..d970b3a 100644
+--- a/modules/stream_filter/Modules.am
++++ b/modules/stream_filter/Modules.am
+@@ -90,7 +90,9 @@ libdash_plugin_la_SOURCES = \
+     dash/Helper.h
+ libdash_plugin_la_CXXFLAGS = $(AM_CFLAGS) -I$(srcdir)/dash
+ libdash_plugin_la_LIBADD = $(AM_LIBADD) $(SOCKET_LIBS)
++if !MODULE_LITE
+ libvlc_LTLIBRARIES += libdash_plugin.la
++endif
+ 
+ libsmooth_plugin_la_SOURCES = \
+     smooth/smooth.c \
+@@ -99,7 +101,9 @@ libsmooth_plugin_la_SOURCES = \
+     smooth/smooth.h
+ 
+ libsmooth_plugin_la_CFLAGS = $(AM_CFLAGS)
++if !MODULE_LITE
+ libvlc_LTLIBRARIES += libsmooth_plugin.la
++endif
+ 
+ libhttplive_plugin_la_SOURCES = httplive.c
+ libhttplive_plugin_la_CFLAGS = $(AM_CFLAGS) $(GCRYPT_CFLAGS)
+-- 
+1.7.10.4
+

@@ -1,0 +1,41 @@
+From e31ba14b6694aea7310ac1e1cbdf9db3103c41df Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 29 May 2012 20:42:41 +0800
+Subject: [PATCH 19/34] httplive: parse EXT-X-MEDIA-SEQUENCE only once
+
+---
+ modules/stream_filter/httplive.c |   11 ++++++++++-
+ 1 个文件被修改，插入 10 行(+)，删除 1 行(-)
+
+diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
+index 3cd610b..18c70f7 100644
+--- a/modules/stream_filter/httplive.c
++++ b/modules/stream_filter/httplive.c
+@@ -1092,6 +1092,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+         assert(hls);
+ 
+         /* */
++        bool media_sequence_loaded = false;
+         int segment_duration = -1;
+         do
+         {
+@@ -1106,7 +1107,15 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+             else if (strncmp(line, "#EXT-X-TARGETDURATION", 21) == 0)
+                 err = parse_TargetDuration(s, hls, line);
+             else if (strncmp(line, "#EXT-X-MEDIA-SEQUENCE", 21) == 0)
+-                err = parse_MediaSequence(s, hls, line);
++            {
++                /* A Playlist file MUST NOT contain more than one EXT-X-MEDIA-SEQUENCE tag. */
++                /* We only care about first one */
++                if (!media_sequence_loaded)
++                {
++                    err = parse_MediaSequence(s, hls, line);
++                    media_sequence_loaded = true;
++                }
++            }
+             else if (strncmp(line, "#EXT-X-KEY", 10) == 0)
+                 err = parse_Key(s, hls, line);
+             else if (strncmp(line, "#EXT-X-PROGRAM-DATE-TIME", 24) == 0)
+-- 
+1.7.10.4
+

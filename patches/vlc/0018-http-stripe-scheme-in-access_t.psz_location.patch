@@ -1,0 +1,43 @@
+From 260b0f868f23b6886b50170266aab2b876395912 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 24 May 2012 16:39:56 +0800
+Subject: [PATCH 18/34] http: stripe scheme in access_t.psz_location
+
+---
+ modules/access/http.c |   13 +++++++++++--
+ 1 个文件被修改，插入 11 行(+)，删除 2 行(-)
+
+diff --git a/modules/access/http.c b/modules/access/http.c
+index f71a4b2..af1c3df 100644
+--- a/modules/access/http.c
++++ b/modules/access/http.c
+@@ -594,7 +594,7 @@ connect:
+ 
+ 
+         /* Do not accept redirection outside of HTTP works */
+-        const char *psz_protocol;
++        const char *psz_protocol = NULL;
+         if( !strncmp( p_sys->psz_location, "http:", 5 ) )
+             psz_protocol = "http";
+         else if( !strncmp( p_sys->psz_location, "https:", 6 ) )
+@@ -605,7 +605,16 @@ connect:
+             goto error;
+         }
+         free( p_access->psz_location );
+-        p_access->psz_location = strdup( p_sys->psz_location );
++        p_access->psz_location = NULL;
++
++        /* For access_t, scheme in URL should be stripped. */
++        const char *psz_stripe_schema = strstr( p_sys->psz_location, "://" );
++        if( psz_stripe_schema )
++            p_access->psz_location = strdup( psz_stripe_schema + 3 );
++
++        if( p_access->psz_location == NULL )
++            p_access->psz_location = strdup( p_sys->psz_location );
++
+         /* Clean up current Open() run */
+         vlc_UrlClean( &p_sys->url );
+         http_auth_Reset( &p_sys->auth );
+-- 
+1.7.10.4
+

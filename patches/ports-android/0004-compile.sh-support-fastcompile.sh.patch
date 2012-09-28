@@ -1,4 +1,4 @@
-From c477f51c0caf7541a3318740014d3df1f168c6aa Mon Sep 17 00:00:00 2001
+From fdb98a02cf8b8865ed4ae7c72ce969645265f08d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
 Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
@@ -10,7 +10,7 @@ Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index 7c44d26..6c02091 100755
+index 493afd3..cb54d57 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -90,6 +90,7 @@ CHOST=${ANDROID_BIN}/${TARGET_TUPLE}
@@ -18,7 +18,7 @@ index 7c44d26..6c02091 100755
  
  # 1/ libvlc, libvlccore and its plugins
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
- TESTED_HASH=eeaa3b9ef3
+ TESTED_HASH=fe6e7e3
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
 @@ -126,6 +127,9 @@ EOF

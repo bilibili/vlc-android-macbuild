@@ -1,4 +1,4 @@
-From fbaa15424a43f82e3b98f9068c8bde6a72d9e2e8 Mon Sep 17 00:00:00 2001
+From c914664a4ae1d5c22d5ef49c0142c6e8ec19a11b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 10 Jul 2012 19:41:13 +0800
 Subject: [PATCH 8/8] libvlcjni: another libvlc wrapper
