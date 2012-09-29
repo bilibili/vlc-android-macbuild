@@ -1,4 +1,4 @@
-From ec381e2bdfaef42234f50e30aacac0a2b716cdf3 Mon Sep 17 00:00:00 2001
+From d393810285ba975f1a987e8acda2588f26b454a8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 11:20:15 +0800
 Subject: [PATCH 03/34] core: tcp: recalculate timeout for EINTR

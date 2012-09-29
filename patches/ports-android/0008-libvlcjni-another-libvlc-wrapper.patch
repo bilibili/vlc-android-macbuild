@@ -1,4 +1,4 @@
-From c914664a4ae1d5c22d5ef49c0142c6e8ec19a11b Mon Sep 17 00:00:00 2001
+From 0c06430192c79ad84a1470392f68a902f3932f00 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 10 Jul 2012 19:41:13 +0800
 Subject: [PATCH 8/8] libvlcjni: another libvlc wrapper
@@ -13,11 +13,11 @@ Subject: [PATCH 8/8] libvlcjni: another libvlc wrapper
  vlc-android/jni/jni_libvlcevent.h                  |   32 +
  vlc-android/jni/jni_vsl.c                          |  263 +++++
  vlc-android/jni/jni_vsl.h                          |   36 +
- vlc-android/jni/libvlcjni_danmaku.c                | 1173 ++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c                | 1174 ++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |   65 ++
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |   61 +
  .../jni/libvlcjni_danmaku_readMediaEx.inc.c        |  108 ++
- 13 个文件被修改，插入 2089 行(+)，删除 2 行(-)
+ 13 个文件被修改，插入 2090 行(+)，删除 2 行(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.h
@@ -787,10 +787,10 @@ index 0000000..256b0ed
 +#endif // JNI_VSL_H
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..277daef
+index 0000000..4e17fc5
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,1173 @@
+@@ -0,0 +1,1174 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -1028,7 +1028,8 @@ index 0000000..277daef
 +    pthread_mutex_unlock(&vout_android_lock);
 +}
 +
-+void jni_SetAndroidSurfaceSize(int width, int height)
++/* TODO: send sar_num and sar_den to java side */
++void jni_SetAndroidSurfaceSize(int width, int height, int sar_num, int sar_den)
 +{
 +    if (vout_android_gui == NULL)
 +        return;

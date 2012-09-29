@@ -1,4 +1,4 @@
-From 93240e669c307d21ddebe847e64e252f7b4ba5cc Mon Sep 17 00:00:00 2001
+From 64b6973c4d2eed2ba4ddfea3110718445429df66 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 28 Sep 2012 17:41:16 +0800
 Subject: [PATCH 01/34] autoreconf: config unused modules
@@ -12,7 +12,7 @@ Subject: [PATCH 01/34] autoreconf: config unused modules
  5 个文件被修改，插入 23 行(+)，删除 4 行(-)
 
 diff --git a/configure.ac b/configure.ac
-index 8b4567a..41f31c6 100644
+index 10b0579..2b1c796 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -274,6 +274,7 @@ AM_CONDITIONAL(HAVE_OS2,     test "${SYS}" = "os2")
@@ -44,10 +44,10 @@ index 5665477..ebbad03 100644
  
  ### Digital TV ###
 diff --git a/modules/codec/Modules.am b/modules/codec/Modules.am
-index bcda85b..a8aa02e 100644
+index 7947def..fe604f6 100644
 --- a/modules/codec/Modules.am
 +++ b/modules/codec/Modules.am
-@@ -72,7 +72,6 @@ libvlc_LTLIBRARIES += \
+@@ -71,7 +71,6 @@ libvlc_LTLIBRARIES += \
  	liblpcm_plugin.la \
  	libmpeg_audio_plugin.la \
  	librawvideo_plugin.la \
@@ -55,9 +55,9 @@ index bcda85b..a8aa02e 100644
  	libsvcdsub_plugin.la \
  	libsubsdec_plugin.la \
  	libsubsusf_plugin.la \
-@@ -80,6 +79,12 @@ libvlc_LTLIBRARIES += \
- 	libstl_plugin.la \
- 	$(NULL)
+@@ -84,6 +83,12 @@ libvlc_LTLIBRARIES += \
+ 	libedummy_plugin.la
+ endif
  
 +if !MODULE_LITE
 +libvlc_LTLIBRARIES += \

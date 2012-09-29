@@ -1,4 +1,4 @@
-From 94d67ecde70de7111e71876bedde346eade9a581 Mon Sep 17 00:00:00 2001
+From c086f4e0fc06f120082f9e64f318ba8b001a1a72 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 15:02:07 +0800
 Subject: [PATCH 26/34] avcodec: fix broken picture

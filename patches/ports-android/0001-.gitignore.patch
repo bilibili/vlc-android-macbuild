@@ -1,4 +1,4 @@
-From 89a824ec52d7f22611d30c70f2f121ace9a0a1e5 Mon Sep 17 00:00:00 2001
+From abd85fc21c6581b0fa5ab92723eeb5148c0dab2f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 14 Jul 2012 15:15:42 +0800
 Subject: [PATCH 1/8] .gitignore
@@ -8,14 +8,14 @@ Subject: [PATCH 1/8] .gitignore
  1 个文件被修改，插入 1 行(+)
 
 diff --git a/.gitignore b/.gitignore
-index b5ae6d4..b4cd6de 100644
+index 5883b76..28e02b9 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -1,5 +1,6 @@
  /vlc/
  /android-libs/*.so
 +/patches/100*.patch
- vlc-android/local.properties
+ local.properties
  .DS_Store
  *.keystore
 -- 
