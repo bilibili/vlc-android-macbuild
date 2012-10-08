@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="tv.danmaku.utility" >
+
+    <uses-sdk
+        android:minSdkVersion="7"
+        android:targetSdkVersion="10" />
+
+</manifest>
