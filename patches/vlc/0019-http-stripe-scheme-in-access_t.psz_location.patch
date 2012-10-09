@@ -1,17 +1,17 @@
-From e310ef4e8af20b83dfaa19dca4341cb457209dbe Mon Sep 17 00:00:00 2001
+From aeb1164fbc1ec4061af24379a50223ef0d2feb00 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 24 May 2012 16:39:56 +0800
-Subject: [PATCH 18/34] http: stripe scheme in access_t.psz_location
+Subject: [PATCH 19/35] http: stripe scheme in access_t.psz_location
 
 ---
  modules/access/http.c |   13 +++++++++++--
  1 个文件被修改，插入 11 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index f71a4b2..af1c3df 100644
+index 5fb9153..1403178 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
-@@ -594,7 +594,7 @@ connect:
+@@ -595,7 +595,7 @@ connect:
  
  
          /* Do not accept redirection outside of HTTP works */
@@ -20,7 +20,7 @@ index f71a4b2..af1c3df 100644
          if( !strncmp( p_sys->psz_location, "http:", 5 ) )
              psz_protocol = "http";
          else if( !strncmp( p_sys->psz_location, "https:", 6 ) )
-@@ -605,7 +605,16 @@ connect:
+@@ -606,7 +606,16 @@ connect:
              goto error;
          }
          free( p_access->psz_location );

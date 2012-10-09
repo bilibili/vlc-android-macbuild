@@ -1,17 +1,17 @@
-From 13544d4658c4c78a5f5efdcdc3092540dd735000 Mon Sep 17 00:00:00 2001
+From fca7e8c8ccc5edd90604a8eef7826fd90545ac29 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
-Subject: [PATCH 13/34] http: add http option to disable range header
+Subject: [PATCH 14/35] http: add http option to disable range header
 
 ---
  modules/access/http.c |   49 +++++++++++++++++++++++++++++++++++++++++++++++--
  1 个文件被修改，插入 47 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index f9a3dff..f71a4b2 100644
+index 12d1d20..5fb9153 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
-@@ -102,6 +102,10 @@ static void Close( vlc_object_t * );
+@@ -103,6 +103,10 @@ static void Close( vlc_object_t * );
      "slash, e.g. FooBar/1.2.3. This option can only be specified per input " \
      "item, not globally.")
  
@@ -22,7 +22,7 @@ index f9a3dff..f71a4b2 100644
  vlc_module_begin ()
      set_description( N_("HTTP input") )
      set_capability( "access", 0 )
-@@ -126,6 +130,12 @@ vlc_module_begin ()
+@@ -127,6 +131,12 @@ vlc_module_begin ()
          change_safe()
      add_bool( "http-forward-cookies", true, FORWARD_COOKIES_TEXT,
                FORWARD_COOKIES_LONGTEXT, true )
@@ -35,7 +35,7 @@ index f9a3dff..f71a4b2 100644
      /* 'itpc' = iTunes Podcast */
      add_shortcut( "http", "https", "unsv", "itpc", "icyx" )
      set_callbacks( Open, Close )
-@@ -148,6 +158,8 @@ struct access_sys_t
+@@ -149,6 +159,8 @@ struct access_sys_t
      char    *psz_referrer;
      http_auth_t auth;
  
@@ -44,7 +44,7 @@ index f9a3dff..f71a4b2 100644
      /* Proxy */
      bool b_proxy;
      vlc_url_t  proxy;
-@@ -361,6 +373,13 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
+@@ -362,6 +374,13 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
          }
      }
  
@@ -58,7 +58,7 @@ index f9a3dff..f71a4b2 100644
      /* HTTP referrer */
      p_sys->psz_referrer = var_InheritString( p_access, "http-referrer" );
  
-@@ -1274,8 +1293,34 @@ static int Request( access_t *p_access, uint64_t i_tell )
+@@ -1275,8 +1294,34 @@ static int Request( access_t *p_access, uint64_t i_tell )
      if( p_sys->i_version == 1 && ! p_sys->b_continuous )
      {
          p_sys->b_persist = true;

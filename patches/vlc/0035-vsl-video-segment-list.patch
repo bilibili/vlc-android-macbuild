@@ -1,15 +1,15 @@
-From a43b3f3c8b5feed18e63cd88ae8331602e2a862b Mon Sep 17 00:00:00 2001
+From ca0725ca450d570b9fb27b27ca305f911edfdc9b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
-Subject: [PATCH 34/34] vsl: video segment list
+Subject: [PATCH 35/35] vsl: video segment list
 
 ---
  modules/access/vsl/index.c     |  889 ++++++++++++++++++++++++++++++++++++++++
- modules/access/vsl/segment.c   |  868 +++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/segment.c   |  880 +++++++++++++++++++++++++++++++++++++++
  modules/access/vsl/vsl.c       |  189 ++++-----
  modules/access/vsl/vsl.h       |   70 ++--
  modules/stream_filter/membuf.c |  165 +++++---
- 5 个文件被修改，插入 1983 行(+)，删除 198 行(-)
+ 5 个文件被修改，插入 1995 行(+)，删除 198 行(-)
  create mode 100644 modules/access/vsl/index.c
  create mode 100644 modules/access/vsl/segment.c
 
@@ -911,10 +911,10 @@ index 0000000..65ed6a7
 \ No newline at end of file
 diff --git a/modules/access/vsl/segment.c b/modules/access/vsl/segment.c
 new file mode 100644
-index 0000000..ea2ca3a
+index 0000000..ae5b9f6
 --- /dev/null
 +++ b/modules/access/vsl/segment.c
-@@ -0,0 +1,868 @@
+@@ -0,0 +1,880 @@
 +/*****************************************************************************
 + * segment.c: video segment list segment access
 + *****************************************************************************
@@ -1069,6 +1069,7 @@ index 0000000..ea2ca3a
 +
 +    p_sys->b_seekable = true;
 +    p_sys->b_continuous = true;
++    p_sys->pfn_new_seekd_stream = NULL;
 +    if( 0 == strcmp( p_access->psz_access, ACCESS_SINA_SEGMENT ) )
 +    {
 +        msg_Dbg( p_access, "segment: sina seek" );
@@ -1092,19 +1093,17 @@ index 0000000..ea2ca3a
 +    else if( 0 == strcmp( p_access->psz_access, ACCESS_SOHU_SEGMENT ) )
 +    {
 +        msg_Dbg( p_access, "segment: vsl seek (sohu) " );
-+        p_sys->pfn_new_seekd_stream = stream_vslNewSeek;
-+        p_sys->b_seekable = true;
 +        p_sys->b_continuous = false;
 +    }
 +    else if( 0 == strcmp( p_access->psz_access, ACCESS_LETV_SEGMENT ) )
 +    {
 +        msg_Dbg( p_access, "segment: vsl seek (letv) " );
-+        p_sys->pfn_new_seekd_stream = stream_vslNewSeek;
 +        p_sys->b_continuous = false;
 +    }
-+    else {
++    else
++    {
 +        msg_Dbg( p_access, "segment: vsl seek" );
-+        p_sys->pfn_new_seekd_stream = stream_vslNewSeek;
++        p_sys->b_continuous = false;
 +    }
 +
 +    p_sys->i_order = atoi( p_access->psz_location );
@@ -1645,7 +1644,7 @@ index 0000000..ea2ca3a
 +{
 +    access_sys_t *p_sys = p_access->p_sys;
 +
-+    msg_Info( p_access, "segment: vsk: seek to %"PRId64, i_pos );
++    msg_Info( p_access, "segment: vsl: seek to %"PRId64, i_pos );
 +    stream_t *p_stream = stream_UrlNew( p_access, p_sys->psz_url);
 +    if( !p_stream )
 +    {
@@ -1654,7 +1653,7 @@ index 0000000..ea2ca3a
 +    }
 +
 +    int i_ret = stream_Seek( p_stream, i_pos );
-+    if( i_ret < 0 )
++    if( i_ret != VLC_SUCCESS )
 +    {
 +        msg_Err( p_access, "segment: failed to seek" );
 +        goto EXIT_FAIL;
@@ -1706,22 +1705,35 @@ index 0000000..ea2ca3a
 +        return VLC_SUCCESS;
 +    }
 +
-+    /* close previous stream first */
-+    if( p_sys->p_stream )
++    if( p_sys->pfn_new_seekd_stream )
 +    {
-+        stream_Delete( p_sys->p_stream );
-+        p_sys->p_stream = NULL;
-+    }
++        /* close previous stream first */
++        if( p_sys->p_stream )
++        {
++            stream_Delete( p_sys->p_stream );
++            p_sys->p_stream = NULL;
++        }
 +
-+    /* */
-+    p_stream = p_sys->pfn_new_seekd_stream( p_access, i_pos );
-+    if( !p_stream )
++        /* */
++        p_stream = p_sys->pfn_new_seekd_stream( p_access, i_pos );
++        if( !p_stream )
++        {
++            msg_Err( p_access, "segment: failed to open seeked stream %s", p_sys->psz_url );
++            goto EXIT_FAIL;
++        }
++
++        p_sys->p_stream = p_stream;
++    }
++    else
 +    {
-+        msg_Err( p_access, "segment: failed to open seeked stream %s", p_sys->psz_url );
-+        goto EXIT_FAIL;
++        /* direct seek */
++        int i_ret = stream_Seek( p_sys->p_stream, i_pos );
++        if( i_ret != VLC_SUCCESS )
++        {
++            msg_Err( p_access, "segment: failed to seek" );
++            goto EXIT_FAIL;
++        }
 +    }
-+
-+    p_sys->p_stream = p_stream;
 +
 +    p_access->info.i_pos = i_pos;
 +    p_access->info.b_eof = ( i_pos >= p_access->info.i_size );

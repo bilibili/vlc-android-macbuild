@@ -1,7 +1,7 @@
-From 64b6973c4d2eed2ba4ddfea3110718445429df66 Mon Sep 17 00:00:00 2001
+From 596ea18f6e29d40b2bc08df860c734ed31d38613 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 28 Sep 2012 17:41:16 +0800
-Subject: [PATCH 01/34] autoreconf: config unused modules
+Subject: [PATCH 01/35] autoreconf: config unused modules
 
 ---
  configure.ac                     |    1 +

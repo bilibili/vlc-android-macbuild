@@ -1,0 +1,50 @@
+From cdf3ea68b54be5f74317191c5f127744961bb603 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 9 Oct 2012 17:53:52 +0800
+Subject: [PATCH 13/35] http: trim trailing space in filed contents
+
+---
+ modules/access/http.c |   13 +++++++++++--
+ 1 个文件被修改，插入 11 行(+)，删除 2 行(-)
+
+diff --git a/modules/access/http.c b/modules/access/http.c
+index f9a3dff..12d1d20 100644
+--- a/modules/access/http.c
++++ b/modules/access/http.c
+@@ -54,6 +54,7 @@
+ 
+ #include <assert.h>
+ #include <limits.h>
++#include <ctype.h>
+ 
+ #ifdef HAVE_LIBPROXY
+ #    include <proxy.h>
+@@ -1374,7 +1375,8 @@ static int Request( access_t *p_access, uint64_t i_tell )
+     for( ;; )
+     {
+         char *psz = net_Gets( p_access, p_sys->fd, pvs );
+-        char *p;
++        char *p = NULL;
++        char *p_trailing = NULL;
+ 
+         if( psz == NULL )
+         {
+@@ -1402,7 +1404,14 @@ static int Request( access_t *p_access, uint64_t i_tell )
+             goto error;
+         }
+         *p++ = '\0';
+-        while( *p == ' ' ) p++;
++        while( isspace( *p ) ) p++;
++
++        /* trim trailing white space */
++        p_trailing = p;
++        while( !isspace( *p_trailing ) && *p_trailing != '\0' )
++            p_trailing++;
++
++        *p_trailing = '\0';
+ 
+         if( !strcasecmp( psz, "Content-Length" ) )
+         {
+-- 
+1.7.10.4
+
