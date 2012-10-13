@@ -1,47 +1,37 @@
-From ed8dd70994304129437a7d99b7a2ca12b97051c2 Mon Sep 17 00:00:00 2001
+From 24bbfc6409057e242c89e9294e42b6ac8b8a1107 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 9 Oct 2012 17:53:52 +0800
 Subject: [PATCH 13/32] http: trim trailing space in field contents
 
 ---
- modules/access/http.c |   18 ++++++++++++++++--
- 1 个文件被修改，插入 16 行(+)，删除 2 行(-)
+ modules/access/http.c |   15 ++++++++++++++-
+ 1 个文件被修改，插入 14 行(+)，删除 1 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index cd388cc..05e86bc 100644
+index cd388cc..fb5319f 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
-@@ -54,6 +54,7 @@
- 
- #include <assert.h>
- #include <limits.h>
-+#include <ctype.h>
- 
- #ifdef HAVE_LIBPROXY
- #    include <proxy.h>
-@@ -1380,7 +1381,8 @@ static int Request( access_t *p_access, uint64_t i_tell )
-     for( ;; )
+@@ -1381,6 +1381,7 @@ static int Request( access_t *p_access, uint64_t i_tell )
      {
          char *psz = net_Gets( p_access, p_sys->fd, pvs );
--        char *p;
-+        char *p = NULL;
-+        char *p_trailing = NULL;
+         char *p;
++        char *p_trailing;
  
          if( psz == NULL )
          {
-@@ -1408,7 +1410,19 @@ static int Request( access_t *p_access, uint64_t i_tell )
+@@ -1408,7 +1409,19 @@ static int Request( access_t *p_access, uint64_t i_tell )
              goto error;
          }
          *p++ = '\0';
 -        while( *p == ' ' ) p++;
-+        while( isspace( *p ) ) p++;
++        p += strspn( p, " \t" );
 +
 +        /* trim trailing white space */
 +        p_trailing = p + strlen( p );
 +        if( p_trailing > p )
 +        {
 +            p_trailing--;
-+            while( isspace( *p_trailing ) && p_trailing > p )
++            while( ( *p_trailing == ' ' || *p_trailing == '\t' ) && p_trailing > p )
 +            {
 +                *p_trailing = '\0';
 +                p_trailing--;

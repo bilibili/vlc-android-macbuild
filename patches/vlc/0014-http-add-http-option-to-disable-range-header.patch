@@ -1,4 +1,4 @@
-From 1729a473a9e11e45951d880c6f4b31807250e913 Mon Sep 17 00:00:00 2001
+From 8dad194a7fb3177cd80abe6d44c6bf172ceb2c39 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
 Subject: [PATCH 14/32] http: add http option to disable range header
@@ -8,10 +8,10 @@ Subject: [PATCH 14/32] http: add http option to disable range header
  1 个文件被修改，插入 47 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index 05e86bc..2eb00e1 100644
+index fb5319f..5bb389a 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
-@@ -103,6 +103,10 @@ static void Close( vlc_object_t * );
+@@ -102,6 +102,10 @@ static void Close( vlc_object_t * );
      "slash, e.g. FooBar/1.2.3. This option can only be specified per input " \
      "item, not globally.")
  
@@ -22,7 +22,7 @@ index 05e86bc..2eb00e1 100644
  vlc_module_begin ()
      set_description( N_("HTTP input") )
      set_capability( "access", 0 )
-@@ -127,6 +131,12 @@ vlc_module_begin ()
+@@ -126,6 +130,12 @@ vlc_module_begin ()
          change_safe()
      add_bool( "http-forward-cookies", true, FORWARD_COOKIES_TEXT,
                FORWARD_COOKIES_LONGTEXT, true )
@@ -35,7 +35,7 @@ index 05e86bc..2eb00e1 100644
      /* 'itpc' = iTunes Podcast */
      add_shortcut( "http", "https", "unsv", "itpc", "icyx" )
      set_callbacks( Open, Close )
-@@ -150,6 +160,8 @@ struct access_sys_t
+@@ -149,6 +159,8 @@ struct access_sys_t
      char    *psz_referrer;
      http_auth_t auth;
  
@@ -44,7 +44,7 @@ index 05e86bc..2eb00e1 100644
      /* Proxy */
      bool b_proxy;
      vlc_url_t  proxy;
-@@ -363,6 +375,13 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
+@@ -362,6 +374,13 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
          }
      }
  
@@ -58,7 +58,7 @@ index 05e86bc..2eb00e1 100644
      /* HTTP referrer */
      p_sys->psz_referrer = var_InheritString( p_access, "http-referrer" );
  
-@@ -1281,8 +1300,34 @@ static int Request( access_t *p_access, uint64_t i_tell )
+@@ -1280,8 +1299,34 @@ static int Request( access_t *p_access, uint64_t i_tell )
      if( p_sys->i_version == 1 && ! p_sys->b_continuous )
      {
          p_sys->b_persist = true;
