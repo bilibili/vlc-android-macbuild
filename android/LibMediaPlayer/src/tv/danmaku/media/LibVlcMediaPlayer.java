@@ -41,6 +41,9 @@ public class LibVlcMediaPlayer extends AbsMediaPlayer implements
     public static final String[] sAout_OpenSLES = new String[] { ":aout=opensles" };
 
     // HW/SW
+    public static final String[] sCodec_MediaCodec_Iomx = new String[] {
+            ":codec=mediacodec,iomx,all", ":file-caching=1500",
+            ":network-caching=1500" };
     public static final String[] sCodec_Iomx = new String[] {
             ":codec=iomx,all", ":file-caching=1500", ":network-caching=1500" };
     public static final String[] sCodec_All = new String[] { ":codec=all",

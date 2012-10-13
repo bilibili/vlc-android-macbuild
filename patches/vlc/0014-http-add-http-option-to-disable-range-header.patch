@@ -1,14 +1,14 @@
-From fca7e8c8ccc5edd90604a8eef7826fd90545ac29 Mon Sep 17 00:00:00 2001
+From 3be46f7efd314a567330c68a9c1e04b7dc6f77fd Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
-Subject: [PATCH 14/35] http: add http option to disable range header
+Subject: [PATCH 14/32] http: add http option to disable range header
 
 ---
  modules/access/http.c |   49 +++++++++++++++++++++++++++++++++++++++++++++++--
  1 个文件被修改，插入 47 行(+)，删除 2 行(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index 12d1d20..5fb9153 100644
+index d072861..47135d5 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
 @@ -103,6 +103,10 @@ static void Close( vlc_object_t * );
@@ -35,7 +35,7 @@ index 12d1d20..5fb9153 100644
      /* 'itpc' = iTunes Podcast */
      add_shortcut( "http", "https", "unsv", "itpc", "icyx" )
      set_callbacks( Open, Close )
-@@ -149,6 +159,8 @@ struct access_sys_t
+@@ -150,6 +160,8 @@ struct access_sys_t
      char    *psz_referrer;
      http_auth_t auth;
  
@@ -44,7 +44,7 @@ index 12d1d20..5fb9153 100644
      /* Proxy */
      bool b_proxy;
      vlc_url_t  proxy;
-@@ -362,6 +374,13 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
+@@ -363,6 +375,13 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
          }
      }
  
@@ -58,7 +58,7 @@ index 12d1d20..5fb9153 100644
      /* HTTP referrer */
      p_sys->psz_referrer = var_InheritString( p_access, "http-referrer" );
  
-@@ -1275,8 +1294,34 @@ static int Request( access_t *p_access, uint64_t i_tell )
+@@ -1281,8 +1300,34 @@ static int Request( access_t *p_access, uint64_t i_tell )
      if( p_sys->i_version == 1 && ! p_sys->b_continuous )
      {
          p_sys->b_persist = true;

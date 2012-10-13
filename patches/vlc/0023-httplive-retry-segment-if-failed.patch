@@ -1,14 +1,14 @@
-From 07e56c69bde2ae7b1c012a415555d00e2add23ad Mon Sep 17 00:00:00 2001
+From affdb4b660a02f06fe2a57f3ae79974c392d947b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 29 Jul 2012 16:44:03 +0800
-Subject: [PATCH 26/35] httplive: retry segment if failed
+Subject: [PATCH 23/32] httplive: retry segment if failed
 
 ---
  modules/stream_filter/httplive.c |    9 ++++++++-
  1 个文件被修改，插入 8 行(+)，删除 1 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 3d60378..ca96726 100644
+index d485b31..ea9d908 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1825,7 +1825,14 @@ static int hls_Download(stream_t *s, segment_t *segment)

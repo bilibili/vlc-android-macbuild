@@ -1,23 +1,23 @@
-From 7b18f889cb698b2bab3d7c4d7b6ea6522cdc9941 Mon Sep 17 00:00:00 2001
+From 2d02d3e5db9fa61e07ef241b4d771b4a01933c61 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
-Subject: [PATCH 1001/1002] lite-mode: ffmpeg: disable modules
+Subject: [PATCH] lite-mode: ffmpeg: disable modules
 
 ---
- contrib/src/ffmpeg/rules.mak |   38 +++++++++++++++++++++++++++++++++++---
- 1 个文件被修改，插入 35 行(+)，删除 3 行(-)
+ contrib/src/ffmpeg/rules.mak |   39 ++++++++++++++++++++++++++++++++++++---
+ 1 个文件被修改，插入 36 行(+)，删除 3 行(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 15aabaf..da4524b 100644
+index 8ec49f2..0db5116 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -6,10 +6,42 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=HEAD;sf=tgz
+@@ -6,9 +6,42 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=HEAD;sf=tgz
  FFMPEGCONF = \
  	--cc="$(CC)" \
  	--disable-doc \
 +	--disable-network \
 +	--disable-protocols \
- 	--disable-decoder=libvpx \
++	--disable-decoder=libvpx \
  	--disable-decoder=bink \
 -	--enable-libgsm \
 -	--enable-libopenjpeg \
@@ -56,7 +56,7 @@ index 15aabaf..da4524b 100644
  	--disable-debug \
  	--disable-avdevice \
  	--disable-devices \
-@@ -20,7 +52,7 @@ FFMPEGCONF = \
+@@ -21,7 +54,7 @@ FFMPEGCONF = \
  #	--disable-ffserver \
  #	--disable-ffplay \
  #	--disable-ffprobe

@@ -1,7 +1,7 @@
-From d488f6bf664e821ef52e7cfca3e19d63027d3f92 Mon Sep 17 00:00:00 2001
+From e5e422fb580956efa7d1048804f5aba9c606820e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 13 Jun 2012 18:07:26 +0800
-Subject: [PATCH 24/35] httplive: add close flag and condition
+Subject: [PATCH 21/32] httplive: add close flag and condition
 
 hls_Reload() thread now wait for close condition instead of just sleeping,
 which make Close() return faster.
@@ -10,7 +10,7 @@ which make Close() return faster.
  1 个文件被修改，插入 26 行(+)，删除 6 行(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 1db2d2b..9ae9bda 100644
+index 2254265..1957204 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -143,6 +143,10 @@ struct stream_sys_t

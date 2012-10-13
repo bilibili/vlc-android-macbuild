@@ -1,4 +1,4 @@
-From cf627345b46af1aa3a1321f319aa4017c203085c Mon Sep 17 00:00:00 2001
+From c2547b9a4de0ba5a50fbb399f37be1c14adc7ea8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
 Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
@@ -10,18 +10,18 @@ Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index fccee37..bcd61ff 100755
+index 2721901..b786153 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -90,6 +90,7 @@ CHOST=${ANDROID_BIN}/${TARGET_TUPLE}
+@@ -84,6 +84,7 @@ CHOST=${ANDROID_BIN}/${TARGET_TUPLE}
  export PATH=${ANDROID_BIN}:${PATH}
  
  # 1/ libvlc, libvlccore and its plugins
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
- TESTED_HASH=45adae3485
+ TESTED_HASH=b389b4f1e
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
-@@ -126,6 +127,9 @@ EOF
+@@ -120,6 +121,9 @@ EOF
          exit 1
      fi
  fi
@@ -30,8 +30,8 @@ index fccee37..bcd61ff 100755
 +fi
  
  if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
-     if test -z "${NO_NEON}" ; then
-@@ -158,6 +162,7 @@ EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++${CX
+     EXTRA_CFLAGS="-mfpu=vfpv3-d16 -mcpu=cortex-a8"
+@@ -147,6 +151,7 @@ EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++${CX
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
@@ -39,7 +39,7 @@ index fccee37..bcd61ff 100755
  ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout --enable-small \
      --disable-sdl \
      --disable-SDL_image \
-@@ -176,6 +181,7 @@ cd contrib/android
+@@ -165,6 +170,7 @@ cd contrib/android
      --disable-faad2 \
      --disable-harfbuzz \
      --enable-iconv
@@ -47,8 +47,8 @@ index fccee37..bcd61ff 100755
  
  # TODO: mpeg2, theora
  
-@@ -192,10 +198,13 @@ else
-     OPTS="--enable-debug"
+@@ -187,10 +193,13 @@ then
+ MAKEFLAGS=-j`nproc`
  fi
  
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
@@ -61,10 +61,10 @@ index fccee37..bcd61ff 100755
  if  test -d "../../../../tarballs" ; then
      echo "fetch local tarballs"
      mkdir -p ../tarballs
-@@ -204,9 +213,11 @@ fi
+@@ -199,9 +208,11 @@ fi
  
  make fetch
- make
+ make $MAKEFLAGS
 +fi
  
  cd ../.. && mkdir -p android && cd android
@@ -73,14 +73,14 @@ index fccee37..bcd61ff 100755
  if test ! -s "../configure" ; then
      echo "Bootstraping"
      ../bootstrap
-@@ -214,6 +225,7 @@ fi
+@@ -209,6 +220,7 @@ fi
  
  echo "Configuring"
  ../../configure.sh $OPTS
 +fi
  
  echo "Building"
- make
+ make $MAKEFLAGS
 diff --git a/fastcompile.sh b/fastcompile.sh
 new file mode 100644
 index 0000000..97130c1

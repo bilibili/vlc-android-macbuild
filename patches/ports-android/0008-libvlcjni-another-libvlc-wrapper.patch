@@ -1,11 +1,10 @@
-From 0c06430192c79ad84a1470392f68a902f3932f00 Mon Sep 17 00:00:00 2001
+From d0485e5d2d5a6aed61036eb33be05722e0a7d8b1 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
-Date: Tue, 10 Jul 2012 19:41:13 +0800
+Date: Sat, 13 Oct 2012 09:18:44 +0800
 Subject: [PATCH 8/8] libvlcjni: another libvlc wrapper
 
 ---
- Makefile                                           |    7 +-
- vlc-android/jni/Android.mk                         |    7 +-
+ vlc-android/jni/Android.mk                         |    3 +-
  vlc-android/jni/jni_bundle.c                       |  150 +++
  vlc-android/jni/jni_bundle.h                       |   61 +
  vlc-android/jni/jni_libvlc.h                       |   36 +
@@ -17,7 +16,7 @@ Subject: [PATCH 8/8] libvlcjni: another libvlc wrapper
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |   65 ++
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |   61 +
  .../jni/libvlcjni_danmaku_readMediaEx.inc.c        |  108 ++
- 13 个文件被修改，插入 2090 行(+)，删除 2 行(-)
+ 12 个文件被修改，插入 2080 行(+)，删除 1 行(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.h
@@ -30,42 +29,13 @@ Subject: [PATCH 8/8] libvlcjni: another libvlc wrapper
  create mode 100644 vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
 
-diff --git a/Makefile b/Makefile
-index 9d512a6..23f41c1 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,12 +1,17 @@
- # Sources and objects
- 
- ARCH = $(ANDROID_ABI)
-+LIBVLCJNI_MODULE_NAME = libvlcjni.so
-+
-+ifneq ($(TEGRA2),)
-+LIBVLCJNI_MODULE_NAME = libvlcjni-tegra2.so
-+endif
- 
- SRC=vlc-android
- JAVA_SOURCES=$(SRC)/src/org/videolan/vlc/*.java
- JNI_SOURCES=$(SRC)/jni/*.c $(SRC)/jni/*.h
- LIBVLCJNI=	\
--	$(SRC)/obj/local/$(ARCH)/libvlcjni.so \
-+	$(SRC)/obj/local/$(ARCH)/$(LIBVLCJNI_MODULE_NAME) \
- 	$(SRC)/obj/local/$(ARCH)/libiomx-ics.so \
- 	$(SRC)/obj/local/$(ARCH)/libiomx-hc.so \
- 	$(SRC)/obj/local/$(ARCH)/libiomx-gingerbread.so \
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 0e59fe8..a86afc4 100644
+index 0e59fe8..d491603 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
-@@ -1,9 +1,14 @@
- LOCAL_PATH := $(call my-dir)
- include $(CLEAR_VARS)
+@@ -3,7 +3,8 @@ include $(CLEAR_VARS)
  
-+ifneq ($(TEGRA2),)
-+LOCAL_MODULE    := libvlcjni-tegra2
-+else
  LOCAL_MODULE    := libvlcjni
-+endif
  
 -LOCAL_SRC_FILES := libvlcjni.c aout.c thumbnailer.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
 +LOCAL_SRC_FILES := libvlcjni_danmaku.c aout.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c

@@ -1,7 +1,7 @@
-From 596ea18f6e29d40b2bc08df860c734ed31d38613 Mon Sep 17 00:00:00 2001
+From ae0de65b40c1ffb6ac439e6655cb652fbbd6d780 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 28 Sep 2012 17:41:16 +0800
-Subject: [PATCH 01/35] autoreconf: config unused modules
+Subject: [PATCH 01/32] autoreconf: config unused modules
 
 ---
  configure.ac                     |    1 +
@@ -12,7 +12,7 @@ Subject: [PATCH 01/35] autoreconf: config unused modules
  5 个文件被修改，插入 23 行(+)，删除 4 行(-)
 
 diff --git a/configure.ac b/configure.ac
-index 10b0579..2b1c796 100644
+index 5d31610..7bdae25 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -274,6 +274,7 @@ AM_CONDITIONAL(HAVE_OS2,     test "${SYS}" = "os2")
@@ -44,7 +44,7 @@ index 5665477..ebbad03 100644
  
  ### Digital TV ###
 diff --git a/modules/codec/Modules.am b/modules/codec/Modules.am
-index 7947def..fe604f6 100644
+index 8a40488..c31d176 100644
 --- a/modules/codec/Modules.am
 +++ b/modules/codec/Modules.am
 @@ -71,7 +71,6 @@ libvlc_LTLIBRARIES += \
@@ -69,10 +69,10 @@ index 7947def..fe604f6 100644
  libavcodec_plugin_la_SOURCES = \
  	avcodec/avcommon.h \
 diff --git a/modules/demux/Modules.am b/modules/demux/Modules.am
-index 2b7ee6e..7fec8f7 100644
+index 43f644d..7586494 100644
 --- a/modules/demux/Modules.am
 +++ b/modules/demux/Modules.am
-@@ -93,8 +93,10 @@ endif
+@@ -94,8 +94,10 @@ endif
  if HAVE_DARWIN
  libmkv_plugin_la_LDFLAGS += -Wl,-framework,IOKit,-framework,CoreFoundation
  endif
@@ -83,7 +83,7 @@ index 2b7ee6e..7fec8f7 100644
  
  libmp4_plugin_la_SOURCES = mp4/mp4.c mp4/libmp4.c mp4/libmp4.h mp4/id3genres.h
  libmp4_plugin_la_CFLAGS = $(AM_CFLAGS)
-@@ -142,9 +144,7 @@ endif
+@@ -143,9 +145,7 @@ endif
  
  libvlc_LTLIBRARIES += \
  	libaiff_plugin.la \
@@ -93,7 +93,7 @@ index 2b7ee6e..7fec8f7 100644
  	librawaud_plugin.la \
  	libdirac_plugin.la \
  	libdemux_cdg_plugin.la \
-@@ -158,7 +158,6 @@ libvlc_LTLIBRARIES += \
+@@ -159,7 +159,6 @@ libvlc_LTLIBRARIES += \
  	libnsc_plugin.la \
  	libnsv_plugin.la \
  	libnuv_plugin.la \
@@ -101,7 +101,7 @@ index 2b7ee6e..7fec8f7 100644
  	libpva_plugin.la \
  	libps_plugin.la \
  	librawdv_plugin.la \
-@@ -177,6 +176,14 @@ libvlc_LTLIBRARIES += \
+@@ -178,6 +177,14 @@ libvlc_LTLIBRARIES += \
  	libdemux_stl_plugin.la \
  	$(NULL)
  

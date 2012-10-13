@@ -1,4 +1,4 @@
-From 8cbf18b603cd319bbea917e4b040d770a95fbf52 Mon Sep 17 00:00:00 2001
+From 1f32734c716e6a90d35152b2d7e103335027f41c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
 Subject: [PATCH 3/8] compile.sh: restore saved contrib package
@@ -8,10 +8,10 @@ Subject: [PATCH 3/8] compile.sh: restore saved contrib package
  1 个文件被修改，插入 6 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index 5a5de73..fccee37 100755
+index c144c30..2721901 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -196,6 +196,12 @@ echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
+@@ -191,6 +191,12 @@ echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
  echo "CHOST= ${CHOST}" >> config.mak
  export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
  
@@ -22,7 +22,7 @@ index 5a5de73..fccee37 100755
 +fi
 +
  make fetch
- make
+ make $MAKEFLAGS
  
 -- 
 1.7.10.4

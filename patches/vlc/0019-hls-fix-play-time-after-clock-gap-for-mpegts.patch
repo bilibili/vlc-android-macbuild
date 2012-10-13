@@ -1,7 +1,7 @@
-From 2acf92e34760b3b77743b59aed4bf5863b84bb20 Mon Sep 17 00:00:00 2001
+From 430ec3d949c5e6a7f8efc172264b87f1adc066f8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:27 +0800
-Subject: [PATCH 22/35] hls: fix play time after clock gap for mpegts
+Subject: [PATCH 19/32] hls: fix play time after clock gap for mpegts
 
 ---
  modules/demux/ts.c               |   28 +++++++++++++++++++--
@@ -9,7 +9,7 @@ Subject: [PATCH 22/35] hls: fix play time after clock gap for mpegts
  2 个文件被修改，插入 66 行(+)，删除 13 行(-)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index 254ad10..fd55692 100644
+index ac93836..fba322f 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
 @@ -1981,6 +1981,8 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
@@ -58,7 +58,7 @@ index 254ad10..fd55692 100644
          }
  
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index ec7195f..1db2d2b 100644
+index db89892..2254265 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -64,6 +64,7 @@ vlc_module_end()

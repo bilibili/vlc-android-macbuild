@@ -1,14 +1,14 @@
-From 5f4626f884b151e9ca115ed9bd2211019c3e212a Mon Sep 17 00:00:00 2001
+From acb60df2fc09fb4ff495191494d30dd6bfba76a1 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 11 Aug 2012 13:07:07 +0800
-Subject: [PATCH 02/35] main.mak: add CHOST for cross-compile
+Subject: [PATCH 02/32] main.mak: add CHOST for cross-compile
 
 ---
  contrib/src/main.mak |    1 +
  1 个文件被修改，插入 1 行(+)
 
 diff --git a/contrib/src/main.mak b/contrib/src/main.mak
-index 98b9b64..d69c9c8 100644
+index fc7b877..f1012a5 100644
 --- a/contrib/src/main.mak
 +++ b/contrib/src/main.mak
 @@ -252,6 +252,7 @@ endif

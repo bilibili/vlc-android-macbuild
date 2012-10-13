@@ -1,7 +1,7 @@
-From df22fab29a1017552b191f4573407c4c16d41e19 Mon Sep 17 00:00:00 2001
+From 1f9f39a9d357ae5a055ed204602374017510f019 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:20 +0800
-Subject: [PATCH 09/35] core: es_out: implement es_out_managed
+Subject: [PATCH 09/32] core: es_out: implement es_out_managed
 
 ---
  include/vlc_es_out.h         |    3 +

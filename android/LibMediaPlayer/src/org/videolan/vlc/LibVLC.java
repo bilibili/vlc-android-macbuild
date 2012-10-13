@@ -38,8 +38,8 @@ public class LibVLC {
     private static final String[] sDefaultParameters = new String[] { "-I",
             "dummy", "--no-osd", "--no-plugins-cache", "--no-drop-late-frames",
             "--no-video-title-show", "--no-stats", "--avcodec-fast",
-            "--http-hosts-reject-range", "v.youku.com,f.youku.com",
-            "--ts-seek-percent" };
+            "--avcodec-threads=0", "--http-hosts-reject-range",
+            "v.youku.com,f.youku.com", "--ts-seek-percent" };
 
     private static boolean mLibIomxLoaded = false;
 

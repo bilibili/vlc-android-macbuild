@@ -1,21 +1,21 @@
-From e6891584f18abf32394115b6953815835f320399 Mon Sep 17 00:00:00 2001
+From 759d91dbb5bc3ddcf3a6cdf36309a54e3982e9b3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 24 Jun 2012 17:23:34 +0800
-Subject: [PATCH] build for armeabi-v7a with NEON
+Subject: [PATCH] build for armeabi-v7a
 
 ---
  compile.sh |    3 +++
  1 个文件被修改，插入 3 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index aa11662..18df1e3 100755
+index 2b905d4..e564a8f 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -6,6 +6,9 @@
  
  set -e
  
-+# patched for armeabi-v7a with NEON
++# patched for armeabi-v7a
 +export ANDROID_ABI=armeabi-v7a
 +
  if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" -o -z "$ANDROID_ABI" ]; then

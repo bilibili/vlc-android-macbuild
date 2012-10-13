@@ -1,7 +1,7 @@
-From ca0725ca450d570b9fb27b27ca305f911edfdc9b Mon Sep 17 00:00:00 2001
+From 14db6bbf2d8e4cd506522231926114883ffa58dc Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
-Subject: [PATCH 35/35] vsl: video segment list
+Subject: [PATCH 32/32] vsl: video segment list
 
 ---
  modules/access/vsl/index.c     |  889 ++++++++++++++++++++++++++++++++++++++++

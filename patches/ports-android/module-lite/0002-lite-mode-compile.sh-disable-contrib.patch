@@ -1,17 +1,17 @@
-From 0a2c6459619caa82ae04bf0e04e56e9294d9aac4 Mon Sep 17 00:00:00 2001
+From a1967c19430e57ff3383205d718f7b6c5d4bc0d9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
 Subject: [PATCH 2/4] lite-mode: compile.sh: disable contrib
 
 ---
- compile.sh |   23 ++++++++++++++++++++++-
- 1 个文件被修改，插入 22 行(+)，删除 1 行(-)
+ compile.sh |   24 +++++++++++++++++++++++-
+ 1 个文件被修改，插入 23 行(+)，删除 1 行(-)
 
 diff --git a/compile.sh b/compile.sh
-index cb54d57..aa11662 100755
+index b786153..1657916 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -177,10 +177,31 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
+@@ -166,10 +166,32 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
      --disable-tremor \
      --disable-vorbis \
      --disable-sidplay2 \
@@ -36,6 +36,7 @@ index cb54d57..aa11662 100755
 +    --disable-openjpg \
 +    --disable-libxml2 \
 +    --disable-opus \
++    --disable-mad \
      --disable-samplerate \
      --disable-faad2 \
      --disable-harfbuzz \

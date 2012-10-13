@@ -1,14 +1,14 @@
-From cd1a0db0578c761e5e123ec41b9f2ada5c60e23b Mon Sep 17 00:00:00 2001
+From f3c860d5eab16824bdbd0fdc648b298342f170a7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 18:21:32 +0800
-Subject: [PATCH 29/35] omxil: echo OMX name
+Subject: [PATCH 26/32] omxil: echo OMX name
 
 ---
  modules/codec/omxil/omxil.c |    6 ++++++
  1 个文件被修改，插入 6 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 1de5fe0..23c1019 100644
+index 563e818..13302c6 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -1221,6 +1221,12 @@ loaded:
