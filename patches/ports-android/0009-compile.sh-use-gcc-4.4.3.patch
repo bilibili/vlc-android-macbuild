@@ -1,0 +1,27 @@
+From 7920ee997c6f64eed46b9d07f20b8206662318b1 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 15 Oct 2012 14:14:31 +0800
+Subject: [PATCH 09/10] compile.sh: use gcc 4.4.3
+
+---
+ compile.sh |    4 ++--
+ 1 个文件被修改，插入 2 行(+)，删除 2 行(-)
+
+diff --git a/compile.sh b/compile.sh
+index b786153..50bd566 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -18,8 +18,8 @@ case "$REL" in
+     8?)
+         # NDK >= v8b, both 4.4.3 and 4.6 available,
+         # we use 4.6 because 4.4.3 doesn't handle threads correctly.
+-        GCCVER=4.6
+-        CXXSTL="/4.6"
++        GCCVER=4.4.3
++        CXXSTL="/4.4.3"
+     ;;
+     7|8|*)
+         echo "You need the NDKv8b or later"
+-- 
+1.7.10.4
+
