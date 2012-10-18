@@ -1,4 +1,4 @@
-From 24bbfc6409057e242c89e9294e42b6ac8b8a1107 Mon Sep 17 00:00:00 2001
+From 1f0a2efd91d6702dc1e8d692d3cd034dc90058ad Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 9 Oct 2012 17:53:52 +0800
 Subject: [PATCH 13/32] http: trim trailing space in field contents

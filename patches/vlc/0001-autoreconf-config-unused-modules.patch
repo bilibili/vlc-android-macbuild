@@ -1,18 +1,18 @@
-From ae0de65b40c1ffb6ac439e6655cb652fbbd6d780 Mon Sep 17 00:00:00 2001
+From 3fb4140a742fd79ad5ffc255e692469f6ab61371 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 28 Sep 2012 17:41:16 +0800
 Subject: [PATCH 01/32] autoreconf: config unused modules
 
 ---
- configure.ac                     |    1 +
- modules/access/Modules.am        |    2 ++
+ configure.ac                     |    2 +-
+ modules/access/Modules.am        |    3 ++-
  modules/codec/Modules.am         |    7 ++++++-
  modules/demux/Modules.am         |   13 ++++++++++---
  modules/stream_filter/Modules.am |    4 ++++
- 5 个文件被修改，插入 23 行(+)，删除 4 行(-)
+ 5 个文件被修改，插入 23 行(+)，删除 6 行(-)
 
 diff --git a/configure.ac b/configure.ac
-index 5d31610..7bdae25 100644
+index 5d31610..a9f35bd 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -274,6 +274,7 @@ AM_CONDITIONAL(HAVE_OS2,     test "${SYS}" = "os2")
@@ -23,11 +23,24 @@ index 5d31610..7bdae25 100644
  
  dnl
  dnl Sadly autoconf does not think about testing foo.exe when ask to test
+@@ -4023,7 +4024,6 @@ AC_CONFIG_FILES([
+   bin/Makefile
+   test/Makefile
+   modules/access/Makefile
+-  modules/access/rtp/Makefile
+   modules/access_output/Makefile
+   modules/audio_filter/Makefile
+   modules/audio_mixer/Makefile
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index 5665477..ebbad03 100644
+index 5665477..7c11ced 100644
 --- a/modules/access/Modules.am
 +++ b/modules/access/Modules.am
-@@ -128,6 +128,7 @@ libvlc_LTLIBRARIES += libshm_plugin.la
+@@ -1,4 +1,3 @@
+-SUBDIRS = rtp
+ noinst_LTLIBRARIES =
+ 
+ libfilesystem_plugin_la_SOURCES = \
+@@ -128,6 +127,7 @@ libvlc_LTLIBRARIES += libshm_plugin.la
  endif
  endif
  
@@ -35,7 +48,7 @@ index 5665477..ebbad03 100644
  libv4l2_plugin_la_SOURCES = \
  	v4l2/videodev2.h \
  	v4l2/v4l2.c \
-@@ -204,6 +205,7 @@ libaccess_bd_plugin_la_SOURCES = bd/bd.c bd/mpls.c bd/mpls.h bd/clpi.c bd/clpi.h
+@@ -204,6 +204,7 @@ libaccess_bd_plugin_la_SOURCES = bd/bd.c bd/mpls.c bd/mpls.h bd/clpi.c bd/clpi.h
  libaccess_bd_plugin_la_CFLAGS = $(AM_CFLAGS)
  libaccess_bd_plugin_la_LIBADD = $(AM_LIBADD)
  libvlc_LTLIBRARIES += libaccess_bd_plugin.la

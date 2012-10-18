@@ -1,4 +1,4 @@
-From 288d0b5a297d6fd916cee364e17f2bbcd44ad5b6 Mon Sep 17 00:00:00 2001
+From 266caf7b57807289743364e166d9d6ac210d692d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 14:43:15 +0800
 Subject: [PATCH 10/32] core: add segment resolve api
