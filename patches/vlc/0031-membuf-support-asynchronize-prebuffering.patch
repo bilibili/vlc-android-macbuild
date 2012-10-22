@@ -1,19 +1,19 @@
-From 65f681e47fed581a43a686620ae9b1e45eeae8f2 Mon Sep 17 00:00:00 2001
+From f3a135c5444060ec9acbc2d57f9d1dec57f1c473 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:49:45 +0800
 Subject: [PATCH 31/32] membuf: support asynchronize prebuffering
 
 ---
- modules/stream_filter/membuf.c |  933 ++++++++++++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 933 行(+)
+ modules/stream_filter/membuf.c |  944 ++++++++++++++++++++++++++++++++++++++++
+ 1 个文件被修改，插入 944 行(+)
  create mode 100644 modules/stream_filter/membuf.c
 
 diff --git a/modules/stream_filter/membuf.c b/modules/stream_filter/membuf.c
 new file mode 100644
-index 0000000..634def7
+index 0000000..734b675
 --- /dev/null
 +++ b/modules/stream_filter/membuf.c
-@@ -0,0 +1,933 @@
+@@ -0,0 +1,944 @@
 +/*****************************************************************************
 + * membuf.c: Stream buffer in memory
 + *****************************************************************************
@@ -738,6 +738,17 @@ index 0000000..634def7
 +    {
 +        if( p_sys->b_error || p_sys->b_close )
 +            break;
++
++        if( p_sys->b_buffered_eos )
++        {
++            int64_t i_filled_len = i_prebuffer_offset - p_sys->i_stream_offset;
++            if( i_read > i_filled_len )
++            {                
++                msg_Warn( p_stream, "membuf: buffered eos before enough data filled" );
++                i_read = i_filled_len;
++            }
++            break;
++        }
 +
 +        vlc_mutex_lock( &p_sys->wait_fill_lock );
 +        mutex_cleanup_push( &p_sys->wait_fill_lock );
