@@ -1,17 +1,17 @@
-From 2d02d3e5db9fa61e07ef241b4d771b4a01933c61 Mon Sep 17 00:00:00 2001
+From 0bf9cfbc0c4294379e9e72f1a3f24762d851b616 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
 Subject: [PATCH] lite-mode: ffmpeg: disable modules
 
 ---
- contrib/src/ffmpeg/rules.mak |   39 ++++++++++++++++++++++++++++++++++++---
- 1 个文件被修改，插入 36 行(+)，删除 3 行(-)
+ contrib/src/ffmpeg/rules.mak |   41 ++++++++++++++++++++++++++++++++++++++---
+ 1 个文件被修改，插入 38 行(+)，删除 3 行(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 8ec49f2..0db5116 100644
+index 05f7c5e..859cb5a 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -6,9 +6,42 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=HEAD;sf=tgz
+@@ -6,10 +6,45 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=620345f;sf=tgz
  FFMPEGCONF = \
  	--cc="$(CC)" \
  	--disable-doc \
@@ -19,8 +19,11 @@ index 8ec49f2..0db5116 100644
 +	--disable-protocols \
 +	--disable-decoder=libvpx \
  	--disable-decoder=bink \
+ 	--disable-encoder=vorbis \
 -	--enable-libgsm \
 -	--enable-libopenjpeg \
++	--disable-libgsm \
++	--disable-libopenjpeg \
 +	--disable-decoders \
 +	--enable-decoder=aac \
 +	--enable-decoder=aac_latm \
@@ -45,18 +48,18 @@ index 8ec49f2..0db5116 100644
 +	--enable-decoder=mpeg4v2 \
 +	--enable-decoder=mpeg4v3 \
 +	--enable-decoder=vp3 \
-+    --enable-decoder=vp5 \
-+    --enable-decoder=vp6 \
-+    --enable-decoder=vp6a \
-+    --enable-decoder=vp6f \
-+    --enable-decoder=vp8 \
-+    --enable-decoder=vc1 \
-+    --enable-decoder=vc1_vdpau \
-+    --enable-decoder=vc1image \
++	--enable-decoder=vp5 \
++	--enable-decoder=vp6 \
++	--enable-decoder=vp6a \
++	--enable-decoder=vp6f \
++	--enable-decoder=vp8 \
++	--enable-decoder=vc1 \
++	--enable-decoder=vc1_vdpau \
++	--enable-decoder=vc1image \
  	--disable-debug \
  	--disable-avdevice \
  	--disable-devices \
-@@ -21,7 +54,7 @@ FFMPEGCONF = \
+@@ -22,7 +57,7 @@ FFMPEGCONF = \
  #	--disable-ffserver \
  #	--disable-ffplay \
  #	--disable-ffprobe
