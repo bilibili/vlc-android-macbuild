@@ -1,4 +1,4 @@
-From 3fb4140a742fd79ad5ffc255e692469f6ab61371 Mon Sep 17 00:00:00 2001
+From 409422ec2d934e0ee75c8629d98b0243806a7714 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 28 Sep 2012 17:41:16 +0800
 Subject: [PATCH 01/32] autoreconf: config unused modules
@@ -12,7 +12,7 @@ Subject: [PATCH 01/32] autoreconf: config unused modules
  5 个文件被修改，插入 23 行(+)，删除 6 行(-)
 
 diff --git a/configure.ac b/configure.ac
-index 5d31610..a9f35bd 100644
+index 51b376a..4dc994c 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -274,6 +274,7 @@ AM_CONDITIONAL(HAVE_OS2,     test "${SYS}" = "os2")
@@ -23,7 +23,7 @@ index 5d31610..a9f35bd 100644
  
  dnl
  dnl Sadly autoconf does not think about testing foo.exe when ask to test
-@@ -4023,7 +4024,6 @@ AC_CONFIG_FILES([
+@@ -4045,7 +4046,6 @@ AC_CONFIG_FILES([
    bin/Makefile
    test/Makefile
    modules/access/Makefile
@@ -32,7 +32,7 @@ index 5d31610..a9f35bd 100644
    modules/audio_filter/Makefile
    modules/audio_mixer/Makefile
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index 5665477..7c11ced 100644
+index 71d2c8c..2e3eca7 100644
 --- a/modules/access/Modules.am
 +++ b/modules/access/Modules.am
 @@ -1,4 +1,3 @@
@@ -57,7 +57,7 @@ index 5665477..7c11ced 100644
  
  ### Digital TV ###
 diff --git a/modules/codec/Modules.am b/modules/codec/Modules.am
-index 8a40488..c31d176 100644
+index aa71726..308b3a0 100644
 --- a/modules/codec/Modules.am
 +++ b/modules/codec/Modules.am
 @@ -71,7 +71,6 @@ libvlc_LTLIBRARIES += \

@@ -1,4 +1,4 @@
-From 502d532aee034a0c7ea233eb686c43cc80720fb0 Mon Sep 17 00:00:00 2001
+From c257b040ddcc9764be845ba0ddb64361ed8b6e2b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
 Subject: [PATCH 32/32] vsl: video segment list
@@ -2123,7 +2123,7 @@ index de188ac..1533422 100644
 \ No newline at end of file
 +#endif
 diff --git a/modules/stream_filter/membuf.c b/modules/stream_filter/membuf.c
-index 634def7..3756ed3 100644
+index 734b675..15ea401 100644
 --- a/modules/stream_filter/membuf.c
 +++ b/modules/stream_filter/membuf.c
 @@ -77,6 +77,7 @@ vlc_module_end ()
@@ -2368,7 +2368,7 @@ index 634def7..3756ed3 100644
      {
          if( p_sys->b_error || p_sys->b_close )
              break;
-@@ -729,11 +763,13 @@ static int safe_WaitFillData( stream_t *p_stream, unsigned int i_read )
+@@ -740,11 +774,13 @@ static int safe_WaitFillData( stream_t *p_stream, unsigned int i_read )
          vlc_cond_wait( &p_sys->wait_fill, &p_sys->wait_fill_lock );
  
          vlc_cleanup_run( );
@@ -2384,7 +2384,7 @@ index 634def7..3756ed3 100644
  
      if( p_sys->b_error || p_sys->b_close )
          return -1;
-@@ -743,10 +779,10 @@ static int safe_WaitFillData( stream_t *p_stream, unsigned int i_read )
+@@ -754,10 +790,10 @@ static int safe_WaitFillData( stream_t *p_stream, unsigned int i_read )
  
  static int Read( stream_t *p_stream, void *p_buffer, unsigned int i_read )
  {
@@ -2397,7 +2397,7 @@ index 634def7..3756ed3 100644
  
      assert( p_stream->p_source );
  
-@@ -776,10 +812,10 @@ static int Read( stream_t *p_stream, void *p_buffer, unsigned int i_read )
+@@ -787,10 +823,10 @@ static int Read( stream_t *p_stream, void *p_buffer, unsigned int i_read )
  
  static int Peek( stream_t *p_stream, const uint8_t **pp_peek, unsigned int i_peek )
  {
@@ -2410,7 +2410,7 @@ index 634def7..3756ed3 100644
  
      assert( p_stream->p_source );
  
-@@ -857,20 +893,38 @@ static int Control( stream_t *p_stream, int i_query, va_list args )
+@@ -868,20 +904,38 @@ static int Control( stream_t *p_stream, int i_query, va_list args )
  
              int i_seek_ret = VLC_EGENERIC;
              uint64_t i_seek_pos = (va_arg (args, uint64_t));
@@ -2455,7 +2455,7 @@ index 634def7..3756ed3 100644
                          i_prebuffer_rewind_pos,
                          p_sys->i_prebuffer_offset );
  
-@@ -879,12 +933,19 @@ static int Control( stream_t *p_stream, int i_query, va_list args )
+@@ -890,12 +944,19 @@ static int Control( stream_t *p_stream, int i_query, va_list args )
              }
              else
              {
@@ -2477,7 +2477,7 @@ index 634def7..3756ed3 100644
  
                  p_sys->b_buffered_eos = false;
                  p_sys->i_prebuffer_offset = i_rewind_offset;
-@@ -902,7 +963,7 @@ static int Control( stream_t *p_stream, int i_query, va_list args )
+@@ -913,7 +974,7 @@ static int Control( stream_t *p_stream, int i_query, va_list args )
                  }
              }
  

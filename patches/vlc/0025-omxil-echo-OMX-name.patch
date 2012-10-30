@@ -1,7 +1,7 @@
-From 403588dcdbf66ad8427e8995d5e64e1709160bb4 Mon Sep 17 00:00:00 2001
+From ba0976487108678ab90821db23341f094937a8b1 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 18:21:32 +0800
-Subject: [PATCH 26/32] omxil: echo OMX name
+Subject: [PATCH 25/32] omxil: echo OMX name
 
 ---
  modules/codec/omxil/omxil.c |    6 ++++++

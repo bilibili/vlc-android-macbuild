@@ -1,0 +1,26 @@
+From c862c46b42a9fe3295ce1849046b17051eb3617c Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 30 Oct 2012 20:58:35 +0800
+Subject: [PATCH 30/32] omxil: always use pts if set
+
+revert commit 1f18696f679fe520b64d60cb933fe50d3dfc3215
+---
+ modules/codec/omxil/omxil.c |    2 +-
+ 1 个文件被修改，插入 1 行(+)，删除 1 行(-)
+
+diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
+index 94fce16..708a3ab 100644
+--- a/modules/codec/omxil/omxil.c
++++ b/modules/codec/omxil/omxil.c
+@@ -1556,7 +1556,7 @@ static picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+         p_header->nFilledLen = p_block->i_buffer;
+         p_header->nOffset = 0;
+         p_header->nFlags = OMX_BUFFERFLAG_ENDOFFRAME;
+-        if (p_sys->b_use_pts && p_block->i_pts)
++        if (p_sys->b_use_pts)
+             p_header->nTimeStamp = p_block->i_pts;
+         else
+             p_header->nTimeStamp = p_block->i_dts;
+-- 
+1.7.10.4
+
