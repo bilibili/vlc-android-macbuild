@@ -1,4 +1,4 @@
-From dc4c22e074bd2c8e0501c516c0d869d38ec48e23 Mon Sep 17 00:00:00 2001
+From f67642b88e36ca11deb8e2c49515c8bf447a7109 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:49:45 +0800
 Subject: [PATCH 31/32] membuf: support asynchronize prebuffering
@@ -10,7 +10,7 @@ Subject: [PATCH 31/32] membuf: support asynchronize prebuffering
 
 diff --git a/modules/stream_filter/membuf.c b/modules/stream_filter/membuf.c
 new file mode 100644
-index 0000000..734b675
+index 0000000..9718d56
 --- /dev/null
 +++ b/modules/stream_filter/membuf.c
 @@ -0,0 +1,944 @@
@@ -743,7 +743,7 @@ index 0000000..734b675
 +        {
 +            int64_t i_filled_len = i_prebuffer_offset - p_sys->i_stream_offset;
 +            if( i_read > i_filled_len )
-+            {                
++            {
 +                msg_Warn( p_stream, "membuf: buffered eos before enough data filled" );
 +                i_read = i_filled_len;
 +            }
