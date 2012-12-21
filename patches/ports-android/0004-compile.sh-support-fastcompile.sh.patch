@@ -1,4 +1,4 @@
-From 636e501520b93711b53cbc9231f09b1068d6dd59 Mon Sep 17 00:00:00 2001
+From fd388617f28b6f0342b8c9fe395237f3592309f6 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
 Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
@@ -10,15 +10,15 @@ Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index 7a4e4bb..eee2b57 100755
+index 29774e1..8523ca1 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -84,6 +84,7 @@ CHOST=${ANDROID_BIN}/${TARGET_TUPLE}
- export PATH=${ANDROID_BIN}:${PATH}
+@@ -84,6 +84,7 @@ CHOST=${NDK_TOOLCHAIN_PATH}/${TARGET_TUPLE}
+ export PATH=${NDK_TOOLCHAIN_PATH}:${PATH}
  
  # 1/ libvlc, libvlccore and its plugins
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
- TESTED_HASH=9aef14d5e5
+ TESTED_HASH=4f42f23
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
 @@ -120,6 +121,9 @@ EOF
@@ -31,7 +31,7 @@ index 7a4e4bb..eee2b57 100755
  
  if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
      EXTRA_CFLAGS="-mfpu=vfpv3-d16 -mcpu=cortex-a8"
-@@ -147,6 +151,7 @@ EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++${CX
+@@ -152,6 +156,7 @@ EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++${CX
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
@@ -39,7 +39,7 @@ index 7a4e4bb..eee2b57 100755
  ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout --enable-small \
      --disable-sdl \
      --disable-SDL_image \
-@@ -165,6 +170,7 @@ cd contrib/android
+@@ -170,6 +175,7 @@ cd contrib/android
      --disable-faad2 \
      --disable-harfbuzz \
      --enable-iconv
@@ -47,7 +47,7 @@ index 7a4e4bb..eee2b57 100755
  
  # TODO: mpeg2, theora
  
-@@ -187,10 +193,13 @@ then
+@@ -192,10 +198,13 @@ then
  MAKEFLAGS=-j`nproc`
  fi
  
@@ -61,7 +61,7 @@ index 7a4e4bb..eee2b57 100755
  if  test -d "../../../../tarballs" ; then
      echo "fetch local tarballs"
      mkdir -p ../tarballs
-@@ -199,9 +208,11 @@ fi
+@@ -204,9 +213,11 @@ fi
  
  make fetch
  make $MAKEFLAGS
@@ -73,7 +73,7 @@ index 7a4e4bb..eee2b57 100755
  if test ! -s "../configure" ; then
      echo "Bootstraping"
      ../bootstrap
-@@ -209,6 +220,7 @@ fi
+@@ -214,6 +225,7 @@ fi
  
  echo "Configuring"
  ../../configure.sh $OPTS

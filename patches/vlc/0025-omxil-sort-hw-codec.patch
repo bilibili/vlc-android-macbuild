@@ -1,14 +1,14 @@
-From c1beca564d369866c5f95dbb3440648c53c52f7b Mon Sep 17 00:00:00 2001
+From cab0db19e47b2c1f2cd322651227b3ee9759c8e3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
-Subject: [PATCH 26/32] omxil: sort hw codec
+Subject: [PATCH 25/31] omxil: sort hw codec
 
 ---
  modules/codec/omxil/omxil.c |   96 +++++++++++++++++++++++++++++++++++++++++++
  1 个文件被修改，插入 96 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 13302c6..872116f 100644
+index 628685a..8c1051b 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -197,6 +197,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)

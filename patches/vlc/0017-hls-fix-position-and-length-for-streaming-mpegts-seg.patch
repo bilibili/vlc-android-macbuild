@@ -1,7 +1,7 @@
-From c88330aa92f98650852c95148c7e0fed501a0eae Mon Sep 17 00:00:00 2001
+From 08dd93715daeb6b26dcb32dbcecadcf54d5cd113 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH 17/32] hls: fix position and length for streaming mpegts
+Subject: [PATCH 17/31] hls: fix position and length for streaming mpegts
  segments hls
 
 ---
@@ -10,7 +10,7 @@ Subject: [PATCH 17/32] hls: fix position and length for streaming mpegts
  2 个文件被修改，插入 73 行(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index 19970ac..ac93836 100644
+index a780c38..8f988f5 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
 @@ -328,6 +328,14 @@ struct demux_sys_t

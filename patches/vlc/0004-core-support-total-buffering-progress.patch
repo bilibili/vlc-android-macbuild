@@ -1,7 +1,7 @@
-From c58e6d62b8cd9d97abe86aba4ed774e8b42d55b8 Mon Sep 17 00:00:00 2001
+From f99e8b30081ea520798fad57ecc68a9e5f530b32 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 1 Jul 2012 18:44:58 +0800
-Subject: [PATCH 04/32] core: support total buffering progress
+Subject: [PATCH 04/31] core: support total buffering progress
 
 ---
  include/vlc/libvlc_events.h |    8 +++++++-
@@ -40,7 +40,7 @@ index 2cfedbf..d286cb4 100644
          /* media list */
          struct
 diff --git a/include/vlc_input.h b/include/vlc_input.h
-index 7d8320a..40ec3a8 100644
+index 7882b6c..d4ec8ca 100644
 --- a/include/vlc_input.h
 +++ b/include/vlc_input.h
 @@ -437,6 +437,9 @@ typedef enum input_event_type_e
@@ -54,7 +54,7 @@ index 7d8320a..40ec3a8 100644
  
  /**
 diff --git a/lib/media_player.c b/lib/media_player.c
-index a41b8c7..3bdb1b4 100644
+index 0ac4896..3ff6c42 100644
 --- a/lib/media_player.c
 +++ b/lib/media_player.c
 @@ -315,6 +315,13 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
@@ -71,7 +71,7 @@ index a41b8c7..3bdb1b4 100644
      else if( newval.i_int == INPUT_EVENT_VOUT )
      {
          vout_thread_t **pp_vout;
-@@ -522,6 +529,8 @@ libvlc_media_player_new( libvlc_instance_t *instance )
+@@ -519,6 +526,8 @@ libvlc_media_player_new( libvlc_instance_t *instance )
  
      register_event(mp, MediaChanged);
  
@@ -114,7 +114,7 @@ index c8f1071..3991453 100644
  /* TODO rename Item* */
  void input_SendEventMeta( input_thread_t *p_input );
 diff --git a/src/input/stream.c b/src/input/stream.c
-index 189f281..a07692e 100644
+index bf72c7a..9bb863c 100644
 --- a/src/input/stream.c
 +++ b/src/input/stream.c
 @@ -636,6 +636,8 @@ static int AStreamControl( stream_t *s, int i_query, va_list args )

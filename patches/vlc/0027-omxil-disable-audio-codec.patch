@@ -1,14 +1,14 @@
-From 0da628bec85818a56cc0248f005f525daf1297ea Mon Sep 17 00:00:00 2001
+From 6afa8a0d8cd5e71e00163d5d75a125045252d93f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 4 Jul 2012 18:28:44 +0800
-Subject: [PATCH 28/32] omxil: disable audio codec
+Subject: [PATCH 27/31] omxil: disable audio codec
 
 ---
  modules/codec/omxil/omxil.c |    2 ++
  1 个文件被修改，插入 2 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index a3352bb..e1d57cf 100644
+index f67ccc9..08e81f0 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -1046,6 +1046,8 @@ static int OpenDecoder( vlc_object_t *p_this )

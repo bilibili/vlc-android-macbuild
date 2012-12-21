@@ -1,7 +1,7 @@
-From b608194ff31ebe1565591712711014b6872f117e Mon Sep 17 00:00:00 2001
+From 8faeaf1f09e9fb91cef4fa937116cf21a57c688f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 15:42:47 +0800
-Subject: [PATCH 05/32] core: support echo module name
+Subject: [PATCH 05/31] core: support echo module name
 
 ---
  include/vlc/libvlc_events.h |    8 ++++++++
@@ -40,7 +40,7 @@ index d286cb4..e84ea1d 100644
          /* media list */
          struct
 diff --git a/include/vlc_input.h b/include/vlc_input.h
-index 40ec3a8..0b03ef1 100644
+index d4ec8ca..4c83c20 100644
 --- a/include/vlc_input.h
 +++ b/include/vlc_input.h
 @@ -440,6 +440,9 @@ typedef enum input_event_type_e
@@ -54,7 +54,7 @@ index 40ec3a8..0b03ef1 100644
  
  /**
 diff --git a/lib/media_player.c b/lib/media_player.c
-index 3bdb1b4..9a86cdb 100644
+index 3ff6c42..3ab21fd 100644
 --- a/lib/media_player.c
 +++ b/lib/media_player.c
 @@ -322,6 +322,15 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
@@ -73,7 +73,7 @@ index 3bdb1b4..9a86cdb 100644
      else if( newval.i_int == INPUT_EVENT_VOUT )
      {
          vout_thread_t **pp_vout;
-@@ -530,6 +539,7 @@ libvlc_media_player_new( libvlc_instance_t *instance )
+@@ -527,6 +536,7 @@ libvlc_media_player_new( libvlc_instance_t *instance )
      register_event(mp, MediaChanged);
  
      register_event(mp, BufferingTotal);
@@ -82,7 +82,7 @@ index 3bdb1b4..9a86cdb 100644
      /* Attach a var callback to the global object to provide the glue between
       * vout_thread that generates the event and media_player that re-emits it
 diff --git a/src/input/decoder.c b/src/input/decoder.c
-index a98367f..b82d611 100644
+index b1b038c..9d207d6 100644
 --- a/src/input/decoder.c
 +++ b/src/input/decoder.c
 @@ -287,6 +287,25 @@ static decoder_t *decoder_New( vlc_object_t *p_parent, input_thread_t *p_input,

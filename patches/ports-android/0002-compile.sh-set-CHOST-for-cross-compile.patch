@@ -1,28 +1,25 @@
-From d7ca81f7504b9a585651338c4218702ac949e215 Mon Sep 17 00:00:00 2001
+From df6d8275a25476fa7d7bac39568b7b1b56349224 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 11 Aug 2012 14:27:45 +0800
 Subject: [PATCH 2/8] compile.sh: set CHOST for cross compile
 
 ---
- compile.sh |    5 ++++-
- 1 个文件被修改，插入 4 行(+)，删除 1 行(-)
+ compile.sh |    2 ++
+ 1 个文件被修改，插入 2 行(+)
 
 diff --git a/compile.sh b/compile.sh
-index bf025f3..899c12b 100755
+index ce13c87..2123a21 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -79,7 +79,9 @@ export PLATFORM_SHORT_ARCH
- 
+@@ -80,6 +80,7 @@ export PLATFORM_SHORT_ARCH
  # Add the NDK toolchain to the PATH, needed both for contribs and for building
  # stub libraries
--export PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-${GCCVER}/prebuilt/`uname|tr A-Z a-z`-x86/bin:${PATH}
-+ANDROID_BIN=${ANDROID_NDK}/toolchains/${PATH_HOST}-${GCCVER}/prebuilt/`uname|tr A-Z a-z`-x86/bin
-+CHOST=${ANDROID_BIN}/${TARGET_TUPLE}
-+export PATH=${ANDROID_BIN}:${PATH}
+ NDK_TOOLCHAIN_PATH=${ANDROID_NDK}/toolchains/${PATH_HOST}-${GCCVER}/prebuilt/`uname|tr A-Z a-z`-x86/bin
++CHOST=${NDK_TOOLCHAIN_PATH}/${TARGET_TUPLE}
+ export PATH=${NDK_TOOLCHAIN_PATH}:${PATH}
  
  # 1/ libvlc, libvlccore and its plugins
- TESTED_HASH=9aef14d5e5
-@@ -186,6 +188,7 @@ MAKEFLAGS=-j`nproc`
+@@ -192,6 +193,7 @@ MAKEFLAGS=-j`nproc`
  fi
  
  echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak

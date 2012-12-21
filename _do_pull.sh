@@ -6,7 +6,7 @@ if [ -z "$BILI_VLC_ROOT" ]; then
     exit 1
 fi
 
-BILI_VLC_ANDROID_HASH=9db12a68ea
+BILI_VLC_ANDROID_HASH=24636222e8
 echo "pull "${BILI_VLC_ROOT}":"${BILI_VLC_ANDROID_HASH}
 
 if [ ! -d ${BILI_VLC_ROOT} ]; then

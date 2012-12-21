@@ -1,14 +1,14 @@
-From 93b4d251979e8cc4ee000687d66f0a4de416451f Mon Sep 17 00:00:00 2001
+From 5ef6d2ddfd45be473a64b19b57bcb24cad9dab0e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 4 Jul 2012 18:27:53 +0800
-Subject: [PATCH 27/32] omxil: use pts for OMX.SEC.AVC.Decoder
+Subject: [PATCH 26/31] omxil: use pts for OMX.SEC.AVC.Decoder
 
 ---
  modules/codec/omxil/omxil.c |    2 ++
  1 个文件被修改，插入 2 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 872116f..a3352bb 100644
+index 8c1051b..f67ccc9 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -1317,6 +1317,8 @@ loaded:

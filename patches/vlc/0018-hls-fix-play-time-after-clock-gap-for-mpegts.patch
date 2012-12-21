@@ -1,7 +1,7 @@
-From ed951bbd9a4652b6a4e544c0129e5e2921e28f3f Mon Sep 17 00:00:00 2001
+From 92c783e4bdbe6d63cb5d09b1a93b9a53608486ec Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:27 +0800
-Subject: [PATCH 18/32] hls: fix play time after clock gap for mpegts
+Subject: [PATCH 18/31] hls: fix play time after clock gap for mpegts
 
 ---
  modules/demux/ts.c               |   28 +++++++++++++++++++--
@@ -9,7 +9,7 @@ Subject: [PATCH 18/32] hls: fix play time after clock gap for mpegts
  2 个文件被修改，插入 66 行(+)，删除 13 行(-)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index ac93836..fba322f 100644
+index 8f988f5..1332f04 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
 @@ -1981,6 +1981,8 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )

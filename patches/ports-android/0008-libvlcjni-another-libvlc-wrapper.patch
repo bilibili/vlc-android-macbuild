@@ -1,4 +1,4 @@
-From d0485e5d2d5a6aed61036eb33be05722e0a7d8b1 Mon Sep 17 00:00:00 2001
+From b1e6e002fc64acb7368feb204ad44cfb37034d37 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
 Subject: [PATCH 8/8] libvlcjni: another libvlc wrapper
@@ -30,7 +30,7 @@ Subject: [PATCH 8/8] libvlcjni: another libvlc wrapper
  create mode 100644 vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 0e59fe8..d491603 100644
+index 62e1418..37c313e 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -3,7 +3,8 @@ include $(CLEAR_VARS)
@@ -757,7 +757,7 @@ index 0000000..256b0ed
 +#endif // JNI_VSL_H
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..4e17fc5
+index 0000000..d012825
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
 @@ -0,0 +1,1174 @@
@@ -811,8 +811,8 @@ index 0000000..4e17fc5
 +#include "jni_vsl.h"
 +#include "libvlcjni_danmaku_events.inc.c"
 +
-+#define AOUT_AUDIOTRACK      0
-+#define AOUT_AUDIOTRACK_JAVA 1
++#define AOUT_AUDIOTRACK_JAVA 0
++#define AOUT_AUDIOTRACK      1
 +#define AOUT_OPENSLES        2
 +
 +static jint getInt(JNIEnv *env, jobject thiz, const char* field) {
@@ -908,7 +908,7 @@ index 0000000..4e17fc5
 +
 +libvlc_media_t *new_media(jlong instance, JNIEnv *env, jobject thiz, jstring fileLocation, bool noOmx, bool noVideo)
 +{
-+    libvlc_instance_t *libvlc = (libvlc_instance_t*)instance;
++    libvlc_instance_t *libvlc = (libvlc_instance_t*)(intptr_t)instance;
 +    jboolean isCopy;
 +    const char *psz_location = (*env)->GetStringUTFChars(env, fileLocation, &isCopy);
 +    libvlc_media_t *p_md = libvlc_media_new_location(libvlc, psz_location);
@@ -944,19 +944,19 @@ index 0000000..4e17fc5
 +#if 0
 +static libvlc_media_list_t *getMediaList(JNIEnv *env, jobject thiz)
 +{
-+    return (libvlc_media_list_t*)getLong(env, thiz, "mMediaListInstance");
++    return (libvlc_media_list_t*)(intptr_t)getLong(env, thiz, "mMediaListInstance");
 +}
 +#endif
 +
 +static libvlc_media_player_t *getMediaPlayer(JNIEnv *env, jobject thiz)
 +{
-+    return (libvlc_media_player_t*)getLong(env, thiz, "mInternalMediaPlayerInstance");
++    return (libvlc_media_player_t*)(intptr_t)getLong(env, thiz, "mInternalMediaPlayerInstance");
 +}
 +
 +#if 0
 +static libvlc_media_list_player_t *getMediaListPlayer(JNIEnv *env, jobject thiz)
 +{
-+    return (libvlc_media_list_player_t*)getLong(env, thiz, "mMediaListPlayerInstance");
++    return (libvlc_media_list_player_t*)(intptr_t)getLong(env, thiz, "mMediaListPlayerInstance");
 +}
 +#endif
 +
@@ -1175,7 +1175,7 @@ index 0000000..4e17fc5
 +    };
 +    libvlc_instance_t *instance = libvlc_new(sizeof(argv) / sizeof(*argv), argv);
 +
-+    setLong(env, thiz, "mLibVlcInstance", (jlong) instance);
++    setLong(env, thiz, "mLibVlcInstance", (jlong)(intptr_t) instance);
 +
 +    if (!instance)
 +    {
@@ -1202,7 +1202,7 @@ index 0000000..4e17fc5
 +    for(int i = 0; i < (sizeof(mp_events) / sizeof(*mp_events)); i++)
 +        libvlc_event_attach(ev, mp_events[i], vlc_event_callback, myVm);
 +
-+    setLong(env, thiz, "mMediaListInstance", (jlong)pointer);
++    setLong(env, thiz, "mMediaListInstance", (jlong)(intptr_t)pointer);
 +}
 +#endif
 +
@@ -1232,7 +1232,7 @@ index 0000000..4e17fc5
 +    if (!libVlcInstance)
 +        return; // Already destroyed
 +
-+    libvlc_instance_t *instance = (libvlc_instance_t*) libVlcInstance;
++    libvlc_instance_t *instance = (libvlc_instance_t*)(intptr_t) libVlcInstance;
 +    libvlc_release(instance);
 +    libvlc_log_unsubscribe(&debug_subscriber);
 +
@@ -1338,7 +1338,7 @@ index 0000000..4e17fc5
 +    jmethodID methodId = (*env)->GetMethodID(env, cls, "getAout", "()I");
 +    if ( (*env)->CallIntMethod(env, thiz, methodId) == AOUT_AUDIOTRACK_JAVA )
 +    {
-+        libvlc_audio_set_callbacks(mp, aout_play, NULL, NULL, NULL, NULL,
++        libvlc_audio_set_callbacks(mp, aout_play, aout_pause, NULL, NULL, NULL,
 +                                   (void*) myJavaLibVLC);
 +        libvlc_audio_set_format_callbacks(mp, aout_open, aout_close);
 +    }
@@ -1359,8 +1359,8 @@ index 0000000..4e17fc5
 +    libvlc_media_list_player_set_media_player(p_mlp, mp);
 +
 +    /* Keep a pointer to this media player */
-+    setLong(env, thiz, "mMediaListPlayerInstance", (jlong)p_mlp);
-+    setLong(env, thiz, "mInternalMediaPlayerInstance", (jlong)mp);
++    setLong(env, thiz, "mMediaListPlayerInstance", (jlong)(intptr_t)p_mlp);
++    setLong(env, thiz, "mInternalMediaPlayerInstance", (jlong)(intptr_t)mp);
 +
 +    libvlc_media_list_player_play_item_at_index(p_mlp, position);
 +}
@@ -2008,7 +2008,7 @@ index 0000000..7b129ed
 +#endif//LIBVLCJNI_DANMAKU_INCLUDE_INC_C
 diff --git a/vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c b/vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c
 new file mode 100644
-index 0000000..4dc061b
+index 0000000..b93ad64
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c
 @@ -0,0 +1,61 @@
@@ -2061,7 +2061,7 @@ index 0000000..4dc061b
 +            (*env)->ReleaseStringUTFChars(env, argument, user_argv[i]);
 +    }
 +
-+    setLong(env, thiz, "mLibVlcInstance", (jlong) instance);
++    setLong(env, thiz, "mLibVlcInstance", (jlong)(intptr_t) instance);
 +
 +    if (!instance)
 +    {
@@ -2075,7 +2075,7 @@ index 0000000..4dc061b
 +#endif//LIBVLCJNI_DANMAKU_NATIVEINITEX_INC_C
 diff --git a/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c b/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
 new file mode 100644
-index 0000000..e8bad70
+index 0000000..836c801
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
 @@ -0,0 +1,108 @@
@@ -2181,7 +2181,7 @@ index 0000000..e8bad70
 +    }
 +
 +    /* Keep a pointer to this media player */
-+    setLong(env, thiz, "mInternalMediaPlayerInstance", (jlong) mp);
++    setLong(env, thiz, "mInternalMediaPlayerInstance", (jlong)(intptr_t) mp);
 +
 +    libvlc_media_player_play(mp);
 +}

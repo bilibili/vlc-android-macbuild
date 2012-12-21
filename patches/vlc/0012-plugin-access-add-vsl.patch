@@ -1,7 +1,7 @@
-From 91cb1b49e8c74eda8b543fda036ea38b4e7ad3a7 Mon Sep 17 00:00:00 2001
+From 9378667745ed7153847ea10871d21998b19dba9e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:53:11 +0800
-Subject: [PATCH 12/32] plugin: access: add vsl
+Subject: [PATCH 12/31] plugin: access: add vsl
 
 ---
  modules/access/Modules.am |   12 ++++
@@ -12,10 +12,10 @@ Subject: [PATCH 12/32] plugin: access: add vsl
  create mode 100644 modules/access/vsl/vsl.h
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index 2e3eca7..55d5487 100644
+index f812223..5a61f74 100644
 --- a/modules/access/Modules.am
 +++ b/modules/access/Modules.am
-@@ -207,6 +207,18 @@ libvlc_LTLIBRARIES += libaccess_bd_plugin.la
+@@ -203,6 +203,18 @@ libvlc_LTLIBRARIES += libaccess_bd_plugin.la
  endif
  
  

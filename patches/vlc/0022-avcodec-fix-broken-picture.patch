@@ -1,17 +1,17 @@
-From ae659de756bce12571ddab47bef0c8a6f3c6ae1f Mon Sep 17 00:00:00 2001
+From 02dbcc74e48f1937e6b5950ed01d17f2aede2a52 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 15:02:07 +0800
-Subject: [PATCH 23/32] avcodec: fix broken picture
+Subject: [PATCH 22/31] avcodec: fix broken picture
 
 ---
  modules/codec/avcodec/video.c |   12 +++++++++---
  1 个文件被修改，插入 9 行(+)，删除 3 行(-)
 
 diff --git a/modules/codec/avcodec/video.c b/modules/codec/avcodec/video.c
-index 261f475..93b25ad 100644
+index 7570299..cfc12f8 100644
 --- a/modules/codec/avcodec/video.c
 +++ b/modules/codec/avcodec/video.c
-@@ -466,8 +466,9 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+@@ -461,8 +461,9 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
          return NULL;
      }
  
@@ -22,7 +22,7 @@ index 261f475..93b25ad 100644
          p_sys->i_pts = VLC_TS_INVALID; /* To make sure we recover properly */
  
          p_sys->i_late_frames = 0;
-@@ -478,6 +479,10 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+@@ -473,6 +474,10 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
          block_Release( p_block );
          return NULL;
      }
@@ -33,7 +33,7 @@ index 261f475..93b25ad 100644
  
      if( p_block->i_flags & BLOCK_FLAG_PREROLL )
      {
-@@ -488,11 +493,11 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+@@ -483,11 +488,11 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
      }
  
      if( !p_dec->b_pace_control && (p_sys->i_late_frames > 0) &&
@@ -47,7 +47,7 @@ index 261f475..93b25ad 100644
                       "dropping frame (computer too slow ?)" );
              p_sys->i_pts = VLC_TS_INVALID; /* To make sure we recover properly */
          }
-@@ -542,6 +547,7 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+@@ -537,6 +542,7 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
      {
          /* It creates broken picture
           * FIXME either our parser or ffmpeg is broken */

@@ -1,4 +1,4 @@
-From a2e806f546112397dbca52a8185d93f3adf63150 Mon Sep 17 00:00:00 2001
+From dd03c69aaf83bfd5065e8c982c09f23a97f680ef Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 14 Jul 2012 15:15:42 +0800
 Subject: [PATCH 1/8] .gitignore
@@ -8,7 +8,7 @@ Subject: [PATCH 1/8] .gitignore
  1 个文件被修改，插入 1 行(+)
 
 diff --git a/.gitignore b/.gitignore
-index 5883b76..28e02b9 100644
+index 6fed1c6..f1ba9d8 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -1,5 +1,6 @@

@@ -1,7 +1,7 @@
-From 261e329a19f2243058c5b8b3c3ff6d27471ff14a Mon Sep 17 00:00:00 2001
+From 095b9c3e5f3422098a8a1affe7800f6811a09ea8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 14:43:15 +0800
-Subject: [PATCH 10/32] core: add segment resolve api
+Subject: [PATCH 10/31] core: add segment resolve api
 
 ---
  include/vlc/libvlc_media_player.h |   10 ++++++++++
@@ -14,10 +14,10 @@ diff --git a/include/vlc/libvlc_ls b/include/vlc/libvlc_ls
 new file mode 100644
 index 0000000..e69de29
 diff --git a/include/vlc/libvlc_media_player.h b/include/vlc/libvlc_media_player.h
-index aefef02..13ecc5c 100644
+index 497db9a..ce7cdd2 100644
 --- a/include/vlc/libvlc_media_player.h
 +++ b/include/vlc/libvlc_media_player.h
-@@ -1628,6 +1628,16 @@ LIBVLC_API int libvlc_audio_set_delay( libvlc_media_player_t *p_mi, int64_t i_de
+@@ -1629,6 +1629,16 @@ LIBVLC_API int libvlc_audio_set_delay( libvlc_media_player_t *p_mi, int64_t i_de
  
  /** @} audio */
  
@@ -62,10 +62,10 @@ index ad602c0..8d3217a 100644
  
  # ifdef __cplusplus
 diff --git a/lib/media_player.c b/lib/media_player.c
-index 9a86cdb..b7d15ba 100644
+index 3ab21fd..e876277 100644
 --- a/lib/media_player.c
 +++ b/lib/media_player.c
-@@ -498,6 +498,14 @@ libvlc_media_player_new( libvlc_instance_t *instance )
+@@ -489,6 +489,14 @@ libvlc_media_player_new( libvlc_instance_t *instance )
      var_Create (mp, "amem-rate", VLC_VAR_INTEGER | VLC_VAR_DOINHERIT);
      var_Create (mp, "amem-channels", VLC_VAR_INTEGER | VLC_VAR_DOINHERIT);
  
@@ -80,7 +80,7 @@ index 9a86cdb..b7d15ba 100644
      mp->p_md = NULL;
      mp->state = libvlc_NothingSpecial;
      mp->p_libvlc_instance = instance;
-@@ -1428,3 +1436,22 @@ void libvlc_media_player_next_frame( libvlc_media_player_t *p_mi )
+@@ -1418,3 +1426,22 @@ void libvlc_media_player_next_frame( libvlc_media_player_t *p_mi )
          vlc_object_release( p_input_thread );
      }
  }

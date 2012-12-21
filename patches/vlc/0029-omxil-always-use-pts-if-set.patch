@@ -1,7 +1,7 @@
-From c862c46b42a9fe3295ce1849046b17051eb3617c Mon Sep 17 00:00:00 2001
+From 7c33b277352273f212d7764f7d4b9831bba071a5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 30 Oct 2012 20:58:35 +0800
-Subject: [PATCH 30/32] omxil: always use pts if set
+Subject: [PATCH 29/31] omxil: always use pts if set
 
 revert commit 1f18696f679fe520b64d60cb933fe50d3dfc3215
 ---
@@ -9,7 +9,7 @@ revert commit 1f18696f679fe520b64d60cb933fe50d3dfc3215
  1 个文件被修改，插入 1 行(+)，删除 1 行(-)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 94fce16..708a3ab 100644
+index 94a0475..6bbd046 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -1556,7 +1556,7 @@ static picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )

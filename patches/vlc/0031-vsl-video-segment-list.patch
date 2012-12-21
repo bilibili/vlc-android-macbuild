@@ -1,7 +1,7 @@
-From c257b040ddcc9764be845ba0ddb64361ed8b6e2b Mon Sep 17 00:00:00 2001
+From a4ca7293233b88617ab4e8be5fd81eb4738e1521 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
-Subject: [PATCH 32/32] vsl: video segment list
+Subject: [PATCH 31/31] vsl: video segment list
 
 ---
  modules/access/vsl/index.c     |  889 ++++++++++++++++++++++++++++++++++++++++
@@ -2123,7 +2123,7 @@ index de188ac..1533422 100644
 \ No newline at end of file
 +#endif
 diff --git a/modules/stream_filter/membuf.c b/modules/stream_filter/membuf.c
-index 734b675..15ea401 100644
+index 9718d56..d3dc8fb 100644
 --- a/modules/stream_filter/membuf.c
 +++ b/modules/stream_filter/membuf.c
 @@ -77,6 +77,7 @@ vlc_module_end ()

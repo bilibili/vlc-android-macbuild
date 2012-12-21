@@ -1,7 +1,7 @@
-From d5f8d5594f4bea9a482ba99e9d8c1ba384d86d5a Mon Sep 17 00:00:00 2001
+From 788367c36afd0f445c81e7fa2565e632d4885586 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 5 Jul 2012 23:35:37 +0800
-Subject: [PATCH 24/32] omxil: check h264 profile and level
+Subject: [PATCH 23/31] omxil: check h264 profile and level
 
 Only load omxil codec which support video profile and level.
 Tested on devices and OMX decoder below:
@@ -27,7 +27,7 @@ Tested on devices and OMX decoder below:
  4 个文件被修改，插入 228 行(+)，删除 1 行(-)
 
 diff --git a/modules/codec/omxil/iomx.cpp b/modules/codec/omxil/iomx.cpp
-index b1879b3..ee60e1f 100644
+index c3b096c..73f2634 100644
 --- a/modules/codec/omxil/iomx.cpp
 +++ b/modules/codec/omxil/iomx.cpp
 @@ -175,6 +175,8 @@ static int get_param_size(OMX_INDEXTYPE param_index)
@@ -40,7 +40,7 @@ index b1879b3..ee60e1f 100644
          return 0;
      }
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 0733648..563e818 100644
+index a3f0af3..e2c183f 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -239,6 +239,115 @@ static OMX_ERRORTYPE ImplementationSpecificWorkarounds(decoder_t *p_dec,
@@ -172,7 +172,7 @@ index 0733648..563e818 100644
  
      /* Initialise the OMX core */
 diff --git a/modules/codec/omxil/omxil_utils.h b/modules/codec/omxil/omxil_utils.h
-index e5e29cd..8e54d82 100644
+index c17249d..e63bd19 100644
 --- a/modules/codec/omxil/omxil_utils.h
 +++ b/modules/codec/omxil/omxil_utils.h
 @@ -191,3 +191,26 @@ unsigned int GetAudioParamSize(OMX_INDEXTYPE index);
@@ -204,7 +204,7 @@ index e5e29cd..8e54d82 100644
 +OMX_VIDEO_AVCLEVELTYPE H264LevelToOmxType(int level);
 \ No newline at end of file
 diff --git a/modules/codec/omxil/utils.c b/modules/codec/omxil/utils.c
-index 9aa5337..d81a133 100644
+index 50ab576..3459de4 100644
 --- a/modules/codec/omxil/utils.c
 +++ b/modules/codec/omxil/utils.c
 @@ -915,3 +915,93 @@ void PrintOmx(decoder_t *p_dec, OMX_HANDLETYPE omx_handle, OMX_U32 i_port)
