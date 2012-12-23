@@ -1,4 +1,4 @@
-From cd75e306cc3819e2f445850ecee911e1fe1d6d5e Mon Sep 17 00:00:00 2001
+From 47c4e28853a56250b468f2ee3348c6cf8bc63b67 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 21 Dec 2012 23:22:50 +0800
 Subject: [PATCH 32/32] androidsurface: setup format depending on surface
@@ -9,7 +9,7 @@ Subject: [PATCH 32/32] androidsurface: setup format depending on surface
  1 个文件被修改，插入 127 行(+)，删除 7 行(-)
 
 diff --git a/modules/video_output/androidsurface.c b/modules/video_output/androidsurface.c
-index 1b757ee..07f9215 100644
+index 1b757ee..0ce374b 100644
 --- a/modules/video_output/androidsurface.c
 +++ b/modules/video_output/androidsurface.c
 @@ -43,6 +43,13 @@
@@ -48,7 +48,7 @@ index 1b757ee..07f9215 100644
 +            msg_Dbg( vd, "ImageFormat.YV12" );
 +            fmt.i_chroma = VLC_CODEC_YV12;
 +            break;
-+            
++
 +        case ANDROID_PIXEL_FORMAT_RGB_565:
 +            msg_Dbg( vd, "PixelFormat.RGB_565" );
 +            fmt.i_chroma = VLC_CODEC_RGB16;
