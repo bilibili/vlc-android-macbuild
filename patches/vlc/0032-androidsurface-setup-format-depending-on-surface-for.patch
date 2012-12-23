@@ -1,15 +1,15 @@
-From 30d037e9512fc6436d035f5d25d67ef17448794c Mon Sep 17 00:00:00 2001
+From cd75e306cc3819e2f445850ecee911e1fe1d6d5e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 21 Dec 2012 23:22:50 +0800
 Subject: [PATCH 32/32] androidsurface: setup format depending on surface
  format
 
 ---
- modules/video_output/androidsurface.c |  130 +++++++++++++++++++++++++++++++--
- 1 个文件被修改，插入 123 行(+)，删除 7 行(-)
+ modules/video_output/androidsurface.c |  134 +++++++++++++++++++++++++++++++--
+ 1 个文件被修改，插入 127 行(+)，删除 7 行(-)
 
 diff --git a/modules/video_output/androidsurface.c b/modules/video_output/androidsurface.c
-index 1b757ee..b4d059b 100644
+index 1b757ee..07f9215 100644
 --- a/modules/video_output/androidsurface.c
 +++ b/modules/video_output/androidsurface.c
 @@ -43,6 +43,13 @@
@@ -77,7 +77,7 @@ index 1b757ee..b4d059b 100644
      video_format_FixRgb(&fmt);
  
      /* Create the associated picture */
-@@ -251,6 +287,73 @@ static picture_pool_t *Pool(vout_display_t *vd, unsigned count) {
+@@ -251,6 +287,77 @@ static picture_pool_t *Pool(vout_display_t *vd, unsigned count) {
      return sys->pool;
  }
  
@@ -120,10 +120,14 @@ index 1b757ee..b4d059b 100644
 +    p_picture->p->i_lines = p_surfaceInfo->h;
 +}
 +
++#define ALIGN_16_PIXELS( x ) ( ( ( x ) + 15 ) / 16 * 16 )
 +static void SetupPictureYV12( SurfaceInfo* p_surfaceInfo, picture_t *p_picture )
 +{
++    int i_stride = ALIGN_16_PIXELS( p_surfaceInfo->s );
++    int i_c_stride = ALIGN_16_PIXELS( p_surfaceInfo->s / 2 );
++
 +    p_picture->p->p_pixels = (uint8_t*)p_surfaceInfo->bits;
-+    p_picture->p->i_pitch = p_surfaceInfo->s;
++    p_picture->p->i_pitch = i_stride;
 +    p_picture->p->i_lines = p_surfaceInfo->h;
 +
 +    /*  Fill chroma planes for planar YUV */
@@ -135,7 +139,7 @@ index 1b757ee..b4d059b 100644
 +            plane_t *p = &p_picture->p[n];
 +
 +            p->p_pixels = o->p_pixels + o->i_lines * o->i_pitch;
-+            p->i_pitch  = p_picture->p->i_pitch / 2;
++            p->i_pitch  = i_c_stride;
 +            p->i_lines  = p_picture->format.i_height / 2;
 +        }
 +
@@ -151,7 +155,7 @@ index 1b757ee..b4d059b 100644
  static int  AndroidLockSurface(picture_t *picture) {
      picture_sys_t *picsys = picture->p_sys;
      vout_display_sys_t *sys = picsys->sys;
-@@ -283,9 +386,22 @@ static int  AndroidLockSurface(picture_t *picture) {
+@@ -283,9 +390,22 @@ static int  AndroidLockSurface(picture_t *picture) {
          return VLC_EGENERIC;
      }
  
