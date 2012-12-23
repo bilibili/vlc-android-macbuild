@@ -1,0 +1,29 @@
+From 93324dd064cfdc014adc8800e0b47cf172c3378e Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 5 Mar 2012 17:18:45 +0800
+Subject: [PATCH 3/8] compile.sh: restore saved contrib package
+
+---
+ compile.sh |    6 ++++++
+ 1 个文件被修改，插入 6 行(+)
+
+diff --git a/compile.sh b/compile.sh
+index 2123a21..29774e1 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -196,6 +196,12 @@ echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
+ echo "CHOST= ${CHOST}" >> config.mak
+ export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
+ 
++if  test -d "../../../../tarballs" ; then
++    echo "fetch local tarballs"
++    mkdir -p ../tarballs
++    cp -n -v ../../../../tarballs/* ../tarballs/ || true
++fi
++
+ make fetch
+ make $MAKEFLAGS
+ 
+-- 
+1.7.10.4
+
