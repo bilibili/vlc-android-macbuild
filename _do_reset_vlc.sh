@@ -1,9 +1,9 @@
 #! /bin/sh
 
 BUILD_PLATFORM='unknown'
-if [ "$(uname)" == 'Linux' ]; then
+if [ "$(uname)" = 'Linux' ]; then
     BUILD_PLATFORM='linux'
-elif [ "$(uname)" == 'Darwin' ]; then
+elif [ "$(uname)" = 'Darwin' ]; then
     BUILD_PLATFORM='darwin'
 fi
 
@@ -36,7 +36,7 @@ echo "Applying the patches"
 sleep 3
 git am ../patches/*.patch
 
-if [ ${BUILD_PLATFORM} == 'darwin' ]; then
+if [ ${BUILD_PLATFORM} = 'darwin' ]; then
     echo "======================================="
     echo "Applying the patches for build on darwin"
 #    git am ../../patches/vlc-on-macosx/*.patch
