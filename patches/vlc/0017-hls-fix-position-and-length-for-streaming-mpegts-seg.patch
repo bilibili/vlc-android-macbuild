@@ -1,8 +1,8 @@
-From 08dd93715daeb6b26dcb32dbcecadcf54d5cd113 Mon Sep 17 00:00:00 2001
+From 5e2927ce1e505ed5830a07f45a5074415fd921ad Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH 17/31] hls: fix position and length for streaming mpegts
- segments hls
+Subject: [PATCH] hls: fix position and length for streaming mpegts segments
+ hls
 
 ---
  modules/demux/ts.c               |   54 ++++++++++++++++++++++++++++++++++++++
@@ -10,10 +10,10 @@ Subject: [PATCH 17/31] hls: fix position and length for streaming mpegts
  2 个文件被修改，插入 73 行(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index a780c38..8f988f5 100644
+index 1374791..f984fb6 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
-@@ -328,6 +328,14 @@ struct demux_sys_t
+@@ -334,6 +334,14 @@ struct demux_sys_t
  
      /* */
      bool        b_start_record;
@@ -28,7 +28,7 @@ index a780c38..8f988f5 100644
  };
  
  static int Demux    ( demux_t *p_demux );
-@@ -706,6 +714,13 @@ static int Open( vlc_object_t *p_this )
+@@ -712,6 +720,13 @@ static int Open( vlc_object_t *p_this )
              break;
      }
  
@@ -42,7 +42,7 @@ index a780c38..8f988f5 100644
      return VLC_SUCCESS;
  }
  
-@@ -991,6 +1006,20 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+@@ -997,6 +1012,20 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
              {
                  *pi64 = 0;
              }
@@ -63,7 +63,7 @@ index a780c38..8f988f5 100644
          }
          else
          {
-@@ -1008,6 +1037,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+@@ -1014,6 +1043,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
              {
                  *pi64 = 0;
              }
@@ -75,7 +75,7 @@ index a780c38..8f988f5 100644
          }
          else
          {
-@@ -1947,8 +1981,26 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2019,8 +2053,26 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
      if( i_pcr < 0 )
          return;
  
@@ -102,14 +102,14 @@ index a780c38..8f988f5 100644
  
      /* Search program and set the PCR */
      for( int i = 0; i < p_sys->i_pmt; i++ )
-@@ -2053,6 +2105,8 @@ static bool GatherPES( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2125,6 +2177,8 @@ static bool GatherData( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
              msg_Warn( p_demux, "discontinuity received 0x%x instead of 0x%x (pid=%d)",
                        i_cc, ( pid->i_cc + 1 )&0x0f, pid->i_pid );
  
 +            p_demux->p_sys->b_need_resync_pcr = true;
 +
              pid->i_cc = i_cc;
-             if( pid->es->p_pes && pid->es->fmt.i_cat != VIDEO_ES )
+             if( pid->es->p_data && pid->es->fmt.i_cat != VIDEO_ES )
              {
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
 index c43c7c7..db89892 100644

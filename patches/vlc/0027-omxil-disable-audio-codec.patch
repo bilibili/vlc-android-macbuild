@@ -1,25 +1,26 @@
-From 6afa8a0d8cd5e71e00163d5d75a125045252d93f Mon Sep 17 00:00:00 2001
+From 08759bcc3e5f49a8c2dde358eb41a3acdf26c134 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 4 Jul 2012 18:28:44 +0800
-Subject: [PATCH 27/31] omxil: disable audio codec
+Subject: [PATCH] omxil: disable audio codec
 
 ---
- modules/codec/omxil/omxil.c |    2 ++
- 1 个文件被修改，插入 2 行(+)
+ modules/codec/omxil/omxil.c |    3 +++
+ 1 个文件被修改，插入 3 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index f67ccc9..08e81f0 100644
+index d42e1c9..3c84453 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -1046,6 +1046,8 @@ static int OpenDecoder( vlc_object_t *p_this )
-     if( p_dec->fmt_in.i_cat != VIDEO_ES && !p_dec->b_force)
+@@ -1036,6 +1036,9 @@ static int OpenDecoder( vlc_object_t *p_this )
+     if( 0 || !GetOmxRole(p_dec->fmt_in.i_codec, p_dec->fmt_in.i_cat, false) )
          return VLC_EGENERIC;
- #endif
+ 
 +    if( p_dec->fmt_in.i_cat != VIDEO_ES )
 +        return VLC_EGENERIC;
- 
++
      status = OpenGeneric( p_this, false );
      if(status != VLC_SUCCESS) return status;
+ 
 -- 
 1.7.10.4
 

@@ -1,14 +1,14 @@
-From cab0db19e47b2c1f2cd322651227b3ee9759c8e3 Mon Sep 17 00:00:00 2001
+From 5d6665a82a156b7bde71a2c8c6118d3cbc5d9082 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
-Subject: [PATCH 25/31] omxil: sort hw codec
+Subject: [PATCH] omxil: sort hw codec
 
 ---
  modules/codec/omxil/omxil.c |   96 +++++++++++++++++++++++++++++++++++++++++++
  1 个文件被修改，插入 96 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 628685a..8c1051b 100644
+index 9687e2b..9de67d5 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -197,6 +197,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
@@ -109,7 +109,7 @@ index 628685a..8c1051b 100644
   * ImplementationSpecificWorkarounds: place-holder for implementation
   * specific workarounds
   *****************************************************************************/
-@@ -1100,6 +1191,8 @@ loaded:
+@@ -1089,6 +1180,8 @@ loaded:
          return VLC_EGENERIC;
      }
  
@@ -119,8 +119,8 @@ index 628685a..8c1051b 100644
      omx_error = OMX_ErrorUndefined;
      for(i = 0; i < p_sys->components; i++)
 @@ -1119,6 +1212,9 @@ loaded:
-         /* Some nVidia codec with DRM */
-         if (!strncmp(p_sys->ppsz_components[i], "OMX.Nvidia.h264.decode.secure", 29))
+          * using SW codecs is usually more than fast enough for MP3.) */
+         if (!strcmp(p_sys->ppsz_components[i], "OMX.SEC.MP3.Decoder"))
              continue;
 +        /* Codec in black list */
 +        if (GetOmxCodecWeight( p_sys->ppsz_components[i] ) < 0)

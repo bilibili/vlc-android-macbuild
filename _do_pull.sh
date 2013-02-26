@@ -6,7 +6,7 @@ if [ -z "$BILI_VLC_ROOT" ]; then
     exit 1
 fi
 
-BILI_VLC_ANDROID_HASH=24636222e8
+BILI_VLC_ANDROID_HASH=d8766f2795
 echo "pull "${BILI_VLC_ROOT}":"${BILI_VLC_ANDROID_HASH}
 
 if [ ! -d ${BILI_VLC_ROOT} ]; then
@@ -30,6 +30,7 @@ git am ../patches/ports-android/*.patch
 git am ../patches/ports-android/${BILI_VLC_MODULE_MODE}/*.patch
 git am ../patches/ports-android/${BILI_VLC_TARGET_MODE}/*.patch
 
+mkdir -p patches
 rm patches/100*.patch
 cp ../patches/vlc/${BILI_VLC_MODULE_MODE}/100*.patch patches/ 
 

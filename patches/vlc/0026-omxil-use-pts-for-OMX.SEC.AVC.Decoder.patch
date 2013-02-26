@@ -1,25 +1,25 @@
-From 5ef6d2ddfd45be473a64b19b57bcb24cad9dab0e Mon Sep 17 00:00:00 2001
+From 8426adab45df19b153a8b2de1a22c8b54a3c394d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 4 Jul 2012 18:27:53 +0800
-Subject: [PATCH 26/31] omxil: use pts for OMX.SEC.AVC.Decoder
+Subject: [PATCH] omxil: use pts for OMX.SEC.AVC.Decoder
 
 ---
  modules/codec/omxil/omxil.c |    2 ++
  1 个文件被修改，插入 2 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 8c1051b..f67ccc9 100644
+index 9de67d5..d42e1c9 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -1317,6 +1317,8 @@ loaded:
+@@ -1348,6 +1348,8 @@ loaded:
      p_dec->b_need_packetized = true;
      if (!strcmp(p_sys->psz_component, "OMX.TI.DUCATI1.VIDEO.DECODER"))
          p_sys->b_use_pts = 1;
 +    if (!strcmp(p_sys->psz_component, "OMX.SEC.AVC.Decoder"))
 +        p_sys->b_use_pts = 1;
  
-     if( p_dec->fmt_in.i_cat != VIDEO_ES )
-         var_SetString( p_dec, "module-audio-decoder-impl", p_sys->psz_component );
+     if (!strcmp(p_sys->psz_component, "OMX.STM.Video.Decoder"))
+         p_sys->b_use_pts = 1;
 -- 
 1.7.10.4
 

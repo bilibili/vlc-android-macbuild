@@ -1,21 +1,20 @@
-From 4714b168b5760ab9363db365a067e01929c8b6ea Mon Sep 17 00:00:00 2001
+From 55c3e8692b599a5cc8f0bd519d07ce92d2b6e8da Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 18:21:32 +0800
-Subject: [PATCH 24/31] omxil: echo OMX name
+Subject: [PATCH] omxil: echo OMX name
 
 ---
- modules/codec/omxil/omxil.c |    6 ++++++
- 1 个文件被修改，插入 6 行(+)
+ modules/codec/omxil/omxil.c |    5 +++++
+ 1 个文件被修改，插入 5 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index e2c183f..628685a 100644
+index d9a7d2a..9687e2b 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -1221,6 +1221,12 @@ loaded:
-     p_dec->b_need_packetized = true;
-     if (!strcmp(p_sys->psz_component, "OMX.TI.DUCATI1.VIDEO.DECODER"))
-         p_sys->b_use_pts = 1;
-+
+@@ -1259,6 +1259,11 @@ loaded:
+     if (p_sys->b_use_pts)
+         msg_Dbg( p_dec, "using pts timestamp mode for %s", p_sys->psz_component);
+ 
 +    if( p_dec->fmt_in.i_cat != VIDEO_ES )
 +        var_SetString( p_dec, "module-audio-decoder-impl", p_sys->psz_component );
 +    else
