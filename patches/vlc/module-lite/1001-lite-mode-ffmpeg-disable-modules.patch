@@ -1,17 +1,17 @@
-From 0bf9cfbc0c4294379e9e72f1a3f24762d851b616 Mon Sep 17 00:00:00 2001
+From c5607c0b6575a3e2d6dccda39f5850f185ff1fda Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
-Subject: [PATCH] lite-mode: ffmpeg: disable modules
+Subject: [PATCH 1001/1002] lite-mode: ffmpeg: disable modules
 
 ---
  contrib/src/ffmpeg/rules.mak |   41 ++++++++++++++++++++++++++++++++++++++---
  1 个文件被修改，插入 38 行(+)，删除 3 行(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 05f7c5e..859cb5a 100644
+index 61477f8..405a0c4 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -6,10 +6,45 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=620345f;sf=tgz
+@@ -8,10 +8,45 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=$(HASH);sf=tgz
  FFMPEGCONF = \
  	--cc="$(CC)" \
  	--disable-doc \
@@ -59,7 +59,7 @@ index 05f7c5e..859cb5a 100644
  	--disable-debug \
  	--disable-avdevice \
  	--disable-devices \
-@@ -22,7 +57,7 @@ FFMPEGCONF = \
+@@ -24,7 +59,7 @@ FFMPEGCONF = \
  #	--disable-ffserver \
  #	--disable-ffplay \
  #	--disable-ffprobe

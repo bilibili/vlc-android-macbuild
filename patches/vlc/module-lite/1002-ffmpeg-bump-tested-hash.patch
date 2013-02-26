@@ -1,0 +1,24 @@
+From 40896428ecc0c7f84802fc461646730e14ee607d Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 26 Feb 2013 19:01:29 +0800
+Subject: [PATCH 1002/1002] ffmpeg: bump tested hash
+
+---
+ contrib/src/ffmpeg/rules.mak |    2 +-
+ 1 个文件被修改，插入 1 行(+)，删除 1 行(-)
+
+diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
+index 405a0c4..f8fa562 100644
+--- a/contrib/src/ffmpeg/rules.mak
++++ b/contrib/src/ffmpeg/rules.mak
+@@ -1,6 +1,6 @@
+ # FFmpeg
+ 
+-HASH=HEAD
++HASH=3a02b6884c
+ 
+ #FFMPEG_SNAPURL := http://git.videolan.org/?p=ffmpeg.git;a=snapshot;h=$(HASH);sf=tgz
+ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=$(HASH);sf=tgz
+-- 
+1.7.10.4
+
