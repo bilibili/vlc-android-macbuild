@@ -9,6 +9,7 @@
 /vlc-medium-armv7a-neon
 /vlc-medium-cortex-a9-vfpv3-d16
 /vlc-app
+/vlc-fork
 /_ndk_stack.sh
 /_addr2line.sh
 /tmp
