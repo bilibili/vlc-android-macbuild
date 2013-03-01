@@ -1,7 +1,7 @@
-From fd388617f28b6f0342b8c9fe395237f3592309f6 Mon Sep 17 00:00:00 2001
+From 4bf6bf83ea69eeb0473fd2bae4465a2ddd179003 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
-Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
+Subject: [PATCH] compile.sh: support fastcompile.sh
 
 ---
  compile.sh     |   12 ++++++++++++
@@ -10,18 +10,18 @@ Subject: [PATCH 4/8] compile.sh: support fastcompile.sh
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index 29774e1..8523ca1 100755
+index e5fa393..ad18c3a 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -84,6 +84,7 @@ CHOST=${NDK_TOOLCHAIN_PATH}/${TARGET_TUPLE}
+@@ -79,6 +79,7 @@ CHOST=${NDK_TOOLCHAIN_PATH}/${TARGET_TUPLE}
  export PATH=${NDK_TOOLCHAIN_PATH}:${PATH}
  
  # 1/ libvlc, libvlccore and its plugins
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
- TESTED_HASH=4f42f23
+ TESTED_HASH=7018018
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
-@@ -120,6 +121,9 @@ EOF
+@@ -107,6 +108,9 @@ EOF
          exit 1
      fi
  fi
@@ -31,15 +31,15 @@ index 29774e1..8523ca1 100755
  
  if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
      EXTRA_CFLAGS="-mfpu=vfpv3-d16 -mcpu=cortex-a8"
-@@ -152,6 +156,7 @@ EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++${CX
+@@ -141,6 +145,7 @@ EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++${CX
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
  ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout --enable-small \
-     --disable-sdl \
-     --disable-SDL_image \
-@@ -170,6 +175,7 @@ cd contrib/android
+     --disable-dca \
+     --disable-goom \
+@@ -163,6 +168,7 @@ cd contrib/android
      --disable-faad2 \
      --disable-harfbuzz \
      --enable-iconv
@@ -47,7 +47,7 @@ index 29774e1..8523ca1 100755
  
  # TODO: mpeg2, theora
  
-@@ -192,10 +198,13 @@ then
+@@ -185,10 +191,13 @@ then
  MAKEFLAGS=-j`nproc`
  fi
  
@@ -61,7 +61,7 @@ index 29774e1..8523ca1 100755
  if  test -d "../../../../tarballs" ; then
      echo "fetch local tarballs"
      mkdir -p ../tarballs
-@@ -204,9 +213,11 @@ fi
+@@ -197,14 +206,17 @@ fi
  
  make fetch
  make $MAKEFLAGS
@@ -70,10 +70,8 @@ index 29774e1..8523ca1 100755
  cd ../.. && mkdir -p android && cd android
  
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
- if test ! -s "../configure" ; then
-     echo "Bootstraping"
-     ../bootstrap
-@@ -214,6 +225,7 @@ fi
+ echo "Bootstraping"
+ ../bootstrap
  
  echo "Configuring"
  ../../configure.sh $OPTS
