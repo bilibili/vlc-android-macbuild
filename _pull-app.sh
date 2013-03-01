@@ -20,7 +20,7 @@ cp ../patches/ports-android/${BILI_VLC_TARGET_MODE}/*.patch patches/ports-androi
 
 mkdir -p patches/vlc
 rm patches/vlc/*.patch
-cp ../patches/vlc-app/*-zlib-fix-zlib-build-on-android.patch patches/vlc/
+cp ../patches/vlc-app/*.patch patches/vlc/
 
 sh ../_do_pull.sh
 
