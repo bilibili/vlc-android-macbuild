@@ -1,15 +1,14 @@
-From 3a05b2918bbce36c3590a89a75e623e3e18d167c Mon Sep 17 00:00:00 2001
+From 893a4a1849d160bf2a534a04a18994a447229f89 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 3 Mar 2013 19:13:00 +0800
-Subject: [PATCH 32/33] androidsurface: do not post late picture
+Subject: [PATCH 33/33] androidsurface: do not post late picture
 
 ---
  modules/video_output/androidsurface.c |   79 ++++++++++++++++++++++++++-------
- src/video_output/video_output.c       |    4 +-
- 2 个文件被修改，插入 65 行(+)，删除 18 行(-)
+ 1 个文件被修改，插入 63 行(+)，删除 16 行(-)
 
 diff --git a/modules/video_output/androidsurface.c b/modules/video_output/androidsurface.c
-index 6784ab9..a0d182f 100644
+index e0b1fb9..e91f602 100644
 --- a/modules/video_output/androidsurface.c
 +++ b/modules/video_output/androidsurface.c
 @@ -113,6 +113,9 @@ struct vout_display_sys_t {
@@ -22,7 +21,7 @@ index 6784ab9..a0d182f 100644
  };
  
  struct picture_sys_t {
-@@ -176,6 +179,8 @@ static int Open(vlc_object_t *p_this)
+@@ -184,6 +187,8 @@ static int Open(vlc_object_t *p_this)
          vlc_mutex_unlock(&single_instance);
          return VLC_ENOMEM;
      }
@@ -31,7 +30,7 @@ index 6784ab9..a0d182f 100644
  
      /* */
      sys->p_library = InitLibrary(sys);
-@@ -229,6 +234,7 @@ static int Open(vlc_object_t *p_this)
+@@ -256,6 +261,7 @@ static int Open(vlc_object_t *p_this)
      if (!rsc->p_sys)
          goto enomem;
      rsc->p_sys->sys = sys;
@@ -39,7 +38,7 @@ index 6784ab9..a0d182f 100644
  
      for (int i = 0; i < PICTURE_PLANE_MAX; i++) {
          rsc->p[i].p_pixels = NULL;
-@@ -283,6 +289,8 @@ static void Close(vlc_object_t *p_this)
+@@ -310,6 +316,8 @@ static void Close(vlc_object_t *p_this)
      vout_display_t *vd = (vout_display_t *)p_this;
      vout_display_sys_t *sys = vd->sys;
  
@@ -48,7 +47,7 @@ index 6784ab9..a0d182f 100644
      picture_pool_Delete(sys->pool);
      dlclose(sys->p_library);
      free(sys);
-@@ -328,25 +336,29 @@ static int  AndroidLockSurface(picture_t *picture)
+@@ -380,25 +388,29 @@ static int  AndroidLockSurface(picture_t *picture)
  {
      picture_sys_t *picsys = picture->p_sys;
      vout_display_sys_t *sys = picsys->sys;
@@ -89,7 +88,7 @@ index 6784ab9..a0d182f 100644
  
      // For RGB (32 or 16) we need to align on 8 or 4 pixels, 16 pixels for YUV
      int align_pixels = (16 / picture->p[0].i_pixel_pitch) - 1;
-@@ -357,6 +369,7 @@ static int  AndroidLockSurface(picture_t *picture)
+@@ -409,6 +421,7 @@ static int  AndroidLockSurface(picture_t *picture)
          jni_SetAndroidSurfaceSize(sw, sh, sys->i_sar_num, sys->i_sar_den);
          sys->s_unlockAndPost(surf);
          jni_UnlockAndroidSurface();
@@ -97,7 +96,7 @@ index 6784ab9..a0d182f 100644
          return VLC_EGENERIC;
      }
  
-@@ -370,23 +383,57 @@ static int  AndroidLockSurface(picture_t *picture)
+@@ -422,23 +435,57 @@ static int  AndroidLockSurface(picture_t *picture)
      return VLC_SUCCESS;
  }
  
@@ -160,32 +159,6 @@ index 6784ab9..a0d182f 100644
      picture_Release(picture);
  }
  
-diff --git a/src/video_output/video_output.c b/src/video_output/video_output.c
-index 0c56ef9..e2d7c2d 100644
---- a/src/video_output/video_output.c
-+++ b/src/video_output/video_output.c
-@@ -1030,7 +1030,7 @@ static int ThreadDisplayRenderPicture(vout_thread_t *vout, bool is_forced)
-     }
- 
-     vout_chrono_Stop(&vout->p->render);
--#if 0
-+#if 1
-         {
-         static int i = 0;
-         if (((i++)%10) == 0)
-@@ -1049,11 +1049,11 @@ static int ThreadDisplayRenderPicture(vout_thread_t *vout, bool is_forced)
-         mwait(direct->date);
- 
-     /* Display the direct buffer returned by vout_RenderPicture */
--    vout->p->displayed.date = mdate();
-     vout_display_Display(vd,
-                          sys->display.filtered ? sys->display.filtered
-                                                 : direct,
-                          subpic);
-+    vout->p->displayed.date = mdate();
-     sys->display.filtered = NULL;
- 
-     vout_statistic_AddDisplayed(&vout->p->statistic, 1);
 -- 
 1.7.10.4
 

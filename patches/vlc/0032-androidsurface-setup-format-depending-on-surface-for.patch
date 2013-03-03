@@ -1,7 +1,7 @@
-From 425c5a8459837df094cea6b593b1e6e614af20f8 Mon Sep 17 00:00:00 2001
+From 1bde1ecd2a65ea39896ff1d49e52341399a3fed6 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 26 Feb 2013 17:25:39 +0800
-Subject: [PATCH 33/33] androidsurface: setup format depending on surface
+Subject: [PATCH 32/33] androidsurface: setup format depending on surface
  format
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH 33/33] androidsurface: setup format depending on surface
  1 个文件被修改，插入 54 行(+)，删除 2 行(-)
 
 diff --git a/modules/video_output/androidsurface.c b/modules/video_output/androidsurface.c
-index a0d182f..e91f602 100644
+index 6784ab9..e0b1fb9 100644
 --- a/modules/video_output/androidsurface.c
 +++ b/modules/video_output/androidsurface.c
-@@ -126,6 +126,7 @@ struct picture_sys_t {
+@@ -123,6 +123,7 @@ struct picture_sys_t {
  
  static int  AndroidLockSurface(picture_t *);
  static void AndroidUnlockSurface(picture_t *);
@@ -20,7 +20,7 @@ index a0d182f..e91f602 100644
  
  static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
  
-@@ -163,6 +164,13 @@ static void *InitLibrary(vout_display_sys_t *sys)
+@@ -160,6 +161,13 @@ static void *InitLibrary(vout_display_sys_t *sys)
      return NULL;
  }
  
@@ -34,7 +34,7 @@ index a0d182f..e91f602 100644
  static int Open(vlc_object_t *p_this)
  {
      vout_display_t *vd = (vout_display_t *)p_this;
-@@ -198,8 +206,27 @@ static int Open(vlc_object_t *p_this)
+@@ -193,8 +201,27 @@ static int Open(vlc_object_t *p_this)
      if( psz_fcc ) {
          fmt.i_chroma = vlc_fourcc_GetCodecFromString(VIDEO_ES, psz_fcc);
          free(psz_fcc);
@@ -64,7 +64,7 @@ index a0d182f..e91f602 100644
  
      switch(fmt.i_chroma) {
          case VLC_CODEC_YV12:
-@@ -304,6 +331,31 @@ static picture_pool_t *Pool(vout_display_t *vd, unsigned count)
+@@ -296,6 +323,31 @@ static picture_pool_t *Pool(vout_display_t *vd, unsigned count)
      return vd->sys->pool;
  }
  
