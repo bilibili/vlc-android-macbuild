@@ -1,7 +1,7 @@
-From b5d9dcde1ec8a4402d936c24656a8c2c158f525c Mon Sep 17 00:00:00 2001
+From 309efac99c48d844e4cbc030a7dbc24f78c4fac7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 28 Sep 2012 17:41:16 +0800
-Subject: [PATCH 01/31] autoreconf: config unused modules
+Subject: [PATCH] autoreconf: config unused modules
 
 ---
  configure.ac                     |    2 +-
@@ -12,10 +12,10 @@ Subject: [PATCH 01/31] autoreconf: config unused modules
  5 个文件被修改，插入 23 行(+)，删除 6 行(-)
 
 diff --git a/configure.ac b/configure.ac
-index dbd27dd..780efd1 100644
+index c08205b..46fa413 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -274,6 +274,7 @@ AM_CONDITIONAL(HAVE_OS2,     test "${SYS}" = "os2")
+@@ -280,6 +280,7 @@ AM_CONDITIONAL(HAVE_OS2,     test "${SYS}" = "os2")
  AM_CONDITIONAL(HAVE_WIN32,   test "${SYS}" = "mingw32")
  AM_CONDITIONAL(HAVE_WIN64,   test "${HAVE_WIN64}" = "1")
  AM_CONDITIONAL(HAVE_SYMBIAN, test "${SYS}" = "symbian")
@@ -23,7 +23,7 @@ index dbd27dd..780efd1 100644
  
  dnl
  dnl Sadly autoconf does not think about testing foo.exe when ask to test
-@@ -4060,7 +4061,6 @@ AC_CONFIG_FILES([
+@@ -4096,7 +4097,6 @@ AC_CONFIG_FILES([
    bin/Makefile
    test/Makefile
    modules/access/Makefile
@@ -32,7 +32,7 @@ index dbd27dd..780efd1 100644
    modules/audio_filter/Makefile
    modules/audio_mixer/Makefile
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index c04485d..f812223 100644
+index daca19c..141058d 100644
 --- a/modules/access/Modules.am
 +++ b/modules/access/Modules.am
 @@ -1,4 +1,3 @@
@@ -40,15 +40,15 @@ index c04485d..f812223 100644
  noinst_LTLIBRARIES =
  
  libfilesystem_plugin_la_SOURCES = \
-@@ -124,6 +123,7 @@ libshm_plugin_la_CFLAGS = $(AM_CFLAGS)
+@@ -135,6 +134,7 @@ libshm_plugin_la_CFLAGS = $(AM_CFLAGS)
  libshm_plugin_la_LIBADD = $(AM_LIBADD) $(LIBM)
  libvlc_LTLIBRARIES += libshm_plugin.la
  
 +if !MODULE_LITE
  libv4l2_plugin_la_SOURCES = \
- 	v4l2/videodev2.h \
- 	v4l2/v4l2.c \
-@@ -200,6 +200,7 @@ libaccess_bd_plugin_la_SOURCES = bd/bd.c bd/mpls.c bd/mpls.h bd/clpi.c bd/clpi.h
+ 	v4l2/linux/videodev2.h \
+ 	v4l2/linux/v4l2-common.h \
+@@ -216,6 +216,7 @@ libaccess_bd_plugin_la_SOURCES = bd/bd.c bd/mpls.c bd/mpls.h bd/clpi.c bd/clpi.h
  libaccess_bd_plugin_la_CFLAGS = $(AM_CFLAGS)
  libaccess_bd_plugin_la_LIBADD = $(AM_LIBADD)
  libvlc_LTLIBRARIES += libaccess_bd_plugin.la
@@ -57,10 +57,10 @@ index c04485d..f812223 100644
  
  ### Digital TV ###
 diff --git a/modules/codec/Modules.am b/modules/codec/Modules.am
-index d701a26..476b843 100644
+index ebd25bc..d44332ac 100644
 --- a/modules/codec/Modules.am
 +++ b/modules/codec/Modules.am
-@@ -72,7 +72,6 @@ libvlc_LTLIBRARIES += \
+@@ -75,7 +75,6 @@ libvlc_LTLIBRARIES += \
  	liblpcm_plugin.la \
  	libmpeg_audio_plugin.la \
  	librawvideo_plugin.la \
@@ -68,7 +68,7 @@ index d701a26..476b843 100644
  	libsvcdsub_plugin.la \
  	libsubsdec_plugin.la \
  	libsubsusf_plugin.la \
-@@ -85,6 +84,12 @@ libvlc_LTLIBRARIES += \
+@@ -89,6 +88,12 @@ libvlc_LTLIBRARIES += \
  	libedummy_plugin.la
  endif
  
@@ -80,9 +80,9 @@ index d701a26..476b843 100644
 +
  ### FFmpeg/libav ###
  libavcodec_plugin_la_SOURCES = \
- 	avcodec/avcommon.h \
+ 	avcodec/avcommon_compat.h \
 diff --git a/modules/demux/Modules.am b/modules/demux/Modules.am
-index 01a9d72..fcc6fe3 100644
+index 4347197..6376751 100644
 --- a/modules/demux/Modules.am
 +++ b/modules/demux/Modules.am
 @@ -94,8 +94,10 @@ endif

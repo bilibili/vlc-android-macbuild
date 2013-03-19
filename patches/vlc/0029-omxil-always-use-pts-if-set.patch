@@ -1,7 +1,7 @@
-From 7c33b277352273f212d7764f7d4b9831bba071a5 Mon Sep 17 00:00:00 2001
+From 41832097d8c144ecb04afed5fa7ed40974e765d5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 30 Oct 2012 20:58:35 +0800
-Subject: [PATCH 29/31] omxil: always use pts if set
+Subject: [PATCH] omxil: always use pts if set
 
 revert commit 1f18696f679fe520b64d60cb933fe50d3dfc3215
 ---
@@ -9,18 +9,18 @@ revert commit 1f18696f679fe520b64d60cb933fe50d3dfc3215
  1 个文件被修改，插入 1 行(+)，删除 1 行(-)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 94a0475..6bbd046 100644
+index 63097c6..96b4f66 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -1556,7 +1556,7 @@ static picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+@@ -1599,7 +1599,7 @@ static picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
          p_header->nFilledLen = p_block->i_buffer;
          p_header->nOffset = 0;
          p_header->nFlags = OMX_BUFFERFLAG_ENDOFFRAME;
 -        if (p_sys->b_use_pts && p_block->i_pts)
 +        if (p_sys->b_use_pts)
-             p_header->nTimeStamp = p_block->i_pts;
+             p_header->nTimeStamp = ToOmxTicks(p_block->i_pts);
          else
-             p_header->nTimeStamp = p_block->i_dts;
+             p_header->nTimeStamp = ToOmxTicks(p_block->i_dts);
 -- 
 1.7.10.4
 

@@ -1,4 +1,4 @@
-From 5d6665a82a156b7bde71a2c8c6118d3cbc5d9082 Mon Sep 17 00:00:00 2001
+From 12b9e34c3c672536591fe1361683050d4f8e847b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
 Subject: [PATCH] omxil: sort hw codec
@@ -8,10 +8,10 @@ Subject: [PATCH] omxil: sort hw codec
  1 个文件被修改，插入 96 行(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 9687e2b..9de67d5 100644
+index ed3d34d..7e3f4d0 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -197,6 +197,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
+@@ -196,6 +196,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
  }
  
  /*****************************************************************************
@@ -109,7 +109,7 @@ index 9687e2b..9de67d5 100644
   * ImplementationSpecificWorkarounds: place-holder for implementation
   * specific workarounds
   *****************************************************************************/
-@@ -1089,6 +1180,8 @@ loaded:
+@@ -1087,6 +1178,8 @@ loaded:
          return VLC_EGENERIC;
      }
  
@@ -118,9 +118,9 @@ index 9687e2b..9de67d5 100644
      /* Try to load and initialise a component */
      omx_error = OMX_ErrorUndefined;
      for(i = 0; i < p_sys->components; i++)
-@@ -1119,6 +1212,9 @@ loaded:
-          * using SW codecs is usually more than fast enough for MP3.) */
-         if (!strcmp(p_sys->ppsz_components[i], "OMX.SEC.MP3.Decoder"))
+@@ -1124,6 +1217,9 @@ loaded:
+          * it until we can make it work properly. */
+         if (!strcmp(p_sys->ppsz_components[i], "OMX.Nvidia.vc1.decode"))
              continue;
 +        /* Codec in black list */
 +        if (GetOmxCodecWeight( p_sys->ppsz_components[i] ) < 0)
