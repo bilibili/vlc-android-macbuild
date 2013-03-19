@@ -1,7 +1,7 @@
-From 4bf6bf83ea69eeb0473fd2bae4465a2ddd179003 Mon Sep 17 00:00:00 2001
+From 5458e4a74d45e970c17f4e27678fce964efe4ccf Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
-Subject: [PATCH] compile.sh: support fastcompile.sh
+Subject: [PATCH 4/4] compile.sh: support fastcompile.sh
 
 ---
  compile.sh     |   12 ++++++++++++
@@ -10,7 +10,7 @@ Subject: [PATCH] compile.sh: support fastcompile.sh
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index e5fa393..ad18c3a 100755
+index a275b52..d1d3651 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -79,6 +79,7 @@ CHOST=${NDK_TOOLCHAIN_PATH}/${TARGET_TUPLE}
@@ -18,7 +18,7 @@ index e5fa393..ad18c3a 100755
  
  # 1/ libvlc, libvlccore and its plugins
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
- TESTED_HASH=7018018
+ TESTED_HASH=e3d6ee9
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
 @@ -107,6 +108,9 @@ EOF
