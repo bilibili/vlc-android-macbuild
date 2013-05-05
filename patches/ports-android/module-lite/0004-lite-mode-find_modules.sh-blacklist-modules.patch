@@ -1,11 +1,11 @@
-From 31ee4bb689f75d8fe36b137cd897402be9fe82ff Mon Sep 17 00:00:00 2001
+From cb6041d275aac8e1079130e46d400dc6e75917c9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 12:04:30 +0800
 Subject: [PATCH 4/4] lite-mode: find_modules.sh: blacklist modules
 
 ---
- find_modules.sh |   36 +++++++++++++++++++++++++++++++++++-
- 1 个文件被修改，插入 35 行(+)，删除 1 行(-)
+ find_modules.sh | 36 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 35 insertions(+), 1 deletion(-)
 
 diff --git a/find_modules.sh b/find_modules.sh
 index 322033a..7b2eab4 100755
@@ -60,5 +60,5 @@ index 322033a..7b2eab4 100755
  
  regexp=
 -- 
-1.7.10.4
+1.8.2.1
 
