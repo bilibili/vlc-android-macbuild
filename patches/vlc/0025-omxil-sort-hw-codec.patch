@@ -1,18 +1,18 @@
-From 12b9e34c3c672536591fe1361683050d4f8e847b Mon Sep 17 00:00:00 2001
+From 3b0f859975c9ad95f2788ca5979c95d4cdff4a9d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
 Subject: [PATCH] omxil: sort hw codec
 
 ---
- modules/codec/omxil/omxil.c |   96 +++++++++++++++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 96 行(+)
+ modules/codec/omxil/omxil.c | 96 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 96 insertions(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index ed3d34d..7e3f4d0 100644
+index 062f2e5..b7abfba 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -196,6 +196,97 @@ static int CreateComponentsList(decoder_t *p_dec, const char *psz_role)
- }
+@@ -91,6 +91,97 @@ vlc_module_begin ()
+ vlc_module_end ()
  
  /*****************************************************************************
 + * Sort component list: place-holder for choosing from multiple codec share same role
@@ -109,7 +109,7 @@ index ed3d34d..7e3f4d0 100644
   * ImplementationSpecificWorkarounds: place-holder for implementation
   * specific workarounds
   *****************************************************************************/
-@@ -1087,6 +1178,8 @@ loaded:
+@@ -946,6 +1037,8 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
          return VLC_EGENERIC;
      }
  
@@ -118,7 +118,7 @@ index ed3d34d..7e3f4d0 100644
      /* Try to load and initialise a component */
      omx_error = OMX_ErrorUndefined;
      for(i = 0; i < p_sys->components; i++)
-@@ -1124,6 +1217,9 @@ loaded:
+@@ -983,6 +1076,9 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
           * it until we can make it work properly. */
          if (!strcmp(p_sys->ppsz_components[i], "OMX.Nvidia.vc1.decode"))
              continue;
@@ -129,5 +129,5 @@ index ed3d34d..7e3f4d0 100644
          omx_error = InitialiseComponent(p_dec, p_sys->ppsz_components[i],
                                          &p_sys->omx_handle);
 -- 
-1.7.10.4
+1.8.2.1
 

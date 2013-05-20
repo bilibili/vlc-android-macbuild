@@ -1,7 +1,7 @@
-From 788367c36afd0f445c81e7fa2565e632d4885586 Mon Sep 17 00:00:00 2001
+From 8fed09c9dbec9f0c9e764468f7522e2ee2872431 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 5 Jul 2012 23:35:37 +0800
-Subject: [PATCH 23/31] omxil: check h264 profile and level
+Subject: [PATCH] omxil: check h264 profile and level
 
 Only load omxil codec which support video profile and level.
 Tested on devices and OMX decoder below:
@@ -20,11 +20,11 @@ Tested on devices and OMX decoder below:
   Tianyu Ali Cloud W806, Tegra2
       OMX.Nvidia.h264ext.decode, No profile informatio
 ---
- modules/codec/omxil/iomx.cpp      |    2 +
- modules/codec/omxil/omxil.c       |  114 ++++++++++++++++++++++++++++++++++++-
- modules/codec/omxil/omxil_utils.h |   23 ++++++++
- modules/codec/omxil/utils.c       |   90 +++++++++++++++++++++++++++++
- 4 个文件被修改，插入 228 行(+)，删除 1 行(-)
+ modules/codec/omxil/iomx.cpp      |   2 +
+ modules/codec/omxil/omxil.c       | 114 +++++++++++++++++++++++++++++++++++++-
+ modules/codec/omxil/omxil_utils.h |  23 ++++++++
+ modules/codec/omxil/utils.c       |  90 ++++++++++++++++++++++++++++++
+ 4 files changed, 228 insertions(+), 1 deletion(-)
 
 diff --git a/modules/codec/omxil/iomx.cpp b/modules/codec/omxil/iomx.cpp
 index c3b096c..73f2634 100644
@@ -40,10 +40,10 @@ index c3b096c..73f2634 100644
          return 0;
      }
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index a3f0af3..e2c183f 100644
+index bad3ad1..1ff4a62 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -239,6 +239,115 @@ static OMX_ERRORTYPE ImplementationSpecificWorkarounds(decoder_t *p_dec,
+@@ -133,6 +133,115 @@ static OMX_ERRORTYPE ImplementationSpecificWorkarounds(decoder_t *p_dec,
          break;
      }
  
@@ -159,7 +159,7 @@ index a3f0af3..e2c183f 100644
      if(!strcmp(p_sys->psz_component, "OMX.TI.Video.Decoder"))
      {
          if(p_fmt->i_cat == VIDEO_ES && def->eDir == OMX_DirInput &&
-@@ -959,7 +1068,10 @@ loaded:
+@@ -817,7 +926,10 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
      p_sys->p_ports = &p_sys->in;
      p_sys->b_use_pts = 0;
  
@@ -170,12 +170,12 @@ index a3f0af3..e2c183f 100644
 +            p_dec->fmt_in.video.i_frame_rate / 1000,
              (char *)&p_dec->fmt_out.i_codec);
  
-     /* Initialise the OMX core */
+     /* Enumerate components and build a list of the one we want to try */
 diff --git a/modules/codec/omxil/omxil_utils.h b/modules/codec/omxil/omxil_utils.h
-index c17249d..e63bd19 100644
+index 8f113b4..4557c03 100644
 --- a/modules/codec/omxil/omxil_utils.h
 +++ b/modules/codec/omxil/omxil_utils.h
-@@ -191,3 +191,26 @@ unsigned int GetAudioParamSize(OMX_INDEXTYPE index);
+@@ -242,3 +242,26 @@ unsigned int GetAudioParamSize(OMX_INDEXTYPE index);
  #define OMX_TI_COLOR_FormatYUV420PackedSemiPlanar 0x7F000100
  #define QOMX_COLOR_FormatYUV420PackedSemiPlanar64x32Tile2m8ka 0x7FA30C03
  #define OMX_IndexVendorSetYUV420pMode 0x7f000003
@@ -202,12 +202,11 @@ index c17249d..e63bd19 100644
 +uint8_t OmxLevelTypeToH264Level(OMX_VIDEO_AVCLEVELTYPE omx_profile);
 +/* Return OMX_VIDEO_AVCLevelMax for unknown level */
 +OMX_VIDEO_AVCLEVELTYPE H264LevelToOmxType(int level);
-\ No newline at end of file
 diff --git a/modules/codec/omxil/utils.c b/modules/codec/omxil/utils.c
-index 50ab576..3459de4 100644
+index 4736b7e..f315814 100644
 --- a/modules/codec/omxil/utils.c
 +++ b/modules/codec/omxil/utils.c
-@@ -915,3 +915,93 @@ void PrintOmx(decoder_t *p_dec, OMX_HANDLETYPE omx_handle, OMX_U32 i_port)
+@@ -992,3 +992,93 @@ void PrintOmx(decoder_t *p_dec, OMX_HANDLETYPE omx_handle, OMX_U32 i_port)
          }
      }
  }
@@ -302,5 +301,5 @@ index 50ab576..3459de4 100644
 +    }
 +}
 -- 
-1.7.10.4
+1.8.2.1
 

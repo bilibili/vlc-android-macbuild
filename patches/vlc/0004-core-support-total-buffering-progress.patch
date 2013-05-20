@@ -1,17 +1,17 @@
-From f99e8b30081ea520798fad57ecc68a9e5f530b32 Mon Sep 17 00:00:00 2001
+From 8f8d8bcfc7026cf6742be552eb974c1078fb93a8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 1 Jul 2012 18:44:58 +0800
-Subject: [PATCH 04/31] core: support total buffering progress
+Subject: [PATCH 4/4] core: support total buffering progress
 
 ---
- include/vlc/libvlc_events.h |    8 +++++++-
- include/vlc_input.h         |    3 +++
- lib/media_player.c          |    9 +++++++++
- src/input/event.c           |   10 ++++++++++
- src/input/event.h           |    1 +
- src/input/stream.c          |    2 ++
- src/input/var.c             |    3 +++
- 7 个文件被修改，插入 35 行(+)，删除 1 行(-)
+ include/vlc/libvlc_events.h |  8 +++++++-
+ include/vlc_input.h         |  3 +++
+ lib/media_player.c          |  9 +++++++++
+ src/input/event.c           | 10 ++++++++++
+ src/input/event.h           |  1 +
+ src/input/stream.c          |  3 ++-
+ src/input/var.c             |  3 +++
+ 7 files changed, 35 insertions(+), 2 deletions(-)
 
 diff --git a/include/vlc/libvlc_events.h b/include/vlc/libvlc_events.h
 index 2cfedbf..d286cb4 100644
@@ -40,10 +40,10 @@ index 2cfedbf..d286cb4 100644
          /* media list */
          struct
 diff --git a/include/vlc_input.h b/include/vlc_input.h
-index 7882b6c..d4ec8ca 100644
+index b48a256..63ac950 100644
 --- a/include/vlc_input.h
 +++ b/include/vlc_input.h
-@@ -437,6 +437,9 @@ typedef enum input_event_type_e
+@@ -400,6 +400,9 @@ typedef enum input_event_type_e
      /* A vout_thread_t object has been created/deleted by *the input* */
      INPUT_EVENT_VOUT,
  
@@ -54,10 +54,10 @@ index 7882b6c..d4ec8ca 100644
  
  /**
 diff --git a/lib/media_player.c b/lib/media_player.c
-index 0ac4896..3ff6c42 100644
+index 9366400..8d615a9 100644
 --- a/lib/media_player.c
 +++ b/lib/media_player.c
-@@ -315,6 +315,13 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
+@@ -299,6 +299,13 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
              var_GetFloat( p_input, "cache" ));
          libvlc_event_send( p_mi->p_event_manager, &event );
      }
@@ -71,7 +71,7 @@ index 0ac4896..3ff6c42 100644
      else if( newval.i_int == INPUT_EVENT_VOUT )
      {
          vout_thread_t **pp_vout;
-@@ -519,6 +526,8 @@ libvlc_media_player_new( libvlc_instance_t *instance )
+@@ -503,6 +510,8 @@ libvlc_media_player_new( libvlc_instance_t *instance )
  
      register_event(mp, MediaChanged);
  
@@ -114,20 +114,21 @@ index c8f1071..3991453 100644
  /* TODO rename Item* */
  void input_SendEventMeta( input_thread_t *p_input );
 diff --git a/src/input/stream.c b/src/input/stream.c
-index bf72c7a..9bb863c 100644
+index d3c4d9e..3d083f1 100644
 --- a/src/input/stream.c
 +++ b/src/input/stream.c
-@@ -636,6 +636,8 @@ static int AStreamControl( stream_t *s, int i_query, va_list args )
-         case STREAM_GET_CONTENT_TYPE:
-             return access_Control( p_access, ACCESS_GET_CONTENT_TYPE,
-                                     va_arg( args, char ** ) );
+@@ -635,7 +635,8 @@ static int AStreamControl( stream_t *s, int i_query, va_list args )
+                 AStreamControlReset( s );
+             return ret;
+         }
+-
 +        case STREAM_GET_CACHED_SIZE:
 +            return VLC_EGENERIC;
          case STREAM_SET_RECORD_STATE:
          default:
              msg_Err( s, "invalid stream_vaControl query=0x%x", i_query );
 diff --git a/src/input/var.c b/src/input/var.c
-index 9613fe2..198e0f9 100644
+index 3e3d112..19c1ff4 100644
 --- a/src/input/var.c
 +++ b/src/input/var.c
 @@ -501,6 +501,9 @@ void input_ConfigVarInit ( input_thread_t *p_input )
@@ -141,5 +142,5 @@ index 9613fe2..198e0f9 100644
      var_Create( p_input, "input-record-native", VLC_VAR_BOOL | VLC_VAR_DOINHERIT );
  
 -- 
-1.7.10.4
+1.8.2.1
 

@@ -1,17 +1,17 @@
-From d16b7732f2622118221818494fc0c16489b58497 Mon Sep 17 00:00:00 2001
+From 50a745fb2d6b165c4fa5a773bebd1c3828ba9689 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
-Subject: [PATCH 1/4] lite-mode: Android.mk: disable modules
+Subject: [PATCH] lite-mode: Android.mk: disable modules
 
 ---
- vlc-android/jni/Android.mk | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ vlc-android/jni/Android.mk | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 1cf902d..a482bcd 100644
+index d8442c4..a482bcd 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
-@@ -60,14 +60,11 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+@@ -60,15 +60,11 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
  	$(VLC_BUILD_DIR)/src/.libs/libvlccore.a \
  	$(VLC_BUILD_DIR)/compat/.libs/libcompat.a \
  	-ldl -lz -lm -llog \
@@ -23,6 +23,7 @@ index 1cf902d..a482bcd 100644
 -	-lliveMedia -lUsageEnvironment -lBasicUsageEnvironment -lgroupsock \
 -	-lspeex -lspeexdsp \
 -	-lxml2 -lpng -lgnutls -lgcrypt -lgpg-error \
+-	-lnettle -lhogweed -lgmp \
 -	-lfreetype -liconv -lass -lfribidi -lopus \
 +	-lavformat -lavcodec -lswscale -lavutil -lpostproc \
 +	-lgnutls -lgcrypt -lgpg-error \
