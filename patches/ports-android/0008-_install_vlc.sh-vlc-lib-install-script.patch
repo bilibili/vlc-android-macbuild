@@ -1,11 +1,11 @@
-From 423b9a91ba79f3d967f02b5fed09d9c771fe0749 Mon Sep 17 00:00:00 2001
+From 8b8c76121eefe96d48dbd2cad40d89b546005d94 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 15:23:34 +0800
-Subject: [PATCH 7/8] _install_vlc.sh vlc lib install script
+Subject: [PATCH 8/9] _install_vlc.sh vlc lib install script
 
 ---
- _install_vlc.sh |    8 ++++++++
- 1 个文件被修改，插入 8 行(+)
+ _install_vlc.sh | 8 ++++++++
+ 1 file changed, 8 insertions(+)
  create mode 100644 _install_vlc.sh
 
 diff --git a/_install_vlc.sh b/_install_vlc.sh
@@ -23,5 +23,5 @@ index 0000000..7824946
 +rm ${INSTALL_PROJECT}/libs/armeabi-v7a/gdb.setup
 +rm ${INSTALL_PROJECT}/libs/armeabi-v7a/gdbserver
 -- 
-1.7.10.4
+1.8.2.1
 
