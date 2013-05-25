@@ -1,0 +1,35 @@
+From 8b5eb8d75350c48b9ebd1dfdccaba6fdf372dc18 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 20 May 2013 22:29:57 +0800
+Subject: [PATCH 5/9] compile.sh: disable extras/tools
+
+---
+ compile.sh | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/compile.sh b/compile.sh
+index 71fb93d..8c088bf 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -154,12 +154,12 @@ then
+ MAKEFLAGS=-j`sysctl -n machdep.cpu.thread_count`
+ fi
+ 
+-export PATH=`pwd`/extras/tools/build/bin:$PATH
+-echo "Building tools"
+-cd extras/tools
+-./bootstrap
+-make $MAKEFLAGS
+-cd ../..
++# export PATH=`pwd`/extras/tools/build/bin:$PATH
++# echo "Building tools"
++# cd extras/tools
++# ./bootstrap
++# make $MAKEFLAGS
++# cd ../..
+ 
+ echo "Building the contribs"
+ mkdir -p contrib/android
+-- 
+1.8.2.1
+

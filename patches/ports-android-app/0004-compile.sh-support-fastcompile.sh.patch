@@ -1,27 +1,27 @@
-From 5458e4a74d45e970c17f4e27678fce964efe4ccf Mon Sep 17 00:00:00 2001
+From 8955f46b1fbe09b4099a021dea42861521975d25 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
-Subject: [PATCH 4/4] compile.sh: support fastcompile.sh
+Subject: [PATCH 4/9] compile.sh: support fastcompile.sh
 
 ---
- compile.sh     |   12 ++++++++++++
- fastcompile.sh |    4 ++++
- 2 个文件被修改，插入 16 行(+)
+ compile.sh     | 12 +++++++++++-
+ fastcompile.sh |  4 ++++
+ 2 files changed, 15 insertions(+), 1 deletion(-)
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index a275b52..d1d3651 100755
+index 28e2005..71fb93d 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -79,6 +79,7 @@ CHOST=${NDK_TOOLCHAIN_PATH}/${TARGET_TUPLE}
- export PATH=${NDK_TOOLCHAIN_PATH}:${PATH}
+@@ -81,6 +81,7 @@ export PATH=${NDK_TOOLCHAIN_PATH}:${PATH}
+ ANDROID_PATH="`pwd`"
  
  # 1/ libvlc, libvlccore and its plugins
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
- TESTED_HASH=e3d6ee9
+ TESTED_HASH=41edeb738
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
-@@ -107,6 +108,9 @@ EOF
+@@ -109,6 +110,9 @@ EOF
          exit 1
      fi
  fi
@@ -31,7 +31,7 @@ index a275b52..d1d3651 100755
  
  if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
      EXTRA_CFLAGS="-mfpu=vfpv3-d16 -mcpu=cortex-a8"
-@@ -141,6 +145,7 @@ EXTRA_CFLAGS="${EXTRA_CFLAGS} -I${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++${CX
+@@ -160,6 +164,7 @@ cd ../..
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
@@ -39,7 +39,7 @@ index a275b52..d1d3651 100755
  ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout --enable-small \
      --disable-dca \
      --disable-goom \
-@@ -163,6 +168,7 @@ cd contrib/android
+@@ -183,6 +188,7 @@ cd contrib/android
      --disable-faad2 \
      --disable-harfbuzz \
      --enable-iconv
@@ -47,8 +47,8 @@ index a275b52..d1d3651 100755
  
  # TODO: mpeg2, theora
  
-@@ -185,10 +191,13 @@ then
- MAKEFLAGS=-j`nproc`
+@@ -199,10 +205,13 @@ else
+     OPTS="--enable-debug"
  fi
  
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
@@ -61,7 +61,7 @@ index a275b52..d1d3651 100755
  if  test -d "../../../../tarballs" ; then
      echo "fetch local tarballs"
      mkdir -p ../tarballs
-@@ -197,14 +206,17 @@ fi
+@@ -211,13 +220,14 @@ fi
  
  make fetch
  make $MAKEFLAGS
@@ -69,16 +69,14 @@ index a275b52..d1d3651 100755
  
  cd ../.. && mkdir -p android && cd android
  
-+if [ -z "${VLC_FAST_COMPILE}" ]; then
- echo "Bootstraping"
- ../bootstrap
- 
- echo "Configuring"
- ../../configure.sh $OPTS
-+fi
- 
- echo "Building"
- make $MAKEFLAGS
+ if [ $# -eq 1 ] && [ "$1" = "jni" ]; then
+     CLEAN="jniclean"
+     RELEASEFLAG="vlc-android/obj/local/armeabi-v7a/libvlcjni.so"
+-else
++elif [ -z "${VLC_FAST_COMPILE}" ]; then
+     CLEAN="distclean"
+     echo "Bootstraping"
+     ../bootstrap
 diff --git a/fastcompile.sh b/fastcompile.sh
 new file mode 100644
 index 0000000..97130c1
@@ -90,5 +88,5 @@ index 0000000..97130c1
 +export VLC_FAST_COMPILE=1
 +sh compile.sh
 -- 
-1.7.10.4
+1.8.2.1
 
