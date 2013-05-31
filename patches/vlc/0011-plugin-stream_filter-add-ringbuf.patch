@@ -1,0 +1,29 @@
+From 0899252dfda6ce73baae5ce0690b76ba67025763 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Fri, 31 May 2013 18:19:18 +0800
+Subject: [PATCH 11/33] plugin: stream_filter: add ringbuf
+
+---
+ modules/stream_filter/Modules.am | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/modules/stream_filter/Modules.am b/modules/stream_filter/Modules.am
+index d970b3a..6df1540 100644
+--- a/modules/stream_filter/Modules.am
++++ b/modules/stream_filter/Modules.am
+@@ -112,6 +112,12 @@ if HAVE_GCRYPT
+ libvlc_LTLIBRARIES += libhttplive_plugin.la
+ endif
+ 
++libstream_filter_ringbuf_plugin_la_SOURCES = ringbuf.c
++libstream_filter_ringbuf_plugin_la_CFLAGS = $(AM_CFLAGS)
++libstream_filter_ringbuf_plugin_la_LIBADD = $(AM_LIBADD)
++libstream_filter_ringbuf_plugin_la_DEPENDENCIES =
++libvlc_LTLIBRARIES += libstream_filter_ringbuf_plugin.la
++
+ librecord_plugin_la_SOURCES = record.c
+ librecord_plugin_la_CFLAGS = $(AM_CFLAGS)
+ librecord_plugin_la_LIBADD = $(AM_LIBADD)
+-- 
+1.8.2.1
+

@@ -1,18 +1,18 @@
-From 92c783e4bdbe6d63cb5d09b1a93b9a53608486ec Mon Sep 17 00:00:00 2001
+From 97f6cbceb59e68c46cfa7b194db6bc40f1fa43b7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:27 +0800
-Subject: [PATCH 18/31] hls: fix play time after clock gap for mpegts
+Subject: [PATCH 18/33] hls: fix play time after clock gap for mpegts
 
 ---
- modules/demux/ts.c               |   28 +++++++++++++++++++--
- modules/stream_filter/httplive.c |   51 ++++++++++++++++++++++++++++++--------
- 2 个文件被修改，插入 66 行(+)，删除 13 行(-)
+ modules/demux/ts.c               | 28 ++++++++++++++++++++--
+ modules/stream_filter/httplive.c | 51 +++++++++++++++++++++++++++++++---------
+ 2 files changed, 66 insertions(+), 13 deletions(-)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index 8f988f5..1332f04 100644
+index 07d6012..e8c6450 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
-@@ -1981,6 +1981,8 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2045,6 +2045,8 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
      if( i_pcr < 0 )
          return;
  
@@ -21,7 +21,7 @@ index 8f988f5..1332f04 100644
      /* handle first PCR if not obtain in Open() */
      if( p_sys->i_pid_ref_pcr == -1 )
      {
-@@ -1991,11 +1993,33 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2055,11 +2057,33 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
  
      if( p_sys->i_pid_ref_pcr == pid->i_pid )
      {
@@ -58,7 +58,7 @@ index 8f988f5..1332f04 100644
          }
  
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index db89892..2254265 100644
+index 4a63456..5e5b76d 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -64,6 +64,7 @@ vlc_module_end()
@@ -92,7 +92,7 @@ index db89892..2254265 100644
      segment->duration = duration; /* seconds */
      segment->size = 0; /* bytes */
      segment->sequence = 0;
-@@ -630,7 +633,7 @@ static int parse_SegmentInformation(hls_stream_t *hls, char *p_read, int *durati
+@@ -615,7 +618,7 @@ static int parse_SegmentInformation(hls_stream_t *hls, char *p_read, int *durati
      return VLC_SUCCESS;
  }
  
@@ -101,7 +101,7 @@ index db89892..2254265 100644
  {
      assert(hls);
      assert(uri);
-@@ -640,7 +643,7 @@ static int parse_AddSegment(hls_stream_t *hls, const int duration, const char *u
+@@ -625,7 +628,7 @@ static int parse_AddSegment(hls_stream_t *hls, const int duration, const char *u
  
      char *psz_uri = relative_URI(hls->url, uri);
  
@@ -110,7 +110,7 @@ index db89892..2254265 100644
      if (segment)
          segment->sequence = hls->sequence + vlc_array_count(hls->segments) - 1;
      free(psz_uri);
-@@ -1094,7 +1097,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1085,7 +1088,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
          /* */
          bool media_sequence_loaded = false;
          int segment_duration = -1;
@@ -119,7 +119,7 @@ index db89892..2254265 100644
          do
          {
              /* Next line */
-@@ -1107,10 +1110,6 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1098,10 +1101,6 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
              {
                  segment_duration = 0;
                  err = parse_SegmentInformation(hls, line, &segment_duration);
@@ -130,7 +130,7 @@ index db89892..2254265 100644
              }
              else if (strncmp(line, "#EXT-X-TARGETDURATION", 21) == 0)
                  err = parse_TargetDuration(s, hls, line);
-@@ -1138,7 +1137,9 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1129,7 +1128,9 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
                  err = parse_EndList(s, hls);
              else if ((strncmp(line, "#", 1) != 0) && (*line != '\0') )
              {
@@ -141,7 +141,7 @@ index db89892..2254265 100644
                  segment_duration = -1; /* reset duration */
              }
  
-@@ -1150,10 +1151,10 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1141,10 +1142,10 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
  
          } while (err == VLC_SUCCESS);
  
@@ -154,7 +154,7 @@ index db89892..2254265 100644
          }
  
          free(line);
-@@ -2026,6 +2027,7 @@ static int Open(vlc_object_t *p_this)
+@@ -2017,6 +2018,7 @@ static int Open(vlc_object_t *p_this)
      /* Choose first HLS stream to start with */
      int current = p_sys->playback.stream = 0;
      p_sys->playback.segment = p_sys->download.segment = ChooseSegment(s, current);
@@ -162,7 +162,7 @@ index db89892..2254265 100644
  
      /* manage encryption key if needed */
      hls_ManageSegmentKeys(s, hls_Get(p_sys->hls_stream, current));
-@@ -2255,11 +2257,13 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
+@@ -2246,11 +2248,13 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
              else
                  segment_RestorePos(segment);
  
@@ -176,7 +176,7 @@ index db89892..2254265 100644
              vlc_cond_signal(&p_sys->download.wait);
              vlc_mutex_unlock(&p_sys->download.lock_wait);
              continue;
-@@ -2523,6 +2527,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2514,6 +2518,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
  
          vlc_mutex_lock(&segment->lock);
          segment_RestorePos(segment);
@@ -184,7 +184,7 @@ index db89892..2254265 100644
          vlc_mutex_unlock(&segment->lock);
  
          /* start download at current playback segment */
-@@ -2551,6 +2556,19 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2542,6 +2547,19 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
      return b_found ? VLC_SUCCESS : VLC_EGENERIC;
  }
  
@@ -204,7 +204,7 @@ index db89892..2254265 100644
  static int Control(stream_t *s, int i_query, va_list args)
  {
      stream_sys_t *p_sys = s->p_sys;
-@@ -2577,6 +2595,17 @@ static int Control(stream_t *s, int i_query, va_list args)
+@@ -2573,6 +2591,17 @@ static int Control(stream_t *s, int i_query, va_list args)
          case STREAM_GET_SIZE:
              *(va_arg (args, uint64_t *)) = GetStreamSize(s);
              break;
@@ -223,5 +223,5 @@ index db89892..2254265 100644
              return VLC_EGENERIC;
      }
 -- 
-1.7.10.4
+1.8.2.1
 

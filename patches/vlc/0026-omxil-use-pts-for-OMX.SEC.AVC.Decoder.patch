@@ -1,17 +1,17 @@
-From 8426adab45df19b153a8b2de1a22c8b54a3c394d Mon Sep 17 00:00:00 2001
+From 4d5795543029895e10736d38f6e7f0e3488ec5d0 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 4 Jul 2012 18:27:53 +0800
-Subject: [PATCH] omxil: use pts for OMX.SEC.AVC.Decoder
+Subject: [PATCH 26/33] omxil: use pts for OMX.SEC.AVC.Decoder
 
 ---
- modules/codec/omxil/omxil.c |    2 ++
- 1 个文件被修改，插入 2 行(+)
+ modules/codec/omxil/omxil.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 9de67d5..d42e1c9 100644
+index b7abfba..a0831f9 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -1348,6 +1348,8 @@ loaded:
+@@ -1212,6 +1212,8 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
      p_dec->b_need_packetized = true;
      if (!strcmp(p_sys->psz_component, "OMX.TI.DUCATI1.VIDEO.DECODER"))
          p_sys->b_use_pts = 1;
@@ -21,5 +21,5 @@ index 9de67d5..d42e1c9 100644
      if (!strcmp(p_sys->psz_component, "OMX.STM.Video.Decoder"))
          p_sys->b_use_pts = 1;
 -- 
-1.7.10.4
+1.8.2.1
 

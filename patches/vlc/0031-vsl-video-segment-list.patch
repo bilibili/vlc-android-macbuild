@@ -1,21 +1,21 @@
-From a4ca7293233b88617ab4e8be5fd81eb4738e1521 Mon Sep 17 00:00:00 2001
+From d22155b78108bc25f5ead2bfd21e7745fcca7aac Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
-Subject: [PATCH 31/31] vsl: video segment list
+Subject: [PATCH 31/33] vsl: video segment list
 
 ---
- modules/access/vsl/index.c     |  889 ++++++++++++++++++++++++++++++++++++++++
- modules/access/vsl/segment.c   |  880 +++++++++++++++++++++++++++++++++++++++
- modules/access/vsl/vsl.c       |  189 ++++-----
- modules/access/vsl/vsl.h       |   70 ++--
- modules/stream_filter/membuf.c |  165 +++++---
- 5 个文件被修改，插入 1995 行(+)，删除 198 行(-)
+ modules/access/vsl/index.c     | 889 +++++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/segment.c   | 880 ++++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/vsl.c       | 189 ++++-----
+ modules/access/vsl/vsl.h       |  70 ++--
+ modules/stream_filter/membuf.c | 165 +++++---
+ 5 files changed, 1995 insertions(+), 198 deletions(-)
  create mode 100644 modules/access/vsl/index.c
  create mode 100644 modules/access/vsl/segment.c
 
 diff --git a/modules/access/vsl/index.c b/modules/access/vsl/index.c
 new file mode 100644
-index 0000000..65ed6a7
+index 0000000..ba2d5fc
 --- /dev/null
 +++ b/modules/access/vsl/index.c
 @@ -0,0 +1,889 @@
@@ -473,16 +473,16 @@ index 0000000..65ed6a7
 +        p_new_segment->p_origin_stream = p_stream;
 +
 +        /* Use membuf to prebuffer segment */
-+        stream_t *p_stream_filter = stream_FilterNew( p_stream, "membuf" );
++        stream_t *p_stream_filter = stream_FilterNew( p_stream, "asyncbuf" );
 +        if( p_stream_filter )
 +        {
-+            msg_Dbg( p_demux, "open membuf" );
++            msg_Dbg( p_demux, "open asyncbuf" );
 +            p_stream = p_stream_filter;
 +            p_new_segment->p_membuf_filter = p_stream_filter;
 +        }
 +        else
 +        {
-+            msg_Err( p_demux, "failed to open membuf" );
++            msg_Err( p_demux, "failed to open asyncbuf" );
 +            /* ignore membuf */
 +        }
 +
@@ -2123,7 +2123,7 @@ index de188ac..1533422 100644
 \ No newline at end of file
 +#endif
 diff --git a/modules/stream_filter/membuf.c b/modules/stream_filter/membuf.c
-index 9718d56..d3dc8fb 100644
+index 99fc2cf..a23637b 100644
 --- a/modules/stream_filter/membuf.c
 +++ b/modules/stream_filter/membuf.c
 @@ -77,6 +77,7 @@ vlc_module_end ()
@@ -2487,5 +2487,5 @@ index 9718d56..d3dc8fb 100644
              /* wakeup prebuffer thread */
              vlc_mutex_lock( &p_sys->wait_rewind_lock );
 -- 
-1.7.10.4
+1.8.2.1
 

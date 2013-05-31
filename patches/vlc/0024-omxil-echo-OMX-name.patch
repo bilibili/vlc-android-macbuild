@@ -1,17 +1,17 @@
-From 55c3e8692b599a5cc8f0bd519d07ce92d2b6e8da Mon Sep 17 00:00:00 2001
+From fec79830a08b0d3874b67c9c5656dd7de35ab07d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 18:21:32 +0800
-Subject: [PATCH] omxil: echo OMX name
+Subject: [PATCH 24/33] omxil: echo OMX name
 
 ---
- modules/codec/omxil/omxil.c |    5 +++++
- 1 个文件被修改，插入 5 行(+)
+ modules/codec/omxil/omxil.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index d9a7d2a..9687e2b 100644
+index 1ff4a62..062f2e5 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -1259,6 +1259,11 @@ loaded:
+@@ -1123,6 +1123,11 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
      if (p_sys->b_use_pts)
          msg_Dbg( p_dec, "using pts timestamp mode for %s", p_sys->psz_component);
  
@@ -24,5 +24,5 @@ index d9a7d2a..9687e2b 100644
  
   error:
 -- 
-1.7.10.4
+1.8.2.1
 

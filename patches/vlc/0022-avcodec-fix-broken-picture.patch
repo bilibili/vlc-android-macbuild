@@ -1,17 +1,17 @@
-From 6cb58696ddbfd82d0ab5b207fc083ad2d9d45860 Mon Sep 17 00:00:00 2001
+From 388d3d1ca4492fa79f70873cd242f42e2bef1bb5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 15:02:07 +0800
-Subject: [PATCH] avcodec: fix broken picture
+Subject: [PATCH 22/33] avcodec: fix broken picture
 
 ---
- modules/codec/avcodec/video.c |    9 +++++----
- 1 个文件被修改，插入 5 行(+)，删除 4 行(-)
+ modules/codec/avcodec/video.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/modules/codec/avcodec/video.c b/modules/codec/avcodec/video.c
-index 062068f..bb86814 100644
+index 1269542..9f5b108 100644
 --- a/modules/codec/avcodec/video.c
 +++ b/modules/codec/avcodec/video.c
-@@ -473,8 +473,8 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+@@ -465,8 +465,8 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
  
          p_sys->i_late_frames = 0;
  
@@ -22,7 +22,7 @@ index 062068f..bb86814 100644
  
          block_Release( p_block );
          return NULL;
-@@ -489,11 +489,11 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+@@ -481,11 +481,11 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
      }
  
      if( !p_dec->b_pace_control && (p_sys->i_late_frames > 0) &&
@@ -36,7 +36,7 @@ index 062068f..bb86814 100644
                       "dropping frame (computer too slow ?)" );
              p_sys->i_pts = VLC_TS_INVALID; /* To make sure we recover properly */
          }
-@@ -543,6 +543,7 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+@@ -535,6 +535,7 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
      {
          /* It creates broken picture
           * FIXME either our parser or ffmpeg is broken */
@@ -45,5 +45,5 @@ index 062068f..bb86814 100644
          if( p_sys->b_hurry_up )
              p_context->skip_frame = __MAX( p_context->skip_frame,
 -- 
-1.7.10.4
+1.8.2.1
 

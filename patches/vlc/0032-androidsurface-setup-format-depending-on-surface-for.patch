@@ -1,12 +1,12 @@
-From 1bde1ecd2a65ea39896ff1d49e52341399a3fed6 Mon Sep 17 00:00:00 2001
+From 08e0134ea76e828d029941003b05bf667b55e10d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 26 Feb 2013 17:25:39 +0800
 Subject: [PATCH 32/33] androidsurface: setup format depending on surface
  format
 
 ---
- modules/video_output/androidsurface.c |   56 +++++++++++++++++++++++++++++++--
- 1 个文件被修改，插入 54 行(+)，删除 2 行(-)
+ modules/video_output/androidsurface.c | 56 +++++++++++++++++++++++++++++++++--
+ 1 file changed, 54 insertions(+), 2 deletions(-)
 
 diff --git a/modules/video_output/androidsurface.c b/modules/video_output/androidsurface.c
 index 6784ab9..e0b1fb9 100644
@@ -97,5 +97,5 @@ index 6784ab9..e0b1fb9 100644
  static void SetupPictureYV12( SurfaceInfo* p_surfaceInfo, picture_t *p_picture )
  {
 -- 
-1.7.10.4
+1.8.2.1
 

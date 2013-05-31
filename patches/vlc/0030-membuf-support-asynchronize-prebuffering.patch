@@ -1,16 +1,16 @@
-From f780ca42ef3accd7bf9531ad49c1f8d0d9eb0dcd Mon Sep 17 00:00:00 2001
+From 7a413294ae228eac71a38a0e08f584411c45a211 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:49:45 +0800
-Subject: [PATCH 30/31] membuf: support asynchronize prebuffering
+Subject: [PATCH 30/33] membuf: support asynchronize prebuffering
 
 ---
- modules/stream_filter/membuf.c |  944 ++++++++++++++++++++++++++++++++++++++++
- 1 个文件被修改，插入 944 行(+)
+ modules/stream_filter/membuf.c | 944 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 944 insertions(+)
  create mode 100644 modules/stream_filter/membuf.c
 
 diff --git a/modules/stream_filter/membuf.c b/modules/stream_filter/membuf.c
 new file mode 100644
-index 0000000..9718d56
+index 0000000..99fc2cf
 --- /dev/null
 +++ b/modules/stream_filter/membuf.c
 @@ -0,0 +1,944 @@
@@ -66,8 +66,8 @@ index 0000000..9718d56
 +    set_description (N_("Memory stream buffer"))
 +    set_category (CAT_INPUT)
 +    set_subcategory (SUBCAT_INPUT_STREAM_FILTER)
-+    set_capability ("stream_filter", 1)
-+    add_shortcut( "membuf" )
++    set_capability ("stream_filter", 2)
++    add_shortcut( "membuf", "asyncbuf" )
 +    add_bool( "membuf-enable", false, ENABLE_TEXT, ENABLE_LONGTEXT, false )
 +    set_callbacks (Open, Close)
 +vlc_module_end ()
@@ -960,5 +960,5 @@ index 0000000..9718d56
 +}
 \ No newline at end of file
 -- 
-1.7.10.4
+1.8.2.1
 

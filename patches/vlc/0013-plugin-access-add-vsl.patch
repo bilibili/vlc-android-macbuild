@@ -1,21 +1,21 @@
-From 9378667745ed7153847ea10871d21998b19dba9e Mon Sep 17 00:00:00 2001
+From a82d057fdc209a2af0fccbd99b45160b3aacea9a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:53:11 +0800
-Subject: [PATCH 12/31] plugin: access: add vsl
+Subject: [PATCH 13/33] plugin: access: add vsl
 
 ---
- modules/access/Modules.am |   12 ++++
- modules/access/vsl/vsl.c  |  159 +++++++++++++++++++++++++++++++++++++++++++++
- modules/access/vsl/vsl.h  |   62 ++++++++++++++++++
- 3 个文件被修改，插入 233 行(+)
+ modules/access/Modules.am |  12 ++++
+ modules/access/vsl/vsl.c  | 159 ++++++++++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/vsl.h  |  62 ++++++++++++++++++
+ 3 files changed, 233 insertions(+)
  create mode 100644 modules/access/vsl/vsl.c
  create mode 100644 modules/access/vsl/vsl.h
 
 diff --git a/modules/access/Modules.am b/modules/access/Modules.am
-index f812223..5a61f74 100644
+index 6a23862..b156804 100644
 --- a/modules/access/Modules.am
 +++ b/modules/access/Modules.am
-@@ -203,6 +203,18 @@ libvlc_LTLIBRARIES += libaccess_bd_plugin.la
+@@ -234,6 +234,18 @@ libvlc_LTLIBRARIES += libaccess_bd_plugin.la
  endif
  
  
@@ -270,5 +270,5 @@ index 0000000..de188ac
 +#endif
 \ No newline at end of file
 -- 
-1.7.10.4
+1.8.2.1
 

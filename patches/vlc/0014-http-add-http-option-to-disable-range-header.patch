@@ -1,17 +1,17 @@
-From e60fed64fabdd791b22e97da97a7f1457cbe2e32 Mon Sep 17 00:00:00 2001
+From 7fb31d4e0790c36ba8c49fea3f1ecd4dd2b198b0 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Apr 2012 20:51:53 +0800
-Subject: [PATCH 13/31] http: add http option to disable range header
+Subject: [PATCH 14/33] http: add http option to disable range header
 
 ---
- modules/access/http.c |   49 +++++++++++++++++++++++++++++++++++++++++++++++--
- 1 个文件被修改，插入 47 行(+)，删除 2 行(-)
+ modules/access/http.c | 49 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 47 insertions(+), 2 deletions(-)
 
 diff --git a/modules/access/http.c b/modules/access/http.c
-index 535f0bf..bec5a57 100644
+index 583cf4a..06b68f0 100644
 --- a/modules/access/http.c
 +++ b/modules/access/http.c
-@@ -102,6 +102,10 @@ static void Close( vlc_object_t * );
+@@ -94,6 +94,10 @@ static void Close( vlc_object_t * );
      "slash, e.g. FooBar/1.2.3. This option can only be specified per input " \
      "item, not globally.")
  
@@ -22,7 +22,7 @@ index 535f0bf..bec5a57 100644
  vlc_module_begin ()
      set_description( N_("HTTP input") )
      set_capability( "access", 0 )
-@@ -126,6 +130,12 @@ vlc_module_begin ()
+@@ -118,6 +122,12 @@ vlc_module_begin ()
          change_safe()
      add_bool( "http-forward-cookies", true, FORWARD_COOKIES_TEXT,
                FORWARD_COOKIES_LONGTEXT, true )
@@ -35,7 +35,7 @@ index 535f0bf..bec5a57 100644
      /* 'itpc' = iTunes Podcast */
      add_shortcut( "http", "https", "unsv", "itpc", "icyx" )
      set_callbacks( Open, Close )
-@@ -149,6 +159,8 @@ struct access_sys_t
+@@ -141,6 +151,8 @@ struct access_sys_t
      char    *psz_referrer;
      http_auth_t auth;
  
@@ -44,7 +44,7 @@ index 535f0bf..bec5a57 100644
      /* Proxy */
      bool b_proxy;
      vlc_url_t  proxy;
-@@ -362,6 +374,13 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
+@@ -354,6 +366,13 @@ static int OpenWithCookies( vlc_object_t *p_this, const char *psz_access,
          }
      }
  
@@ -58,7 +58,7 @@ index 535f0bf..bec5a57 100644
      /* HTTP referrer */
      p_sys->psz_referrer = var_InheritString( p_access, "http-referrer" );
  
-@@ -1277,8 +1296,34 @@ static int Request( access_t *p_access, uint64_t i_tell )
+@@ -1191,8 +1210,34 @@ static int Request( access_t *p_access, uint64_t i_tell )
      if( p_sys->i_version == 1 && ! p_sys->b_continuous )
      {
          p_sys->b_persist = true;
@@ -96,5 +96,5 @@ index 535f0bf..bec5a57 100644
      }
  
 -- 
-1.7.10.4
+1.8.2.1
 
