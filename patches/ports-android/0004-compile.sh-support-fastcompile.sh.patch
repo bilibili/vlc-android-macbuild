@@ -1,7 +1,7 @@
-From 8955f46b1fbe09b4099a021dea42861521975d25 Mon Sep 17 00:00:00 2001
+From 2dc41f10fa7a59b59de9b0792990714b577b5ff1 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
-Subject: [PATCH 4/9] compile.sh: support fastcompile.sh
+Subject: [PATCH] compile.sh: support fastcompile.sh
 
 ---
  compile.sh     | 12 +++++++++++-
@@ -79,14 +79,14 @@ index 28e2005..71fb93d 100755
      ../bootstrap
 diff --git a/fastcompile.sh b/fastcompile.sh
 new file mode 100644
-index 0000000..97130c1
+index 0000000..14c672b
 --- /dev/null
 +++ b/fastcompile.sh
 @@ -0,0 +1,4 @@
 +#! /bin/sh
 +
 +export VLC_FAST_COMPILE=1
-+sh compile.sh
++sh compile.sh jni
 -- 
 1.8.2.1
 
