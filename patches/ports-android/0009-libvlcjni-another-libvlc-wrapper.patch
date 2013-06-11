@@ -1,4 +1,4 @@
-From c5a66afadf4605b7747fe8590c140a9c5c66dfb5 Mon Sep 17 00:00:00 2001
+From 0db37fd6375e7deb79843f5716d1f63522df8a5e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
 Subject: [PATCH] libvlcjni: another libvlc wrapper
@@ -12,11 +12,12 @@ Subject: [PATCH] libvlcjni: another libvlc wrapper
  vlc-android/jni/jni_libvlcevent.h                  |   32 +
  vlc-android/jni/jni_vsl.c                          |  263 ++++
  vlc-android/jni/jni_vsl.h                          |   36 +
- vlc-android/jni/libvlcjni_danmaku.c                | 1282 ++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c                | 1287 ++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |   65 +
- .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |   60 +
+ .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |   61 +
  .../jni/libvlcjni_danmaku_readMediaEx.inc.c        |  108 ++
- 12 files changed, 2187 insertions(+), 1 deletion(-)
+ vlc-android/jni/libvlcjni_fflog.inc.c              |   71 ++
+ 13 files changed, 2264 insertions(+), 1 deletion(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.h
@@ -28,6 +29,7 @@ Subject: [PATCH] libvlcjni: another libvlc wrapper
  create mode 100644 vlc-android/jni/libvlcjni_danmaku_events.inc.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
+ create mode 100644 vlc-android/jni/libvlcjni_fflog.inc.c
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
 index 541256a..d8442c4 100644
@@ -757,10 +759,10 @@ index 0000000..256b0ed
 +#endif // JNI_VSL_H
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..bb3273e
+index 0000000..eb049cb
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,1282 @@
+@@ -0,0 +1,1287 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -797,6 +799,9 @@ index 0000000..bb3273e
 +#include <jni.h>
 +
 +#include <android/api-level.h>
++
++#include "../../vlc/contrib/android/ffmpeg/libavutil/avstring.h"
++#include "../../vlc/contrib/android/ffmpeg/libavutil/log.h"
 +
 +#include "libvlcjni.h"
 +#include "aout.h"
@@ -1175,6 +1180,8 @@ index 0000000..bb3273e
 +
 +    __android_log_vprint(prio, "VLC", fmt, ap);
 +}
++
++#include "libvlcjni_fflog.inc.c"
 +
 +void Java_org_videolan_libvlc_LibVLC_changeVerbosity(JNIEnv *env, jobject thiz, jboolean verbose)
 +{
@@ -2116,10 +2123,10 @@ index 0000000..7b129ed
 +#endif//LIBVLCJNI_DANMAKU_INCLUDE_INC_C
 diff --git a/vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c b/vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c
 new file mode 100644
-index 0000000..c5b9c2f
+index 0000000..ab052f3
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,61 @@
 +/*****************************************************************************
 + * libvlcjni_danmaku_nativeInitEx.inc.c
 + *****************************************************************************
@@ -2177,12 +2184,13 @@ index 0000000..c5b9c2f
 +    LOGI("LibVLC initialized: %p", instance);
 +
 +    libvlc_log_set(instance, debug_log, &verbosity);
++    av_log_set_callback(ffmpeg_debug_log);
 +}
 +
 +#endif//LIBVLCJNI_DANMAKU_NATIVEINITEX_INC_C
 diff --git a/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c b/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
 new file mode 100644
-index 0000000..836c801
+index 0000000..896321d
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
 @@ -0,0 +1,108 @@
@@ -2227,7 +2235,7 @@ index 0000000..836c801
 +
 +    /* Create a media player playing environment */
 +    libvlc_media_player_t *mp = libvlc_media_player_new(
-+            (libvlc_instance_t*) instance);
++            (libvlc_instance_t*)(intptr_t)instance);
 +
 +    int user_argc = (*env)->GetArrayLength(env, options);
 +    int i = 0;
@@ -2294,6 +2302,83 @@ index 0000000..836c801
 +}
 +
 +#endif//LIBVLCJNI_DANMAKU_READMEDIAEX_INC_C
+diff --git a/vlc-android/jni/libvlcjni_fflog.inc.c b/vlc-android/jni/libvlcjni_fflog.inc.c
+new file mode 100644
+index 0000000..4e577db
+--- /dev/null
++++ b/vlc-android/jni/libvlcjni_fflog.inc.c
+@@ -0,0 +1,71 @@
++/*****************************************************************************
++ * libvlcjni_fflog.inc.c
++ *****************************************************************************
++ * Copyright © 2013 Zhang Rui <bbcallen@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++static void ffmpeg_debug_log(void* ptr, int level, const char* fmt, va_list vl)
++{
++    bool *verbose = &verbosity;
++
++    int prio = ANDROID_LOG_DEBUG;
++    if      (level <= AV_LOG_ERROR)     prio = ANDROID_LOG_ERROR;
++    else if (level <= AV_LOG_WARNING)   prio = ANDROID_LOG_WARN;
++    else if (level <= AV_LOG_INFO)      prio = ANDROID_LOG_INFO;
++    else if (level <= AV_LOG_VERBOSE)   prio = ANDROID_LOG_DEBUG;
++    else                                prio = ANDROID_LOG_DEBUG;
++
++    if (!*verbose)
++        return;
++
++    static int print_prefix = 1;
++    static int count;
++    static char prev[1024];
++    char line[1024];
++    static int is_atty;
++    AVClass* avc = ptr ? *(AVClass **) ptr : NULL;
++    line[0] = 0;
++    if (print_prefix && avc) {
++        if (avc->parent_log_context_offset) {
++            AVClass** parent = *(AVClass ***) (((uint8_t *) ptr) +
++                                               avc->parent_log_context_offset);
++            if (parent && *parent) {
++                snprintf(line, sizeof(line), "[%s @ %p] ",
++                         (*parent)->item_name(parent), parent);
++            }
++        }
++        snprintf(line + strlen(line), sizeof(line) - strlen(line), "[%s @ %p] ",
++                 avc->item_name(ptr), ptr);
++    }
++
++    vsnprintf(line + strlen(line), sizeof(line) - strlen(line), fmt, vl);
++
++    print_prefix = strlen(line) && line[strlen(line) - 1] == '\n';
++
++    if (print_prefix && !strncmp(line, prev, sizeof line)) {
++        count++;
++        if (is_atty == 1)
++            fprintf(stderr, "    Last message repeated %d times\r", count);
++        return;
++    }
++    if (count > 0) {
++        fprintf(stderr, "    Last message repeated %d times\n", count);
++        count = 0;
++    }
++    __android_log_write(prio, "VLC-FF", line);
++    av_strlcpy(prev, line, sizeof line);
++}
 -- 
 1.8.2.1
 
