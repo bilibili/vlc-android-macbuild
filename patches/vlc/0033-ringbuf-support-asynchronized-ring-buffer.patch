@@ -1,19 +1,19 @@
-From 52ba47b85cb029c7e7066274073b20e3e60f10dc Mon Sep 17 00:00:00 2001
+From 6fabea1b6a6d45ef256ae0df07145d2443d3d237 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 31 May 2013 18:19:47 +0800
-Subject: [PATCH 33/33] ringbuf: support asynchronized ring buffer
+Subject: [PATCH] ringbuf: support asynchronized ring buffer
 
 ---
- modules/stream_filter/ringbuf.c | 805 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 805 insertions(+)
+ modules/stream_filter/ringbuf.c | 789 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 789 insertions(+)
  create mode 100644 modules/stream_filter/ringbuf.c
 
 diff --git a/modules/stream_filter/ringbuf.c b/modules/stream_filter/ringbuf.c
 new file mode 100644
-index 0000000..ae38f89
+index 0000000..4501406
 --- /dev/null
 +++ b/modules/stream_filter/ringbuf.c
-@@ -0,0 +1,805 @@
+@@ -0,0 +1,789 @@
 +/*****************************************************************************
 + * ringbuf.c: Stream ring buffer in memory
 + *****************************************************************************
@@ -85,7 +85,7 @@ index 0000000..ae38f89
 +#define BYTES_PER_READ ( 16 * 1024 )
 +#define SHORT_SEEK_RANGE ( 128 * 1024 )
 +
-+#define COND_POLL_TIME ( 500 * 1000 )
++#define COND_POLL_TIME ( 1000 * 1000 )
 +
 +struct stream_sys_t
 +{
@@ -202,7 +202,6 @@ index 0000000..ae38f89
 +    stream_sys_t *p_sys = p_stream->p_sys;
 +
 +    msg_Info( p_stream, "ringbuf: close" );
-+    return;
 +
 +    if( p_sys )
 +    {
@@ -315,15 +314,16 @@ index 0000000..ae38f89
 +
 +        if( !b_start_wait )
 +        {
-+            msg_RBuf( p_stream, "ringbuf: WaitBufferForRead_l(%d) wait start: %"PRId64" + %d",
++            msg_RBuf( p_stream, "ringbuf: WaitBufferForRead_l(%d) wait start: %"PRId64" + %d (seek: %d)",
 +                      i_read, p_sys->i_stream_offset,
-+                      p_sys->i_buffer_size );
++                      p_sys->i_buffer_size, p_sys->b_seek_request ? 1 : 0 );
 +            b_start_wait = true;
 +            start_wait_time = mdate();
 +        }
 +
 +        vlc_testcancel();
-+        vlc_cond_broadcast( &p_sys->wakeup_write_cond );
++        if( !p_sys->b_seek_request )
++            vlc_cond_broadcast( &p_sys->wakeup_write_cond );
 +        vlc_cond_timedwait( &p_sys->wakeup_read_cond, &p_sys->buffer_mutex, mdate() + COND_POLL_TIME );
 +    }
 +
@@ -356,30 +356,22 @@ index 0000000..ae38f89
 +    }
 +    // assert( p_sys->i_buffer_size > 0 );
 +
-+    int i_to_read = i_read;
++    int i_to_read = i_data_ready;
 +    if( i_to_read > p_sys->i_buffer_size )
 +        i_to_read = p_sys->i_buffer_size;
 +
 +    /* beyond last byte */
-+    int i_end_index = p_sys->i_read_index + p_sys->i_buffer_size;
-+    int i_last_index = ( i_end_index + RING_TOTAL_CAPACITY - 1 ) % RING_TOTAL_CAPACITY;
-+    int i_last_block = i_last_index / RING_BLOCK_SIZE;
-+
-+    int i_read_index = p_sys->i_read_index;
++    int i_read_index  = p_sys->i_read_index;
 +    int i_data_filled = 0;
 +    while( i_data_filled < i_to_read )
 +    {
-+        int i_block_id              = i_read_index / RING_BLOCK_SIZE;
-+        int i_offset_in_block       = i_read_index % RING_BLOCK_SIZE;
-+        int i_buffer_size_in_block;
-+        if( i_block_id == i_last_block )
-+            i_buffer_size_in_block = i_to_read - i_data_filled;
-+        else
-+            i_buffer_size_in_block = RING_BLOCK_SIZE - i_offset_in_block;
++        int i_block_id          = i_read_index / RING_BLOCK_SIZE;
++        int i_offset_in_block   = i_read_index % RING_BLOCK_SIZE;
++        int i_max_read_in_block = RING_BLOCK_SIZE - i_offset_in_block;
 +
 +        int i_copy = i_to_read - i_data_filled;
-+        if( i_copy > i_buffer_size_in_block )
-+            i_copy = i_buffer_size_in_block;
++        if( i_copy > i_max_read_in_block )
++            i_copy = i_max_read_in_block;
 +
 +        if( p_buffer )
 +            memcpy( (uint8_t*)p_buffer + i_data_filled, p_sys->p_buffer[i_block_id] + i_offset_in_block, i_copy );
@@ -478,25 +470,17 @@ index 0000000..ae38f89
 +    assert( i_write <= ( RING_TOTAL_CAPACITY - p_sys->i_buffer_size ) );
 +
 +    /* beyond last byte */
-+    int i_end_index = p_sys->i_write_index + i_write;
-+    int i_last_index = ( i_end_index + RING_TOTAL_CAPACITY - 1 ) % RING_TOTAL_CAPACITY;
-+    int i_last_block = i_last_index / RING_BLOCK_SIZE;
-+
 +    int i_write_index = p_sys->i_write_index;
 +    int i_data_filled = 0;
 +    while( i_data_filled < i_write )
 +    {
-+        int i_block_id              = i_write_index / RING_BLOCK_SIZE;
-+        int i_offset_in_block       = i_write_index % RING_BLOCK_SIZE;
-+        int i_buffer_size_in_block;
-+        if( i_block_id == i_last_block )
-+            i_buffer_size_in_block = i_write - i_data_filled;
-+        else
-+            i_buffer_size_in_block = RING_BLOCK_SIZE - i_offset_in_block;
++        int i_block_id           = i_write_index / RING_BLOCK_SIZE;
++        int i_offset_in_block    = i_write_index % RING_BLOCK_SIZE;
++        int i_max_write_in_block = RING_BLOCK_SIZE - i_offset_in_block;
 +
 +        int i_copy = i_write - i_data_filled;
-+        if( i_copy > i_buffer_size_in_block )
-+            i_copy = i_buffer_size_in_block;
++        if( i_copy > i_max_write_in_block )
++            i_copy = i_max_write_in_block;
 +
 +        if( p_buffer )
 +            memcpy( p_sys->p_buffer[i_block_id] + i_offset_in_block,
@@ -538,7 +522,7 @@ index 0000000..ae38f89
 +    stream_t *p_source = p_stream->p_source;
 +    uint8_t buf[BYTES_PER_READ];
 +
-+    while( true )
++    while( !p_sys->b_abort && !p_sys->b_error )
 +    {
 +        uint64_t i_source_offset = stream_Tell( p_stream->p_source );
 +        if( i_source_offset >= p_sys->i_stream_size )
