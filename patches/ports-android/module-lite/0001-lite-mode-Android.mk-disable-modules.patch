@@ -1,29 +1,29 @@
-From ef2ccbcf24105120c33efcffd54be83387e6915d Mon Sep 17 00:00:00 2001
+From 30bd1a911f9ab35ccaf79f8b57b4aa8d6b109b46 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
-Subject: [PATCH] lite-mode: Android.mk: disable modules
+Subject: [PATCH 1/4] lite-mode: Android.mk: disable modules
 
 ---
- vlc-android/jni/Android.mk | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ vlc-android/jni/Android.mk | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index d8442c4..76c0b47 100644
+index d8442c4..826372e 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
-@@ -60,15 +60,12 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+@@ -60,15 +60,11 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
  	$(VLC_BUILD_DIR)/src/.libs/libvlccore.a \
  	$(VLC_BUILD_DIR)/compat/.libs/libcompat.a \
  	-ldl -lz -lm -llog \
 -	-ldvbpsi -lebml -lmatroska -ltag \
 -	-logg -lFLAC -ltheora \
-+	-ldvbpsi \
- 	-lmpeg2 -la52 \
+-	-lmpeg2 -la52 \
 -	-lavformat -lavcodec -lswscale -lavutil -lpostproc -lgsm -lopenjpeg \
 -	-lliveMedia -lUsageEnvironment -lBasicUsageEnvironment -lgroupsock \
 -	-lspeex -lspeexdsp \
 -	-lxml2 -lpng -lgnutls -lgcrypt -lgpg-error \
-+	-lavformat -lavcodec -lswscale -lavutil -lpostproc \
++	-ldvbpsi \
++	-lavformat -lavcodec -lswscale -lavutil \
 +	-lgnutls -lgcrypt -lgpg-error \
  	-lnettle -lhogweed -lgmp \
 -	-lfreetype -liconv -lass -lfribidi -lopus \

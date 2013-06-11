@@ -1,14 +1,14 @@
-From 3075884a5d6c0eebbdb1b821207e83c64d9b9f1b Mon Sep 17 00:00:00 2001
+From 112cca08dbc2c4b300ecec1e49ff20ca52eacfa5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH 3/3] lite-mode: configure.sh: disable modules
+Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
 
 ---
- configure.sh | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ configure.sh | 22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
 
 diff --git a/configure.sh b/configure.sh
-index c8643b9..2d6a943 100755
+index c8643b9..0936599 100755
 --- a/configure.sh
 +++ b/configure.sh
 @@ -43,17 +43,20 @@ NM="${CROSS_COMPILE}nm" \
@@ -50,13 +50,16 @@ index c8643b9..2d6a943 100755
                  --disable-caca \
                  --disable-glx \
                  --disable-egl \
-@@ -100,7 +103,7 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+@@ -100,7 +103,10 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
                  --disable-projectm \
                  --disable-sout \
                  --disable-vorbis \
 -                --disable-faad \
 +                --enable-faad \
                  --disable-x264 \
++                --disable-postproc \
++                --disable-a52 \
++                --disable-libmpeg2 \
                  --disable-schroedinger --disable-dirac \
                  $*
 -- 
