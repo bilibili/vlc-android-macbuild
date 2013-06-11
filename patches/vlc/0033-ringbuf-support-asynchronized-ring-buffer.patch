@@ -1,19 +1,19 @@
-From 6fabea1b6a6d45ef256ae0df07145d2443d3d237 Mon Sep 17 00:00:00 2001
+From 7f5ba64bf61f164c68fc758c642bae46c4c34baa Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 31 May 2013 18:19:47 +0800
 Subject: [PATCH] ringbuf: support asynchronized ring buffer
 
 ---
- modules/stream_filter/ringbuf.c | 789 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 789 insertions(+)
+ modules/stream_filter/ringbuf.c | 803 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 803 insertions(+)
  create mode 100644 modules/stream_filter/ringbuf.c
 
 diff --git a/modules/stream_filter/ringbuf.c b/modules/stream_filter/ringbuf.c
 new file mode 100644
-index 0000000..4501406
+index 0000000..e45d6a4
 --- /dev/null
 +++ b/modules/stream_filter/ringbuf.c
-@@ -0,0 +1,789 @@
+@@ -0,0 +1,803 @@
 +/*****************************************************************************
 + * ringbuf.c: Stream ring buffer in memory
 + *****************************************************************************
@@ -79,10 +79,14 @@ index 0000000..4501406
 +#define RING_BLOCK_SIZE ( 1 * 1024 * 1024 )
 +#define RING_BLOCK_COUNT ( 10 )
 +#define RING_TOTAL_CAPACITY ( RING_BLOCK_SIZE * RING_BLOCK_COUNT )
++
++// assert(RING_BUFF_RW_GUARD_GAP + RING_BUFF_SEEK_GUARD_GAP < RING_BLOCK_SIZE)
 +#define RING_BUFF_RW_GUARD_GAP ( 1024 )
++#define RING_BUFF_SEEK_GUARD_GAP ( 1 * 1024 * 1024 )
++
 +#define RING_SEEK_THRESHOLD ( 1 * 1024 * 1024 )
 +
-+#define BYTES_PER_READ ( 16 * 1024 )
++#define BYTES_PER_READ ( 32 * 1024 )
 +#define SHORT_SEEK_RANGE ( 128 * 1024 )
 +
 +#define COND_POLL_TIME ( 1000 * 1000 )
@@ -145,6 +149,7 @@ index 0000000..4501406
 +    stream_t *p_stream = (stream_t *)obj;
 +    stream_sys_t *p_sys = NULL;
 +
++    assert( RING_BUFF_RW_GUARD_GAP + RING_BUFF_SEEK_GUARD_GAP < RING_TOTAL_CAPACITY );
 +    assert( p_stream );
 +    assert( p_stream->p_source );
 +
@@ -323,7 +328,10 @@ index 0000000..4501406
 +
 +        vlc_testcancel();
 +        if( !p_sys->b_seek_request )
++        {
 +            vlc_cond_broadcast( &p_sys->wakeup_write_cond );
++        }
++
 +        vlc_cond_timedwait( &p_sys->wakeup_read_cond, &p_sys->buffer_mutex, mdate() + COND_POLL_TIME );
 +    }
 +
@@ -416,7 +424,7 @@ index 0000000..4501406
 +
 +    // wait until enough space to write
 +    int i_buffer = i_write;
-+    while( p_sys->i_buffer_size + i_buffer > RING_TOTAL_CAPACITY - RING_BUFF_RW_GUARD_GAP )
++    while( p_sys->i_buffer_size + i_buffer > RING_TOTAL_CAPACITY - RING_BUFF_RW_GUARD_GAP - RING_BUFF_SEEK_GUARD_GAP)
 +    {
 +        if( p_sys->b_abort )
 +        {
@@ -429,6 +437,12 @@ index 0000000..4501406
 +        {
 +            msg_Warn( p_stream, "ringbuf: WaitBufferForWrite_l(%d) error", i_write );
 +            i_buffer = -1;
++            break;
++        }
++
++        if( p_sys->b_seek_request && p_sys->i_buffer_size + i_buffer < RING_TOTAL_CAPACITY - RING_BUFF_RW_GUARD_GAP )
++        {
++            msg_Warn( p_stream, "ringbuf: WaitBufferForWrite_l(%d) write to seek-gap", i_write );
 +            break;
 +        }
 +
@@ -498,7 +512,7 @@ index 0000000..4501406
 +    p_sys->i_cache_size += i_data_filled;
 +    if( p_sys->i_cache_size > RING_TOTAL_CAPACITY )
 +    {
-+        int i_diff = p_sys->i_cache_size - RING_TOTAL_CAPACITY - RING_BUFF_RW_GUARD_GAP;
++        int i_diff = p_sys->i_cache_size - RING_TOTAL_CAPACITY - RING_BUFF_RW_GUARD_GAP - RING_BUFF_SEEK_GUARD_GAP;
 +        p_sys->i_cache_offset += i_diff;
 +        p_sys->i_cache_size -= i_diff;
 +        p_sys->i_cache_index = ( p_sys->i_cache_index + i_diff ) % RING_TOTAL_CAPACITY;;
