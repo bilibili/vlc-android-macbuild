@@ -1,18 +1,25 @@
-From 08e0134ea76e828d029941003b05bf667b55e10d Mon Sep 17 00:00:00 2001
+From 64bbd8705afc7c11465d36aaea7ddc6bce616fac Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 26 Feb 2013 17:25:39 +0800
-Subject: [PATCH 32/33] androidsurface: setup format depending on surface
- format
+Subject: [PATCH] androidsurface: setup format depending on surface format
 
 ---
- modules/video_output/androidsurface.c | 56 +++++++++++++++++++++++++++++++++--
- 1 file changed, 54 insertions(+), 2 deletions(-)
+ modules/video_output/androidsurface.c | 61 +++++++++++++++++++++++++++++++++--
+ 1 file changed, 58 insertions(+), 3 deletions(-)
 
 diff --git a/modules/video_output/androidsurface.c b/modules/video_output/androidsurface.c
-index 6784ab9..e0b1fb9 100644
+index 6784ab9..fbe3750 100644
 --- a/modules/video_output/androidsurface.c
 +++ b/modules/video_output/androidsurface.c
-@@ -123,6 +123,7 @@ struct picture_sys_t {
+@@ -109,6 +109,7 @@ struct vout_display_sys_t {
+     Surface_unlockAndPost s_unlockAndPost;
+ 
+     picture_resource_t resource;
++    vout_display_t *vd;
+ 
+     /* density */
+     int i_sar_num;
+@@ -123,6 +124,7 @@ struct picture_sys_t {
  
  static int  AndroidLockSurface(picture_t *);
  static void AndroidUnlockSurface(picture_t *);
@@ -20,7 +27,7 @@ index 6784ab9..e0b1fb9 100644
  
  static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
  
-@@ -160,6 +161,13 @@ static void *InitLibrary(vout_display_sys_t *sys)
+@@ -160,6 +162,13 @@ static void *InitLibrary(vout_display_sys_t *sys)
      return NULL;
  }
  
@@ -34,7 +41,15 @@ index 6784ab9..e0b1fb9 100644
  static int Open(vlc_object_t *p_this)
  {
      vout_display_t *vd = (vout_display_t *)p_this;
-@@ -193,8 +201,27 @@ static int Open(vlc_object_t *p_this)
+@@ -178,6 +187,7 @@ static int Open(vlc_object_t *p_this)
+     }
+ 
+     /* */
++    sys->vd = vd;
+     sys->p_library = InitLibrary(sys);
+     if (!sys->p_library) {
+         free(sys);
+@@ -193,8 +203,27 @@ static int Open(vlc_object_t *p_this)
      if( psz_fcc ) {
          fmt.i_chroma = vlc_fourcc_GetCodecFromString(VIDEO_ES, psz_fcc);
          free(psz_fcc);
@@ -64,7 +79,7 @@ index 6784ab9..e0b1fb9 100644
  
      switch(fmt.i_chroma) {
          case VLC_CODEC_YV12:
-@@ -296,6 +323,31 @@ static picture_pool_t *Pool(vout_display_t *vd, unsigned count)
+@@ -296,6 +325,31 @@ static picture_pool_t *Pool(vout_display_t *vd, unsigned count)
      return vd->sys->pool;
  }
  
@@ -96,6 +111,16 @@ index 6784ab9..e0b1fb9 100644
  #define ALIGN_16_PIXELS( x ) ( ( ( x ) + 15 ) / 16 * 16 )
  static void SetupPictureYV12( SurfaceInfo* p_surfaceInfo, picture_t *p_picture )
  {
+@@ -354,7 +408,8 @@ static int  AndroidLockSurface(picture_t *picture)
+ 
+     if (info->w != aligned_width || info->h != sh) {
+         // input size doesn't match the surface size -> request a resize
+-        jni_SetAndroidSurfaceSize(sw, sh, sys->i_sar_num, sys->i_sar_den);
++        msg_Err( sys->vd, "expecting %dx%d, real %dx%d", aligned_width, sh, aligned_width, info->h );
++        jni_SetAndroidSurfaceSize(aligned_width, sh, sys->i_sar_num, sys->i_sar_den);
+         sys->s_unlockAndPost(surf);
+         jni_UnlockAndroidSurface();
+         return VLC_EGENERIC;
 -- 
 1.8.2.1
 
