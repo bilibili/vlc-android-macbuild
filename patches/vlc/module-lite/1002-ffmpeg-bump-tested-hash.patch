@@ -1,4 +1,4 @@
-From 7470049f0ee50d320bcb886476e66c689e244338 Mon Sep 17 00:00:00 2001
+From f5b8dd6951b3333625d9657df28dfa8260e4ed9b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 26 Feb 2013 19:01:29 +0800
 Subject: [PATCH] ffmpeg: bump tested hash
@@ -8,14 +8,14 @@ Subject: [PATCH] ffmpeg: bump tested hash
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 8f6fad5..13efb89 100644
+index 8f6fad5..f2baea7 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
 @@ -1,6 +1,6 @@
  # FFmpeg
  
 -HASH=HEAD
-+HASH=v9.6
++HASH=v9.7
  
  #FFMPEG_SNAPURL := http://git.videolan.org/?p=ffmpeg.git;a=snapshot;h=$(HASH);sf=tgz
  FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=$(HASH);sf=tgz
