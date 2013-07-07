@@ -1,4 +1,4 @@
-From 798b359bd4029c7ecd8ae039870bbcf27125a5c3 Mon Sep 17 00:00:00 2001
+From 69f04d6eb2c27715d55205407ec2d6abbf09a015 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
 Subject: [PATCH] libvlcjni: another libvlc wrapper
@@ -12,12 +12,12 @@ Subject: [PATCH] libvlcjni: another libvlc wrapper
  vlc-android/jni/jni_libvlcevent.h                  |   32 +
  vlc-android/jni/jni_vsl.c                          |  312 +++++
  vlc-android/jni/jni_vsl.h                          |   37 +
- vlc-android/jni/libvlcjni_danmaku.c                | 1287 ++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c                | 1326 ++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |   65 +
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |   61 +
  .../jni/libvlcjni_danmaku_readMediaEx.inc.c        |  109 ++
  vlc-android/jni/libvlcjni_fflog.inc.c              |   71 ++
- 13 files changed, 2315 insertions(+), 1 deletion(-)
+ 13 files changed, 2354 insertions(+), 1 deletion(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.h
@@ -809,28 +809,28 @@ index 0000000..527277a
 +#endif // JNI_VSL_H
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..eb049cb
+index 0000000..4725db6
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,1287 @@
+@@ -0,0 +1,1326 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
 + * Copyright © 2010-2012 VLC authors and VideoLAN
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
 + * (at your option) any later version.
 + *
 + * This program is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
 + *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
 + *****************************************************************************/
 +
 +#include <dirent.h>
@@ -1286,6 +1286,25 @@ index 0000000..eb049cb
 +    methodId = (*env)->GetMethodID(env, cls, "timeStretchingEnabled", "()Z");
 +    bool enable_time_stretch = (*env)->CallBooleanMethod(env, thiz, methodId);
 +
++    methodId = (*env)->GetMethodID(env, cls, "getDeblocking", "()I");
++    int deblocking = (*env)->CallIntMethod(env, thiz, methodId);
++    char deblockstr[2] = "3";
++    snprintf(deblockstr, 2, "%d", deblocking);
++    LOGD("Using deblocking level %d", deblocking);
++
++    methodId = (*env)->GetMethodID(env, cls, "getChroma", "()Ljava/lang/String;");
++    jstring chroma = (*env)->CallObjectMethod(env, thiz, methodId);
++    const char *chromastr = (*env)->GetStringUTFChars(env, chroma, 0);
++    LOGD("Chroma set to \"%s\"", chromastr);
++
++    methodId = (*env)->GetMethodID(env, cls, "getSubtitlesEncoding", "()Ljava/lang/String;");
++    jstring subsencoding = (*env)->CallObjectMethod(env, thiz, methodId);
++    const char *subsencodingstr = (*env)->GetStringUTFChars(env, subsencoding, 0);
++    LOGD("Subtitle encoding set to \"%s\"", subsencodingstr);
++
++    methodId = (*env)->GetMethodID(env, cls, "isVerboseMode", "()Z");
++    verbosity = (*env)->CallBooleanMethod(env, thiz, methodId);
++
 +    /* Don't add any invalid options, otherwise it causes LibVLC to crash */
 +    const char *argv[] = {
 +        "-I", "dummy",
@@ -1296,12 +1315,18 @@ index 0000000..eb049cb
 +        "--no-drop-late-frames",
 +        "--avcodec-fast",
 +        "--avcodec-threads=0",
++        "--subsdec-encoding", subsencodingstr,
 +        enable_time_stretch ? "--audio-time-stretch" : "--no-audio-time-stretch",
++        "--avcodec-skiploopfilter", deblockstr,
 +        use_opensles ? "--aout=opensles" : "--aout=android_audiotrack",
++        "--androidsurface-chroma", chromastr != NULL && chromastr[0] != 0 ? chromastr : "RV32",
 +    };
 +    libvlc_instance_t *instance = libvlc_new(sizeof(argv) / sizeof(*argv), argv);
 +
 +    setLong(env, thiz, "mLibVlcInstance", (jlong)(intptr_t) instance);
++
++    (*env)->ReleaseStringUTFChars(env, chroma, chromastr);
++    (*env)->ReleaseStringUTFChars(env, subsencoding, subsencodingstr);
 +
 +    if (!instance)
 +    {
@@ -2046,6 +2071,20 @@ index 0000000..eb049cb
 +    return -1;
 +}
 +
++jint Java_org_videolan_libvlc_LibVLC_addSubtitleTrack(JNIEnv *env, jobject thiz, jstring path)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp) {
++        jboolean isCopy;
++        const char* psz_path = (*env)->GetStringUTFChars(env, path, &isCopy);
++        jint res = libvlc_video_set_subtitle_file(mp, psz_path);
++        (*env)->ReleaseStringUTFChars(env, path, psz_path);
++        return res;
++    } else {
++        return -1;
++    }
++}
++
 +void Java_org_videolan_libvlc_LibVLC_nativeReadDirectory(JNIEnv *env, jobject thiz, jstring path, jobject arrayList)
 +{
 +    jboolean isCopy;
@@ -2355,7 +2394,7 @@ index 0000000..a38cd0a
 +#endif//LIBVLCJNI_DANMAKU_READMEDIAEX_INC_C
 diff --git a/vlc-android/jni/libvlcjni_fflog.inc.c b/vlc-android/jni/libvlcjni_fflog.inc.c
 new file mode 100644
-index 0000000..4e577db
+index 0000000..632c6f2
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_fflog.inc.c
 @@ -0,0 +1,71 @@
@@ -2364,19 +2403,19 @@ index 0000000..4e577db
 + *****************************************************************************
 + * Copyright © 2013 Zhang Rui <bbcallen@gmail.com>
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
 + * (at your option) any later version.
 + *
 + * This program is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
 + *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
 + *****************************************************************************/
 +
 +static void ffmpeg_debug_log(void* ptr, int level, const char* fmt, va_list vl)
