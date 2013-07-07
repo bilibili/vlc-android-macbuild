@@ -1,4 +1,4 @@
-From 0db37fd6375e7deb79843f5716d1f63522df8a5e Mon Sep 17 00:00:00 2001
+From 798b359bd4029c7ecd8ae039870bbcf27125a5c3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
 Subject: [PATCH] libvlcjni: another libvlc wrapper
@@ -10,14 +10,14 @@ Subject: [PATCH] libvlcjni: another libvlc wrapper
  vlc-android/jni/jni_libvlc.h                       |   36 +
  vlc-android/jni/jni_libvlcevent.c                  |   92 ++
  vlc-android/jni/jni_libvlcevent.h                  |   32 +
- vlc-android/jni/jni_vsl.c                          |  263 ++++
- vlc-android/jni/jni_vsl.h                          |   36 +
+ vlc-android/jni/jni_vsl.c                          |  312 +++++
+ vlc-android/jni/jni_vsl.h                          |   37 +
  vlc-android/jni/libvlcjni_danmaku.c                | 1287 ++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |   65 +
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |   61 +
- .../jni/libvlcjni_danmaku_readMediaEx.inc.c        |  108 ++
+ .../jni/libvlcjni_danmaku_readMediaEx.inc.c        |  109 ++
  vlc-android/jni/libvlcjni_fflog.inc.c              |   71 ++
- 13 files changed, 2264 insertions(+), 1 deletion(-)
+ 13 files changed, 2315 insertions(+), 1 deletion(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.h
@@ -448,10 +448,10 @@ index 0000000..92e39f2
 +#endif//JNI_LIBVLCEVENT_H
 diff --git a/vlc-android/jni/jni_vsl.c b/vlc-android/jni/jni_vsl.c
 new file mode 100644
-index 0000000..8c57a4a
+index 0000000..5773b64
 --- /dev/null
 +++ b/vlc-android/jni/jni_vsl.c
-@@ -0,0 +1,263 @@
+@@ -0,0 +1,312 @@
 +/*****************************************************************************
 + * jni_vsl.c: video segment list access
 + *****************************************************************************
@@ -500,7 +500,8 @@ index 0000000..8c57a4a
 +#define BUNDLE_DURATION "duration"
 +#define BUNDLE_BYTES "bytes"
 +
-+static jobject do_get_bundle(JNIEnv* env, jobject gui) {
++static jobject do_get_bundle(JNIEnv* env, jobject gui)
++{
 +    /* Get the object class */
 +    jclass cls = (*env)->GetObjectClass(env, gui);
 +    if (!cls) {
@@ -521,7 +522,8 @@ index 0000000..8c57a4a
 +}
 +
 +/* */
-+static int do_load(JNIEnv* env, jobject gui, bool b_force_reload) {
++static int do_load(JNIEnv* env, jobject gui, bool b_force_reload)
++{
 +    /* Get the object class */
 +    jclass cls = (*env)->GetObjectClass(env, gui);
 +    if (!cls) {
@@ -541,7 +543,8 @@ index 0000000..8c57a4a
 +    return jsuccess ? 0 : -1;
 +}
 +
-+int jvsl_load(void *p_cb_data, bool b_force_reload) {
++int jvsl_load(void *p_cb_data, bool b_force_reload)
++{
 +    JNIEnv *env = NULL;
 +    if ((*myVm)->AttachCurrentThread(myVm, &env, NULL) != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
@@ -555,7 +558,44 @@ index 0000000..8c57a4a
 +}
 +
 +/* */
-+static int do_get_count(JNIEnv* env, jobject gui) {
++static int do_load_segment(JNIEnv* env, jobject gui, bool b_force_reload, int segment)
++{
++    /* Get the object class */
++    jclass cls = (*env)->GetObjectClass(env, gui);
++    if (!cls) {
++        LOGE("vsl: failed to get class reference");
++        return -1;
++    }
++
++    /* Find the callback ID */
++    jmethodID methodID = (*env)->GetMethodID(env, cls, "vslLoadSegment", "(ZI)Z");
++    if (!methodID) {
++        LOGE("vsl: failed to get method vslLoad");
++        return -1;
++    }
++
++    jboolean jsuccess = (*env)->CallBooleanMethod(env, gui, methodID,
++                                                  b_force_reload, segment);
++    return jsuccess ? 0 : -1;
++}
++
++int jvsl_load_segment(void *p_cb_data, bool b_force_reload, int segment)
++{
++    JNIEnv *env = NULL;
++    if ((*myVm)->AttachCurrentThread(myVm, &env, NULL) != 0) {
++        LOGE("Could not attach the jvsl thread to the JVM !");
++        return -1;
++    }
++
++    int ret = do_load_segment(env, p_cb_data, b_force_reload, segment);
++
++    (*myVm)->DetachCurrentThread(myVm);
++    return ret;
++}
++
++/* */
++static int do_get_count(JNIEnv* env, jobject gui)
++{
 +    jobject jbundle = do_get_bundle(env, gui);
 +    if (!jbundle) {
 +        LOGE("do_get_count NULL bundle");
@@ -571,7 +611,8 @@ index 0000000..8c57a4a
 +    return ret;
 +}
 +
-+int jvsl_get_count(void *p_cb_data) {
++int jvsl_get_count(void *p_cb_data)
++{
 +    JNIEnv *env = NULL;
 +    if ((*myVm)->AttachCurrentThread(myVm, &env, NULL) != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
@@ -585,7 +626,8 @@ index 0000000..8c57a4a
 +}
 +
 +/* */
-+static char *do_get_mrl(JNIEnv* env, jobject gui, int order) {
++static char *do_get_mrl(JNIEnv* env, jobject gui, int order)
++{
 +    jobject jbundle = do_get_bundle(env, gui);
 +    if (!jbundle) {
 +        LOGE("do_get_count NULL bundle");
@@ -604,7 +646,8 @@ index 0000000..8c57a4a
 +    return ret;
 +}
 +
-+char *jvsl_get_mrl(void *p_cb_data, int order) {
++char *jvsl_get_mrl(void *p_cb_data, int order)
++{
 +    JNIEnv *env = NULL;
 +    if ((*myVm)->AttachCurrentThread(myVm, &env, NULL) != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
@@ -618,7 +661,8 @@ index 0000000..8c57a4a
 +}
 +
 +/* */
-+static char *do_get_url(JNIEnv* env, jobject gui, int order) {
++static char *do_get_url(JNIEnv* env, jobject gui, int order)
++{
 +    jobject jbundle = do_get_bundle(env, gui);
 +    if (!jbundle) {
 +        LOGE("do_get_count NULL bundle");
@@ -637,7 +681,8 @@ index 0000000..8c57a4a
 +    return ret;
 +}
 +
-+char *jvsl_get_url(void *p_cb_data, int order) {
++char *jvsl_get_url(void *p_cb_data, int order)
++{
 +    JNIEnv *env = NULL;
 +    if ((*myVm)->AttachCurrentThread(myVm, &env, NULL) != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
@@ -651,7 +696,8 @@ index 0000000..8c57a4a
 +}
 +
 +/* */
-+static int do_get_duratuon(JNIEnv* env, jobject gui, int order) {
++static int do_get_duratuon(JNIEnv* env, jobject gui, int order)
++{
 +    jobject jbundle = do_get_bundle(env, gui);
 +    if (!jbundle) {
 +        LOGE("do_get_count NULL bundle");
@@ -670,7 +716,8 @@ index 0000000..8c57a4a
 +    return ret;
 +}
 +
-+int jvsl_get_duration(void *p_cb_data, int order) {
++int jvsl_get_duration(void *p_cb_data, int order)
++{
 +    JNIEnv *env = NULL;
 +    if ((*myVm)->AttachCurrentThread(myVm, &env, NULL) != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
@@ -684,7 +731,8 @@ index 0000000..8c57a4a
 +}
 +
 +/* */
-+static int64_t do_get_bytes(JNIEnv* env, jobject gui, int order) {
++static int64_t do_get_bytes(JNIEnv* env, jobject gui, int order)
++{
 +    jobject jbundle = do_get_bundle(env, gui);
 +    if (!jbundle) {
 +        LOGE("do_get_count NULL bundle");
@@ -703,7 +751,8 @@ index 0000000..8c57a4a
 +    return ret;
 +}
 +
-+int64_t jvsl_get_bytes(void *p_cb_data, int order) {
++int64_t jvsl_get_bytes(void *p_cb_data, int order)
++{
 +    JNIEnv *env = NULL;
 +    if ((*myVm)->AttachCurrentThread(myVm, &env, NULL) != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
@@ -717,10 +766,10 @@ index 0000000..8c57a4a
 +}
 diff --git a/vlc-android/jni/jni_vsl.h b/vlc-android/jni/jni_vsl.h
 new file mode 100644
-index 0000000..256b0ed
+index 0000000..527277a
 --- /dev/null
 +++ b/vlc-android/jni/jni_vsl.h
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,37 @@
 +/*****************************************************************************
 + * jni_vsl.h: video segment list access
 + *****************************************************************************
@@ -749,11 +798,12 @@ index 0000000..256b0ed
 +#include <stdint.h>
 +#include <stdbool.h>
 +
-+int jvsl_load(void *p_cb_data, bool b_force_reload);
-+int jvsl_get_count(void *p_cb_data);
-+char *jvsl_get_mrl(void *p_cb_data, int i_order);
-+char *jvsl_get_url(void *p_cb_data, int i_order);
-+int jvsl_get_duration(void *p_cb_data, int i_order);
++int     jvsl_load(void *p_cb_data, bool b_force_reload);
++int     jvsl_load_segment(void *p_cb_data, bool b_force_reload, int segment);
++int     jvsl_get_count(void *p_cb_data);
++char   *jvsl_get_mrl(void *p_cb_data, int i_order);
++char   *jvsl_get_url(void *p_cb_data, int i_order);
++int     jvsl_get_duration(void *p_cb_data, int i_order);
 +int64_t jvsl_get_bytes(void *p_cb_data, int i_order);
 +
 +#endif // JNI_VSL_H
@@ -2190,10 +2240,10 @@ index 0000000..ab052f3
 +#endif//LIBVLCJNI_DANMAKU_NATIVEINITEX_INC_C
 diff --git a/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c b/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
 new file mode 100644
-index 0000000..896321d
+index 0000000..a38cd0a
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
-@@ -0,0 +1,108 @@
+@@ -0,0 +1,109 @@
 +/*****************************************************************************
 + * libvlcjni_danmaku_readMediaEx.inc.c
 + *****************************************************************************
@@ -2271,6 +2321,7 @@ index 0000000..896321d
 +
 +    libvlc_media_player_set_vsl_callback(mp, gui, //
 +            jvsl_load, //
++            jvsl_load_segment, //
 +            jvsl_get_count, //
 +            jvsl_get_mrl, //
 +            jvsl_get_url, //

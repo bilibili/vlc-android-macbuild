@@ -1,4 +1,4 @@
-From a69feed0dc77cdfac0dcf30417da26d9a5dac59d Mon Sep 17 00:00:00 2001
+From a9895a81eb1415936ea5eecc311b9a35760f5b0f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 29 Jul 2012 16:44:03 +0800
 Subject: [PATCH 21/33] httplive: retry segment if failed

@@ -1,7 +1,8 @@
-From 64bbd8705afc7c11465d36aaea7ddc6bce616fac Mon Sep 17 00:00:00 2001
+From da939e8b79cd411827bfe5a2b72ad85c533cef04 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 26 Feb 2013 17:25:39 +0800
-Subject: [PATCH] androidsurface: setup format depending on surface format
+Subject: [PATCH 32/33] androidsurface: setup format depending on surface
+ format
 
 ---
  modules/video_output/androidsurface.c | 61 +++++++++++++++++++++++++++++++++--

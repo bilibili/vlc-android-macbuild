@@ -1,4 +1,4 @@
-From 0899252dfda6ce73baae5ce0690b76ba67025763 Mon Sep 17 00:00:00 2001
+From f2c8a63ced66da38104defe56514f1d423e3332f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 31 May 2013 18:19:18 +0800
 Subject: [PATCH 11/33] plugin: stream_filter: add ringbuf

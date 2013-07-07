@@ -1,21 +1,21 @@
-From d22155b78108bc25f5ead2bfd21e7745fcca7aac Mon Sep 17 00:00:00 2001
+From 1306c00f3b8d09319c324f802d7eb5b7a76bfc31 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
 Subject: [PATCH 31/33] vsl: video segment list
 
 ---
  modules/access/vsl/index.c     | 889 +++++++++++++++++++++++++++++++++++++++++
- modules/access/vsl/segment.c   | 880 ++++++++++++++++++++++++++++++++++++++++
- modules/access/vsl/vsl.c       | 189 ++++-----
- modules/access/vsl/vsl.h       |  70 ++--
+ modules/access/vsl/segment.c   | 888 ++++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/vsl.c       | 195 ++++-----
+ modules/access/vsl/vsl.h       |  74 ++--
  modules/stream_filter/membuf.c | 165 +++++---
- 5 files changed, 1995 insertions(+), 198 deletions(-)
+ 5 files changed, 2015 insertions(+), 196 deletions(-)
  create mode 100644 modules/access/vsl/index.c
  create mode 100644 modules/access/vsl/segment.c
 
 diff --git a/modules/access/vsl/index.c b/modules/access/vsl/index.c
 new file mode 100644
-index 0000000..ba2d5fc
+index 0000000..256d5bf
 --- /dev/null
 +++ b/modules/access/vsl/index.c
 @@ -0,0 +1,889 @@
@@ -81,7 +81,8 @@ index 0000000..ba2d5fc
 +    set_capability( "access_demux", 100 )
 +    add_shortcut( ACCESS_VSL_INDEX, ACCESS_SINA_INDEX,
 +                  ACCESS_YOUKU_INDEX, ACCESS_CNTV_INDEX,
-+                  ACCESS_SOHU_INDEX, ACCESS_LETV_INDEX )
++                  ACCESS_SOHU_INDEX, ACCESS_LETV_INDEX,
++                  ACCESS_IQIYI_INDEX )
 +    set_callbacks( Open, Close )
 +vlc_module_end ()
 +
@@ -462,7 +463,6 @@ index 0000000..ba2d5fc
 +    {
 +        /* Create segment stream */
 +        msg_Info( p_demux, "vsl open segment stream %d", p_new_segment->i_order );
-+
 +        stream_t *p_stream = stream_UrlNew( p_demux, p_new_segment->p_mrl );
 +        if( !p_stream )
 +        {
@@ -911,10 +911,10 @@ index 0000000..ba2d5fc
 \ No newline at end of file
 diff --git a/modules/access/vsl/segment.c b/modules/access/vsl/segment.c
 new file mode 100644
-index 0000000..ae5b9f6
+index 0000000..a85452d
 --- /dev/null
 +++ b/modules/access/vsl/segment.c
-@@ -0,0 +1,880 @@
+@@ -0,0 +1,888 @@
 +/*****************************************************************************
 + * segment.c: video segment list segment access
 + *****************************************************************************
@@ -967,7 +967,8 @@ index 0000000..ae5b9f6
 +    set_capability( "access", 1 )
 +    add_shortcut( ACCESS_VSL_SEGMENT, ACCESS_SINA_SEGMENT,
 +                  ACCESS_YOUKU_SEGMENT, ACCESS_CNTV_SEGMENT,
-+                  ACCESS_SOHU_SEGMENT, ACCESS_LETV_SEGMENT )
++                  ACCESS_SOHU_SEGMENT, ACCESS_LETV_SEGMENT,
++                  ACCESS_IQIYI_SEGMENT )
 +    set_callbacks( Open, Close )
 +vlc_module_end ()
 +
@@ -1100,6 +1101,11 @@ index 0000000..ae5b9f6
 +        msg_Dbg( p_access, "segment: vsl seek (letv) " );
 +        p_sys->b_continuous = false;
 +    }
++    else if( 0 == strcmp( p_access->psz_access, ACCESS_IQIYI_SEGMENT ) )
++    {
++        msg_Dbg( p_access, "segment: vsl seek (iqiyi) " );
++        p_sys->b_continuous = false;
++    }
 +    else
 +    {
 +        msg_Dbg( p_access, "segment: vsl seek" );
@@ -1134,6 +1140,8 @@ index 0000000..ae5b9f6
 +                goto STREAM_OPEN_ERROR;
 +            }
 +        }
++
++        vsl_cbLoadSegment( &p_sys->cb, i == 0, p_sys->i_order );
 +
 +        p_sys->psz_url = vsl_cbGetUrl( &p_sys->cb, p_sys->i_order );
 +        if( !p_sys->psz_url || !*p_sys->psz_url )
@@ -1797,7 +1805,7 @@ index 0000000..ae5b9f6
 +}
 \ No newline at end of file
 diff --git a/modules/access/vsl/vsl.c b/modules/access/vsl/vsl.c
-index aca9b01..e380ab7 100644
+index aca9b01..4cc4502 100644
 --- a/modules/access/vsl/vsl.c
 +++ b/modules/access/vsl/vsl.c
 @@ -1,22 +1,23 @@
@@ -1833,7 +1841,7 @@ index aca9b01..e380ab7 100644
   *****************************************************************************/
  
  /*****************************************************************************
-@@ -33,127 +34,77 @@
+@@ -33,127 +34,85 @@
  
  #include "vsl.h"
  
@@ -1846,6 +1854,7 @@ index aca9b01..e380ab7 100644
 -    p_vsl_info->i_order = -1;
 +    p_vsl_cb->p_cb_data = var_InheritAddress( p_this, "vsl-data" );
 +    p_vsl_cb->pfn_load = var_InheritAddress( p_this, "vsl-load" );
++    p_vsl_cb->pfn_load_segment = var_InheritAddress( p_this, "vsl-load-segment" );
 +    p_vsl_cb->pfn_get_count = var_InheritAddress( p_this, "vsl-get-count" );
 +    p_vsl_cb->pfn_get_mrl = var_InheritAddress( p_this, "vsl-get-mrl" );
 +    p_vsl_cb->pfn_get_url = var_InheritAddress( p_this, "vsl-get-url" );
@@ -1895,7 +1904,7 @@ index aca9b01..e380ab7 100644
  }
  
 -vsl_info_t *vsl_ResolveInfo( demux_t *p_demux )
-+int vsl_cbGetCount( vsl_cb_t *p_vsl_cb )
++int vsl_cbLoadSegment( vsl_cb_t *p_vsl_cb, bool b_force_reload, int segment )
  {
 -    char        *p_find_real_access_tag = NULL;
 -    char        *p_find_segment_order = NULL;
@@ -1963,7 +1972,11 @@ index aca9b01..e380ab7 100644
 -        p_vsl_info->i_order = atol( p_find_segment_order + 1 );
 -        msg_Dbg( p_demux, "vsl segment order %d", p_vsl_info->i_order );
 -    }
--
++    assert( p_vsl_cb->p_cb_data );
++    assert( p_vsl_cb->pfn_load );
++    return p_vsl_cb->pfn_load_segment( p_vsl_cb->p_cb_data, b_force_reload, segment );
++}
+ 
 -    /* save index mrl */
 -    if( 0 > asprintf( &p_vsl_info->p_index_mrl, "%s:/%s/%s",
 -                      p_demux->psz_access,
@@ -1973,6 +1986,8 @@ index aca9b01..e380ab7 100644
 -        msg_Warn( p_demux, "failed to build vsl mrl" );
 -        goto EXIT_ERROR;
 -    }
++int vsl_cbGetCount( vsl_cb_t *p_vsl_cb )
++{
 +    assert( p_vsl_cb->p_cb_data );
 +    assert( p_vsl_cb->pfn_get_count );
 +    return p_vsl_cb->pfn_get_count( p_vsl_cb->p_cb_data );
@@ -2023,7 +2038,7 @@ index aca9b01..e380ab7 100644
 +    return p_vsl_cb->pfn_get_bytes( p_vsl_cb->p_cb_data, i_order );
 +}
 diff --git a/modules/access/vsl/vsl.h b/modules/access/vsl/vsl.h
-index de188ac..1533422 100644
+index de188ac..6b45c19 100644
 --- a/modules/access/vsl/vsl.h
 +++ b/modules/access/vsl/vsl.h
 @@ -1,22 +1,23 @@
@@ -2059,28 +2074,30 @@ index de188ac..1533422 100644
   *****************************************************************************/
  
  /*****************************************************************************
-@@ -35,28 +36,43 @@
+@@ -35,28 +36,49 @@
  #define ACCESS_YOUKU_INDEX      "youkuindex"
  #define ACCESS_YOUKU_SEGMENT    "youkusegment"
  
 -#define VSL_SAFE_FREE( x__ ) do { free( x__ ); ( x__ ) = NULL; } while( 0 )
--
--typedef libvlc_segment_list_t *(*libvlc_segment_list_resolve_cb)( const char *p_mrl );
--typedef void (*libvlc_segment_list_release_cb)( libvlc_segment_list_t *p_segment_lst );
 +#define ACCESS_CNTV_INDEX       "cntvindex"
 +#define ACCESS_CNTV_SEGMENT     "cntvsegment"
+ 
+-typedef libvlc_segment_list_t *(*libvlc_segment_list_resolve_cb)( const char *p_mrl );
+-typedef void (*libvlc_segment_list_release_cb)( libvlc_segment_list_t *p_segment_lst );
++#define ACCESS_SOHU_INDEX       "sohuindex"
++#define ACCESS_SOHU_SEGMENT     "sohusegment"
  
 -typedef struct {
 -    char    *p_index_mrl;
 -    char    *p_index_url;
 -    char    *p_pseudo_segment_access;       /* vslsegment */
-+#define ACCESS_SOHU_INDEX       "sohuindex"
-+#define ACCESS_SOHU_SEGMENT     "sohusegment"
++#define ACCESS_LETV_INDEX       "letvindex"
++#define ACCESS_LETV_SEGMENT     "letvsegment"
  
 -    char    *p_real_access;                 /* http */
 -    char    *p_real_access_tag;             /* mp4 */
-+#define ACCESS_LETV_INDEX       "letvindex"
-+#define ACCESS_LETV_SEGMENT     "letvsegment"
++#define ACCESS_IQIYI_INDEX       "iqiyiindex"
++#define ACCESS_IQIYI_SEGMENT     "iqiyisegment"
  
 -    int     i_order;                        /* -1 for index */
 +#define VSL_SAFE_FREE( x__ ) do { free( x__ ); ( x__ ) = NULL; } while( 0 )
@@ -2090,11 +2107,12 @@ index de188ac..1533422 100644
 -} vsl_info_t;
 +#include <vlc/libvlc_structures.h>
 +#if 0
-+typedef int (*libvlc_vsl_load_cb)( void *p_cb_data, bool b_force_reload );
-+typedef int (*libvlc_vsl_get_count_cb)( void *p_cb_data );
-+typedef char *(*libvlc_vsl_get_mrl_cb)( void *p_cb_data, int i_order );
-+typedef char *(*libvlc_vsl_get_url_cb)( void *p_cb_data, int i_order );
-+typedef int (*libvlc_vsl_get_duration_cb)( void *p_cb_data, int i_order );
++typedef int     (*libvlc_vsl_load_cb)( void *p_cb_data, bool b_force_reload );
++typedef int     (*libvlc_vsl_load_segment_cb)( void *p_cb_data, bool b_force_reload, int segment );
++typedef int     (*libvlc_vsl_get_count_cb)( void *p_cb_data );
++typedef char   *(*libvlc_vsl_get_mrl_cb)( void *p_cb_data, int i_order );
++typedef char   *(*libvlc_vsl_get_url_cb)( void *p_cb_data, int i_order );
++typedef int     (*libvlc_vsl_get_duration_cb)( void *p_cb_data, int i_order );
 +typedef int64_t (*libvlc_vsl_get_bytes_cb)( void *p_cb_data, int i_order );
 +#endif
  
@@ -2103,6 +2121,7 @@ index de188ac..1533422 100644
 +typedef struct {
 +    void                        *p_cb_data;
 +    libvlc_vsl_load_cb          pfn_load;
++    libvlc_vsl_load_segment_cb  pfn_load_segment;
 +    libvlc_vsl_get_count_cb     pfn_get_count;
 +    libvlc_vsl_get_mrl_cb       pfn_get_mrl;
 +    libvlc_vsl_get_url_cb       pfn_get_url;
@@ -2111,11 +2130,12 @@ index de188ac..1533422 100644
 +} vsl_cb_t;
  
 -libvlc_segment_list_t *vsl_ResolveSegmentList( demux_t *p_demux, vsl_info_t *p_vsl_info );
-+int vsl_cbGetCallbacks( vlc_object_t *p_this, vsl_cb_t *p_vsl_cb );
-+int vsl_cbLoad( vsl_cb_t *p_vsl_cb, bool b_force_reload );
-+int vsl_cbGetCount( vsl_cb_t *p_vsl_cb );
-+char *vsl_cbGetMrl( vsl_cb_t *p_vsl_cb, int i_order );
-+char *vsl_cbGetUrl( vsl_cb_t *p_vsl_cb, int i_order );
++int     vsl_cbGetCallbacks( vlc_object_t *p_this, vsl_cb_t *p_vsl_cb );
++int     vsl_cbLoad( vsl_cb_t *p_vsl_cb, bool b_force_reload );
++int     vsl_cbLoadSegment( vsl_cb_t *p_vsl_cb, bool b_force_reload, int segment );
++int     vsl_cbGetCount( vsl_cb_t *p_vsl_cb );
++char   *vsl_cbGetMrl( vsl_cb_t *p_vsl_cb, int i_order );
++char   *vsl_cbGetUrl( vsl_cb_t *p_vsl_cb, int i_order );
 +int64_t vsl_cbGetDurationMilli( vsl_cb_t *p_vsl_cb, int i_order );
 +int64_t vsl_cbGetBytes( vsl_cb_t *p_vsl_cb, int i_order );
  
