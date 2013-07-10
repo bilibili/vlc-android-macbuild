@@ -1,24 +1,24 @@
-From d2e7b4695ceda476437541427cb46405d84f949c Mon Sep 17 00:00:00 2001
+From c9976db1bdba9b91acd95cb4f0b8825cb1f4e8be Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 18:21:02 +0800
-Subject: [PATCH 2/2] fix toolchain config
+Subject: [PATCH] fix toolchain config
 
 ---
- contrib/src/main.mak |    1 +
- 1 个文件被修改，插入 1 行(+)
+ contrib/src/main.mak | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/contrib/src/main.mak b/contrib/src/main.mak
-index fc7b877..3c81608 100644
+index 69465e6..811ad19 100644
 --- a/contrib/src/main.mak
 +++ b/contrib/src/main.mak
-@@ -396,6 +396,7 @@ ifdef HAVE_DARWIN_OS
+@@ -397,6 +397,7 @@ ifdef HAVE_CROSS_COMPILE
  endif
  	echo "set(CMAKE_C_COMPILER $(CC))" >> $@
  	echo "set(CMAKE_CXX_COMPILER $(CXX))" >> $@
-+	echo "set(_CMAKE_TOOLCHAIN_PREFIX $(ANDROID_NDK)/toolchains/arm-linux-androideabi-4.6/prebuilt/darwin-x86/bin/arm-linux-androideabi-)" >> $@
++	echo "set(_CMAKE_TOOLCHAIN_PREFIX $(ANDROID_NDK)/toolchains/arm-linux-androideabi-4.7/prebuilt/darwin-x86_64/bin/arm-linux-androideabi-)" >> $@
  	echo "set(CMAKE_FIND_ROOT_PATH $(PREFIX))" >> $@
  	echo "set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)" >> $@
  	echo "set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)" >> $@
 -- 
-1.7.10.4
+1.8.2.1
 
