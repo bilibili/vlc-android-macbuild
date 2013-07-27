@@ -1,7 +1,7 @@
-From ef9e7c316fa228a807baf3bb619cc8267b8c5c8f Mon Sep 17 00:00:00 2001
+From 5bda5ad61eca6d8edd64fd5323165764d4525356 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 13 Jun 2012 18:07:26 +0800
-Subject: [PATCH 19/33] httplive: add close flag and condition
+Subject: [PATCH 21/36] httplive: add close flag and condition
 
 hls_Reload() thread now wait for close condition instead of just sleeping,
 which make Close() return faster.

@@ -1,7 +1,7 @@
-From da939e8b79cd411827bfe5a2b72ad85c533cef04 Mon Sep 17 00:00:00 2001
+From 88eeffa3a0f8c19458648568aaa0a55422f4a423 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 26 Feb 2013 17:25:39 +0800
-Subject: [PATCH 32/33] androidsurface: setup format depending on surface
+Subject: [PATCH 35/36] androidsurface: setup format depending on surface
  format
 
 ---

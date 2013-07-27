@@ -1,7 +1,7 @@
-From 954af47fa8305847f29dbaa781ed4e0090fd9c93 Mon Sep 17 00:00:00 2001
+From c79674d736d7efce83a26285cccf3739093d789a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:53:11 +0800
-Subject: [PATCH 13/33] plugin: access: add vsl
+Subject: [PATCH 15/36] plugin: access: add vsl
 
 ---
  modules/access/Modules.am |  12 ++++

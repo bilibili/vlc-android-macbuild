@@ -1,7 +1,7 @@
-From 563e632d3542851b2172db5b53a86e95236a5709 Mon Sep 17 00:00:00 2001
+From 004ebd3715233acfaf8929f4ceec6f4baaa7eff8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 26 Jun 2012 15:47:19 +0800
-Subject: [PATCH 12/33] plugin: stream_filter: add membuf
+Subject: [PATCH 14/36] plugin: stream_filter: add membuf
 
 ---
  modules/stream_filter/Modules.am | 6 ++++++

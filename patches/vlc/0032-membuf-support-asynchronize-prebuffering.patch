@@ -1,7 +1,7 @@
-From 2b04f2776dbbba3db7c586f45b8170fbe2fdd577 Mon Sep 17 00:00:00 2001
+From 88d0afc7f078edc4915288201c30c635ada72579 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:49:45 +0800
-Subject: [PATCH 30/33] membuf: support asynchronize prebuffering
+Subject: [PATCH 32/36] membuf: support asynchronize prebuffering
 
 ---
  modules/stream_filter/membuf.c | 944 +++++++++++++++++++++++++++++++++++++++++

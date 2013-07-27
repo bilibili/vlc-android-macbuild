@@ -1,7 +1,7 @@
-From 027080101dc2c4519aeb7c52028c87a667720b6f Mon Sep 17 00:00:00 2001
+From 8aa84b0d3bafdca7a4339ace2ef63a4d167f9fcf Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 30 Oct 2012 20:58:35 +0800
-Subject: [PATCH 29/33] omxil: always use pts if set
+Subject: [PATCH 31/36] omxil: always use pts if set
 
 revert commit 1f18696f679fe520b64d60cb933fe50d3dfc3215
 ---
