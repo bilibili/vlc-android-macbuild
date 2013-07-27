@@ -1,7 +1,7 @@
-From 69f04d6eb2c27715d55205407ec2d6abbf09a015 Mon Sep 17 00:00:00 2001
+From ee4e82f706d4a63fc32128f4b514c8e980beb053 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
-Subject: [PATCH] libvlcjni: another libvlc wrapper
+Subject: [PATCH 11/12] libvlcjni: another libvlc wrapper
 
 ---
  vlc-android/jni/Android.mk                         |    3 +-
@@ -32,7 +32,7 @@ Subject: [PATCH] libvlcjni: another libvlc wrapper
  create mode 100644 vlc-android/jni/libvlcjni_fflog.inc.c
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 541256a..d8442c4 100644
+index 51c1d3c..59dffed 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -3,7 +3,8 @@ include $(CLEAR_VARS)
