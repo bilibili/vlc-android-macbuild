@@ -1,27 +1,29 @@
-From c5607c0b6575a3e2d6dccda39f5850f185ff1fda Mon Sep 17 00:00:00 2001
+From 0200b02e9d1fff5093e84d2f2fda8c7ca6783901 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
-Subject: [PATCH 1001/1002] lite-mode: ffmpeg: disable modules
+Subject: [PATCH] lite-mode: ffmpeg: disable modules
 
 ---
- contrib/src/ffmpeg/rules.mak |   41 ++++++++++++++++++++++++++++++++++++++---
- 1 个文件被修改，插入 38 行(+)，删除 3 行(-)
+ contrib/src/ffmpeg/rules.mak | 44 ++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 40 insertions(+), 4 deletions(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 61477f8..405a0c4 100644
+index 6951933..083e321 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -8,10 +8,45 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=$(HASH);sf=tgz
+@@ -8,10 +8,46 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=$(HASH);sf=tgz
  FFMPEGCONF = \
  	--cc="$(CC)" \
  	--disable-doc \
++	--enable-runtime-cpudetect \
 +	--disable-network \
 +	--disable-protocols \
 +	--disable-decoder=libvpx \
  	--disable-decoder=bink \
- 	--disable-encoder=vorbis \
+-	--disable-encoder=vorbis \
 -	--enable-libgsm \
 -	--enable-libopenjpeg \
++	--disable-encoders \
 +	--disable-libgsm \
 +	--disable-libopenjpeg \
 +	--disable-decoders \
@@ -59,7 +61,7 @@ index 61477f8..405a0c4 100644
  	--disable-debug \
  	--disable-avdevice \
  	--disable-devices \
-@@ -24,7 +59,7 @@ FFMPEGCONF = \
+@@ -24,7 +60,7 @@ FFMPEGCONF = \
  #	--disable-ffserver \
  #	--disable-ffplay \
  #	--disable-ffprobe
@@ -69,5 +71,5 @@ index 61477f8..405a0c4 100644
  # Optional dependencies
  ifdef BUILD_ENCODERS
 -- 
-1.7.10.4
+1.8.2.1
 
