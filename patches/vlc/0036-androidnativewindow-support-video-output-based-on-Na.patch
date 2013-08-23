@@ -1,20 +1,20 @@
-From a8848a56a93aff4c561e319a8c5fd4e18ebcec04 Mon Sep 17 00:00:00 2001
+From 77b285fb671acb886a56c6f5b3117c84bce4af15 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 27 Jul 2013 21:05:28 +0800
-Subject: [PATCH 36/36] androidnativewindow: support video output based on
+Subject: [PATCH] androidnativewindow: support video output based on
  NativeWindow api
 
 ---
- modules/video_output/androidnativewindow.c | 403 +++++++++++++++++++++++++++++
- 1 file changed, 403 insertions(+)
+ modules/video_output/androidnativewindow.c | 404 +++++++++++++++++++++++++++++
+ 1 file changed, 404 insertions(+)
  create mode 100644 modules/video_output/androidnativewindow.c
 
 diff --git a/modules/video_output/androidnativewindow.c b/modules/video_output/androidnativewindow.c
 new file mode 100644
-index 0000000..aec6953
+index 0000000..40cf9fa
 --- /dev/null
 +++ b/modules/video_output/androidnativewindow.c
-@@ -0,0 +1,403 @@
+@@ -0,0 +1,404 @@
 +/*****************************************************************************
 + * androidnativewindow.c: android video output using native window
 + *****************************************************************************
@@ -348,6 +348,7 @@ index 0000000..aec6953
 +    if (p_buffer->format != picsys->surface_format) {
 +        // input format doesn't match the codec format
 +        msg_Warn( sys->vd, "expecting format %d, real %d", picsys->surface_format, p_buffer->format );
++        jni_SetAndroidSurfaceSize(aligned_width, sh, sys->i_sar_num, sys->i_sar_den);
 +        ANativeWindow_setBuffersGeometry( picsys->window, aligned_width, sh, picsys->surface_format );
 +        ANativeWindow_unlockAndPost(picsys->window);
 +        return VLC_EGENERIC;
@@ -419,5 +420,5 @@ index 0000000..aec6953
 +    }
 +}
 -- 
-1.8.2.1
+1.8.3.4
 
