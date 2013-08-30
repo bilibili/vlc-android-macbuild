@@ -1,4 +1,4 @@
-From 77b285fb671acb886a56c6f5b3117c84bce4af15 Mon Sep 17 00:00:00 2001
+From 095a7e95f4eacfc4fb6b8c8aafdb25f94b147d16 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 27 Jul 2013 21:05:28 +0800
 Subject: [PATCH] androidnativewindow: support video output based on
@@ -11,7 +11,7 @@ Subject: [PATCH] androidnativewindow: support video output based on
 
 diff --git a/modules/video_output/androidnativewindow.c b/modules/video_output/androidnativewindow.c
 new file mode 100644
-index 0000000..40cf9fa
+index 0000000..415379e
 --- /dev/null
 +++ b/modules/video_output/androidnativewindow.c
 @@ -0,0 +1,404 @@
@@ -357,7 +357,7 @@ index 0000000..40cf9fa
 +    if ((uint32_t)p_buffer->width != aligned_width ||
 +        (uint32_t)p_buffer->height != sh) {
 +        // input size doesn't match the surface size -> request a resize
-+        msg_Warn( sys->vd, "expecting %dx%d, real %dx%d", aligned_width, sh, aligned_width, p_buffer->height );
++        msg_Warn( sys->vd, "expecting %dx%d, real %dx%d", aligned_width, sh, p_buffer->width, p_buffer->height );
 +        jni_SetAndroidSurfaceSize(aligned_width, sh, sys->i_sar_num, sys->i_sar_den);
 +        // When using ANativeWindow, one should use ANativeWindow_setBuffersGeometry
 +        // to set the size and format. In our case, these are set via the SurfaceHolder
