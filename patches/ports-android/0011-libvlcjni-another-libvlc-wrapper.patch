@@ -1,10 +1,10 @@
-From ee4e82f706d4a63fc32128f4b514c8e980beb053 Mon Sep 17 00:00:00 2001
+From 133676857a763ea3b01ff924149d6a01e78ae36d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
-Subject: [PATCH 11/12] libvlcjni: another libvlc wrapper
+Subject: [PATCH 11/13] libvlcjni: another libvlc wrapper
 
 ---
- vlc-android/jni/Android.mk                         |    3 +-
+ vlc-android/jni/Android.mk                         |    5 +-
  vlc-android/jni/jni_bundle.c                       |  150 +++
  vlc-android/jni/jni_bundle.h                       |   61 +
  vlc-android/jni/jni_libvlc.h                       |   36 +
@@ -17,7 +17,7 @@ Subject: [PATCH 11/12] libvlcjni: another libvlc wrapper
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |   61 +
  .../jni/libvlcjni_danmaku_readMediaEx.inc.c        |  109 ++
  vlc-android/jni/libvlcjni_fflog.inc.c              |   71 ++
- 13 files changed, 2354 insertions(+), 1 deletion(-)
+ 13 files changed, 2355 insertions(+), 2 deletions(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.h
@@ -32,15 +32,17 @@ Subject: [PATCH 11/12] libvlcjni: another libvlc wrapper
  create mode 100644 vlc-android/jni/libvlcjni_fflog.inc.c
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 51c1d3c..59dffed 100644
+index 5832264..1ea87fd 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
-@@ -3,7 +3,8 @@ include $(CLEAR_VARS)
+@@ -3,8 +3,9 @@ include $(CLEAR_VARS)
  
  LOCAL_MODULE    := libvlcjni
  
--LOCAL_SRC_FILES := libvlcjni.c aout.c thumbnailer.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
-+LOCAL_SRC_FILES := libvlcjni_danmaku.c aout.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
+-LOCAL_SRC_FILES := libvlcjni.c libvlcjni-util.c libvlcjni-track.c libvlcjni-medialist.c aout.c vout.c libvlcjni-equalizer.c
+-LOCAL_SRC_FILES += thumbnailer.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
++LOCAL_SRC_FILES := libvlcjni_danmaku.c libvlcjni-util.c libvlcjni-track.c libvlcjni-medialist.c aout.c vout.c libvlcjni-equalizer.c
++LOCAL_SRC_FILES += pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
 +LOCAL_SRC_FILES += jni_bundle.c jni_libvlcevent.c jni_vsl.c
  LOCAL_SRC_FILES += pipe2.c
  LOCAL_SRC_FILES += wchar/wcpcpy.c
@@ -2470,5 +2472,5 @@ index 0000000..632c6f2
 +    av_strlcpy(prev, line, sizeof line);
 +}
 -- 
-1.8.2.1
+1.8.3.4
 

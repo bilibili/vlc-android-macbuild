@@ -1,4 +1,4 @@
-From 0200b02e9d1fff5093e84d2f2fda8c7ca6783901 Mon Sep 17 00:00:00 2001
+From db3908b616fcc125c2d34369e303baa6667cb01e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
 Subject: [PATCH] lite-mode: ffmpeg: disable modules
@@ -8,7 +8,7 @@ Subject: [PATCH] lite-mode: ffmpeg: disable modules
  1 file changed, 40 insertions(+), 4 deletions(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 6951933..083e321 100644
+index 6c04f1f..2a12630 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
 @@ -8,10 +8,46 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=$(HASH);sf=tgz
@@ -69,7 +69,7 @@ index 6951933..083e321 100644
 +DEPS_ffmpeg = zlib
  
  # Optional dependencies
- ifdef BUILD_ENCODERS
+ ifndef BUILD_NETWORK
 -- 
-1.8.2.1
+1.8.3.4
 

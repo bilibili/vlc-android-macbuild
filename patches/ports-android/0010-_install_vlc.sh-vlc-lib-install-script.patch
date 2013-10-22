@@ -1,7 +1,7 @@
-From 69550aa05a19b52d4181255d1ccff63be065081b Mon Sep 17 00:00:00 2001
+From f66d47003431162cfd8f25d8ca3ca4380a740838 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 15:23:34 +0800
-Subject: [PATCH 10/12] _install_vlc.sh vlc lib install script
+Subject: [PATCH 10/14] _install_vlc.sh vlc lib install script
 
 ---
  _install_vlc.sh | 8 ++++++++
@@ -10,18 +10,18 @@ Subject: [PATCH 10/12] _install_vlc.sh vlc lib install script
 
 diff --git a/_install_vlc.sh b/_install_vlc.sh
 new file mode 100644
-index 0000000..7824946
+index 0000000..7809cfd
 --- /dev/null
 +++ b/_install_vlc.sh
 @@ -0,0 +1,8 @@
 +#! /bin/sh
 +
-+INSTALL_PROJECT=../VlcDemo
++INSTALL_PROJECT=../../iBiliPlayer
 +cp -vR vlc-android/libs/* ${INSTALL_PROJECT}/libs/
 +rm ${INSTALL_PROJECT}/libs/armeabi/gdb.setup
 +rm ${INSTALL_PROJECT}/libs/armeabi/gdbserver
 +rm ${INSTALL_PROJECT}/libs/armeabi-v7a/gdb.setup
 +rm ${INSTALL_PROJECT}/libs/armeabi-v7a/gdbserver
 -- 
-1.8.2.1
+1.8.3.4
 

@@ -1,7 +1,7 @@
-From 2dc41f10fa7a59b59de9b0792990714b577b5ff1 Mon Sep 17 00:00:00 2001
+From 5bbe267240c2b99e8002fa135f41b216ffb35030 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
-Subject: [PATCH] compile.sh: support fastcompile.sh
+Subject: [PATCH 04/14] compile.sh: support fastcompile.sh
 
 ---
  compile.sh     | 12 +++++++++++-
@@ -10,18 +10,18 @@ Subject: [PATCH] compile.sh: support fastcompile.sh
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index 28e2005..71fb93d 100755
+index c743678..7570011 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -81,6 +81,7 @@ export PATH=${NDK_TOOLCHAIN_PATH}:${PATH}
+@@ -85,6 +85,7 @@ export PATH=${NDK_TOOLCHAIN_PATH}:${PATH}
  ANDROID_PATH="`pwd`"
  
  # 1/ libvlc, libvlccore and its plugins
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
- TESTED_HASH=41edeb738
+ TESTED_HASH=a5c4d7a
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
-@@ -109,6 +110,9 @@ EOF
+@@ -113,6 +114,9 @@ EOF
          exit 1
      fi
  fi
@@ -31,7 +31,7 @@ index 28e2005..71fb93d 100755
  
  if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
      EXTRA_CFLAGS="-mfpu=vfpv3-d16 -mcpu=cortex-a8"
-@@ -160,6 +164,7 @@ cd ../..
+@@ -164,6 +168,7 @@ cd ../..
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
@@ -39,7 +39,7 @@ index 28e2005..71fb93d 100755
  ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout --enable-small \
      --disable-dca \
      --disable-goom \
-@@ -183,6 +188,7 @@ cd contrib/android
+@@ -187,6 +192,7 @@ cd contrib/android
      --disable-faad2 \
      --disable-harfbuzz \
      --enable-iconv
@@ -47,7 +47,7 @@ index 28e2005..71fb93d 100755
  
  # TODO: mpeg2, theora
  
-@@ -199,10 +205,13 @@ else
+@@ -203,10 +209,13 @@ else
      OPTS="--enable-debug"
  fi
  
@@ -61,9 +61,9 @@ index 28e2005..71fb93d 100755
  if  test -d "../../../../tarballs" ; then
      echo "fetch local tarballs"
      mkdir -p ../tarballs
-@@ -211,13 +220,14 @@ fi
- 
- make fetch
+@@ -217,13 +226,14 @@ make fetch
+ # We already have zlib available
+ [ -e .zlib ] || (mkdir -p zlib; touch .zlib)
  make $MAKEFLAGS
 +fi
  
@@ -88,5 +88,5 @@ index 0000000..14c672b
 +export VLC_FAST_COMPILE=1
 +sh compile.sh jni
 -- 
-1.8.2.1
+1.8.3.4
 
