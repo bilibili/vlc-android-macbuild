@@ -1,0 +1,29 @@
+From 0ae5332e3b3f2cf65cad37312992c4159a3d0de2 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 21 Jun 2012 15:35:02 +0800
+Subject: [PATCH 08/34] core: vlc_stream: define new control code
+
+---
+ include/vlc_stream.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/include/vlc_stream.h b/include/vlc_stream.h
+index 0772553..71d5e25 100644
+--- a/include/vlc_stream.h
++++ b/include/vlc_stream.h
+@@ -121,6 +121,12 @@ enum stream_query_e
+     STREAM_SET_PRIVATE_ID_STATE = 0x1000, /* arg1= int i_private_data, bool b_selected    res=can fail */
+     STREAM_SET_PRIVATE_ID_CA,             /* arg1= int i_program_number, uint16_t i_vpid, uint16_t i_apid1, uint16_t i_apid2, uint16_t i_apid3, uint8_t i_length, uint8_t *p_data */
+     STREAM_GET_PRIVATE_ID_STATE,          /* arg1=int i_private_data arg2=bool *          res=can fail */
++
++    /* */
++    STREAM_GET_CACHED_SIZE,     /**< arg1= uint64_t *     res=can fail (0 if no sense)*/
++
++    /* for clock gap in youku httplive/mpeg2ts */
++    STREAM_HTTPLIVE_GET_SEGMENT_START,
+ };
+ 
+ VLC_API int stream_Read( stream_t *s, void *p_read, int i_read );
+-- 
+1.8.3.4
+

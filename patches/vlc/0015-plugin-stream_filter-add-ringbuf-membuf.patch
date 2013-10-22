@@ -1,0 +1,34 @@
+From 9b1c179ddfdf360b1f44b56a76d2970b85fa19d3 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 22 Oct 2013 14:36:09 +0800
+Subject: [PATCH 15/34] plugin: stream_filter: add ringbuf, membuf
+
+---
+ modules/stream_filter/Makefile.am | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/modules/stream_filter/Makefile.am b/modules/stream_filter/Makefile.am
+index fc712b5..ef27fce 100644
+--- a/modules/stream_filter/Makefile.am
++++ b/modules/stream_filter/Makefile.am
+@@ -113,5 +113,17 @@ if HAVE_GCRYPT
+ stream_filter_LTLIBRARIES += libhttplive_plugin.la
+ endif
+ 
++libstream_filter_ringbuf_plugin_la_SOURCES = stream_filter/ringbuf.c
++libstream_filter_ringbuf_plugin_la_CFLAGS = $(AM_CFLAGS)
++libstream_filter_ringbuf_plugin_la_LIBADD = $(AM_LIBADD)
++libstream_filter_ringbuf_plugin_la_DEPENDENCIES =
++stream_filter_LTLIBRARIES += libstream_filter_ringbuf_plugin.la
++
++libstream_filter_membuf_plugin_la_SOURCES = stream_filter/membuf.c
++libstream_filter_membuf_plugin_la_CFLAGS = $(AM_CFLAGS)
++libstream_filter_membuf_plugin_la_LIBADD = $(AM_LIBADD)
++libstream_filter_membuf_plugin_la_DEPENDENCIES =
++stream_filter_LTLIBRARIES += libstream_filter_membuf_plugin.la
++
+ librecord_plugin_la_SOURCES = stream_filter/record.c
+ stream_filter_LTLIBRARIES += librecord_plugin.la
+-- 
+1.8.3.4
+

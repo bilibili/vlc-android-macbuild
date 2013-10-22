@@ -1,0 +1,25 @@
+From 4612944c8058977d2b0bcdec538ffb75effbc3d3 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sat, 27 Jul 2013 21:04:04 +0800
+Subject: [PATCH 13/34] configure.ac: add android_nativewindow
+
+---
+ configure.ac | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/configure.ac b/configure.ac
+index b96dd34..d149f85 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -3229,6 +3229,8 @@ if test "${enable_android_surface}" = "yes"; then
+   if test "${HAVE_ANDROID}" = "1"; then
+      VLC_ADD_PLUGIN([android_surface])
+      VLC_ADD_LIBS([android_surface], [-ldl])
++     VLC_ADD_PLUGIN([android_nativewindow])
++     VLC_ADD_LIBS([android_nativewindow], [-ldl])
+   fi
+ fi
+ 
+-- 
+1.8.3.4
+

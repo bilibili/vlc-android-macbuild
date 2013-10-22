@@ -1,0 +1,305 @@
+From ab235adfe9badac6480825c90a4b28c5c4c1c593 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 5 Jul 2012 23:35:37 +0800
+Subject: [PATCH 24/34] omxil: check h264 profile and level
+
+Only load omxil codec which support video profile and level.
+Tested on devices and OMX decoder below:
+  Nexus S,               Exynos 3110
+      OMX.SEC.AVC.Decoder,    	 Baseline/Main/High Profile 3.1
+  Mione,                 MSM 8260
+      OMX.qcom.video.decoder, 	 Baseline/Main/High Profile 4
+  LG P970,               OMAP 3630
+      OMX.TI.720P.Decoder,    	 Baseline Profile 3.1
+  Sumsung GT-I9100,      Exynos 4210
+      OMX.SEC.avcdec,         	 Invalid profile information
+  Sumsung GT-P7500,      Tegra2
+      OMX.Nvidia.h264ext.decode, No profile information
+  Meizu MX dual-core,    Exynos 4210
+      OMX.SEC.AVC.Decoder,       Baseline/Main/High Profile 4
+  Tianyu Ali Cloud W806, Tegra2
+      OMX.Nvidia.h264ext.decode, No profile informatio
+---
+ modules/codec/omxil/iomx.cpp      |   2 +
+ modules/codec/omxil/omxil.c       | 114 +++++++++++++++++++++++++++++++++++++-
+ modules/codec/omxil/omxil_utils.h |  23 ++++++++
+ modules/codec/omxil/utils.c       |  90 ++++++++++++++++++++++++++++++
+ 4 files changed, 228 insertions(+), 1 deletion(-)
+
+diff --git a/modules/codec/omxil/iomx.cpp b/modules/codec/omxil/iomx.cpp
+index c3b096c..73f2634 100644
+--- a/modules/codec/omxil/iomx.cpp
++++ b/modules/codec/omxil/iomx.cpp
+@@ -175,6 +175,8 @@ static int get_param_size(OMX_INDEXTYPE param_index)
+         return sizeof(OMX_VIDEO_PARAM_AVCTYPE);
+     case OMX_IndexParamVideoWmv:
+         return sizeof(OMX_VIDEO_PARAM_WMVTYPE);
++    case OMX_IndexParamVideoProfileLevelQuerySupported:
++        return sizeof(OMX_VIDEO_PARAM_PROFILELEVELTYPE);
+     default:
+         return 0;
+     }
+diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
+index da86e23..4c92e57 100644
+--- a/modules/codec/omxil/omxil.c
++++ b/modules/codec/omxil/omxil.c
+@@ -142,6 +142,115 @@ static OMX_ERRORTYPE ImplementationSpecificWorkarounds(decoder_t *p_dec,
+         break;
+     }
+ 
++    /* Check H264 profile and level */
++    if(p_fmt->i_cat == VIDEO_ES &&
++       def->eDir == OMX_DirInput &&
++       p_fmt->i_codec == VLC_CODEC_H264)
++    {
++        OMX_VIDEO_AVCPROFILETYPE omx_video_profile = H264ProfileToOmxType(i_profile);
++        OMX_VIDEO_AVCLEVELTYPE omx_video_level = H264LevelToOmxType(i_level);
++
++        msg_Info(p_dec, "Video: H264 %s Profile (%d) (0x%x), Level %d (0x%x)",
++                 H264ProfileToString( i_profile ),
++                 i_profile, omx_video_profile,
++                 i_level, omx_video_level);
++
++        /*
++         * FIXME: Not sure if profile and level parsed from video are reliable.
++         * But for invalid video profile and level, no check will happen.
++         */
++        if(OMX_VIDEO_AVCProfileMax != omx_video_profile &&
++           OMX_VIDEO_AVCLevelMax != omx_video_level)
++        {
++            bool b_match_capability = false;
++
++            OMX_VIDEO_PARAM_PROFILELEVELTYPE param;
++            OMX_INIT_STRUCTURE(param);
++            param.nPortIndex = p_port->i_port_index;
++
++            if(!strcmp(p_sys->psz_component, "OMX.Nvidia.h264.decode") ||
++               !strcmp(p_sys->psz_component, "OMX.Nvidia.h264ext.decode"))
++            {
++                /*
++                 * OMX.NVidia.h264*.decode support High Porfile 3.1,
++                 * but no param return
++                 */
++                bool b_profile_match = false;
++                if((H264_PROFILE_HIGH >= omx_video_profile) &&
++                   (OMX_VIDEO_AVCLevel4 >= omx_video_level))
++                {
++                    b_profile_match = true;
++                    b_match_capability = true;
++                }
++
++                msg_Info(p_dec, "%s %s ",
++                         p_sys->psz_component,
++                         b_profile_match ? "meet" : "ignore");
++            }
++            else if(!strcmp(p_sys->psz_component, "OMX.SEC.avcdec"))
++            {
++                /*
++                 * OMX.SEC.avcdec support High Porfile 4.1,
++                 * but param returns as Baseline Profile 1
++                 */
++                bool b_profile_match = false;
++                if((H264_PROFILE_HIGH >= omx_video_profile) &&
++                   (OMX_VIDEO_AVCLevel41 >= omx_video_level))
++                {
++                    b_profile_match = true;
++                    b_match_capability = true;
++                }
++
++                msg_Info(p_dec, "%s %s ",
++                         p_sys->psz_component,
++                         b_profile_match ? "meet" : "ignore");
++            }
++            for(param.nProfileIndex = 0; ; ++param.nProfileIndex)
++            {
++                OMX_ERRORTYPE omx_error;
++                omx_error = OMX_GetParameter(p_port->omx_handle,
++                                             OMX_IndexParamVideoProfileLevelQuerySupported, &param);
++                if(omx_error != OMX_ErrorNone)
++                    break;
++
++                bool b_profile_match = false;
++                if((param.eProfile >= omx_video_profile) &&
++                   (param.eLevel >= omx_video_level))
++                {
++                    b_profile_match = true;
++                    b_match_capability = true;
++                }
++
++                msg_Info(p_dec, "%s decoder profile: H264 %s Profile (%d), Level %d (0x%x)",
++                         b_profile_match ? "meet" : "ignore",
++                         OmxProfileTypeToString(param.eProfile),
++                         (int)param.eProfile,
++                         OmxLevelTypeToH264Level(param.eLevel),
++                         (int)param.eLevel);
++            }
++
++#if 0
++            if(param.nProfileIndex <= 0)
++            {
++                /*
++                 * FIXME: Mstorsjo suggests that we should assume it can handle anything,
++                 * if it returns nothing. But since this is the last chance we can diable it,
++                 * I think SW decoder is better than HW decoder we do not know.
++                 *
++                 * Fow now, just make it behave like it did before. -- bbcallen
++                 */
++                msg_Warn(p_dec, "OMX_IndexParamVideoProfileLevelQuerySupported returns nothing");
++            }
++            else if(!b_match_capability)
++#endif
++            if(!b_match_capability)
++            {
++                msg_Err(p_dec, "Vodeo profile level is too high for decoder");
++                return OMX_ErrorNotImplemented;
++            }
++        }
++    }
++
+     if(!strcmp(p_sys->psz_component, "OMX.TI.Video.Decoder"))
+     {
+         if(p_fmt->i_cat == VIDEO_ES && def->eDir == OMX_DirInput &&
+@@ -893,7 +1002,10 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
+     p_sys->p_ports = &p_sys->in;
+     p_sys->b_use_pts = 1;
+ 
+-    msg_Dbg(p_dec, "fmt in:%4.4s, out: %4.4s", (char *)&p_dec->fmt_in.i_codec,
++    msg_Dbg(p_dec, "fmt in:%4.4s %dx%d@%d, out: %4.4s", (char *)&p_dec->fmt_in.i_codec,
++            p_dec->fmt_in.video.i_width,
++            p_dec->fmt_in.video.i_height,
++            p_dec->fmt_in.video.i_frame_rate / 1000,
+             (char *)&p_dec->fmt_out.i_codec);
+ 
+     /* Enumerate components and build a list of the one we want to try */
+diff --git a/modules/codec/omxil/omxil_utils.h b/modules/codec/omxil/omxil_utils.h
+index 1a99dfc..7d86233 100644
+--- a/modules/codec/omxil/omxil_utils.h
++++ b/modules/codec/omxil/omxil_utils.h
+@@ -243,3 +243,26 @@ unsigned int GetAudioParamSize(OMX_INDEXTYPE index);
+ #define QOMX_COLOR_FormatYUV420PackedSemiPlanar64x32Tile2m8ka 0x7FA30C03
+ #define OMX_QCOM_COLOR_FormatYUV420PackedSemiPlanar32m 0x7FA30C04
+ #define OMX_IndexVendorSetYUV420pMode 0x7f000003
++
++/*****************************************************************************
++ * H264 profile level numbers
++ *****************************************************************************/
++#define H264_PROFILE_BASELINE   0x42
++#define H264_PROFILE_MAIN       0x4d
++#define H264_PROFILE_EXTENDED   0x58
++#define H264_PROFILE_HIGH       0x64
++#define H264_PROFILE_HIGH_10    0x6e
++#define H264_PROFILE_HIGH_422   0x7a
++#define H264_PROFILE_HIGH_444   0xf4
++
++/* Return "unknown" for unknown profile */
++const char *H264ProfileToString(int profile_id);
++/* Return "unknown" for unknown profile */
++const char *OmxProfileTypeToString(OMX_VIDEO_AVCPROFILETYPE omx_profile);
++/* Return OMX_VIDEO_AVCProfileMax for unknown level */
++OMX_VIDEO_AVCPROFILETYPE H264ProfileToOmxType(int profile_id);
++
++/* Return 0 for unknown level */
++uint8_t OmxLevelTypeToH264Level(OMX_VIDEO_AVCLEVELTYPE omx_profile);
++/* Return OMX_VIDEO_AVCLevelMax for unknown level */
++OMX_VIDEO_AVCLEVELTYPE H264LevelToOmxType(int level);
+diff --git a/modules/codec/omxil/utils.c b/modules/codec/omxil/utils.c
+index b6cacbb..5272dc0 100644
+--- a/modules/codec/omxil/utils.c
++++ b/modules/codec/omxil/utils.c
+@@ -993,3 +993,93 @@ void PrintOmx(decoder_t *p_dec, OMX_HANDLETYPE omx_handle, OMX_U32 i_port)
+         }
+     }
+ }
++
++const char *H264ProfileToString(int profile_id)
++{
++    OMX_VIDEO_AVCPROFILETYPE omx_profile = H264ProfileToOmxType(profile_id);
++    return OmxProfileTypeToString(omx_profile);
++}
++
++const char *OmxProfileTypeToString(OMX_VIDEO_AVCPROFILETYPE omx_profile)
++{
++    switch(omx_profile)
++    {
++        case OMX_VIDEO_AVCProfileBaseline:    return "Baseline";
++        case OMX_VIDEO_AVCProfileMain:        return "Main";
++        case OMX_VIDEO_AVCProfileExtended:    return "Extended";
++        case OMX_VIDEO_AVCProfileHigh:        return "High";
++        case OMX_VIDEO_AVCProfileHigh10:      return "High 10";
++        case OMX_VIDEO_AVCProfileHigh422:     return "High 422";
++        case OMX_VIDEO_AVCProfileHigh444:     return "High 444";
++        default: return "Unknown";
++    }
++}
++
++OMX_VIDEO_AVCPROFILETYPE H264ProfileToOmxType(int profile_id)
++{
++    switch(profile_id)
++    {
++        case H264_PROFILE_BASELINE:     return OMX_VIDEO_AVCProfileBaseline;
++        case H264_PROFILE_MAIN:         return OMX_VIDEO_AVCProfileMain;
++        case H264_PROFILE_EXTENDED:     return OMX_VIDEO_AVCProfileExtended;
++        case H264_PROFILE_HIGH:         return OMX_VIDEO_AVCProfileHigh;
++        case H264_PROFILE_HIGH_10:      return OMX_VIDEO_AVCProfileHigh10;
++        case H264_PROFILE_HIGH_422:     return OMX_VIDEO_AVCProfileHigh422;
++        case H264_PROFILE_HIGH_444:     return OMX_VIDEO_AVCProfileHigh444;
++        default: return OMX_VIDEO_AVCProfileMax;
++    }
++}
++
++uint8_t OmxLevelTypeToH264Level(OMX_VIDEO_AVCLEVELTYPE omx_level)
++{
++    switch(omx_level)
++    {
++        case OMX_VIDEO_AVCLevel1:   return 10;  /* 0x01,    Level 1 */
++#if 0
++            /* FIXME: dunno how to mean 1b in omxil plugin */
++        case OMX_VIDEO_AVCLevel1b:  return 1b;  /* 0x02,    Level 1b */
++#endif
++        case OMX_VIDEO_AVCLevel11:  return 11;  /* 0x04,    Level 1.1 */
++        case OMX_VIDEO_AVCLevel12:  return 12;  /* 0x08,    Level 1.2 */
++        case OMX_VIDEO_AVCLevel13:  return 13;  /* 0x10,    Level 1.3 */
++        case OMX_VIDEO_AVCLevel2:   return 20;  /* 0x20,    Level 2 */
++        case OMX_VIDEO_AVCLevel21:  return 21;  /* 0x40,    Level 2.1 */
++        case OMX_VIDEO_AVCLevel22:  return 22;  /* 0x80,    Level 2.2 */
++        case OMX_VIDEO_AVCLevel3:   return 30;  /* 0x100,   Level 3 */
++        case OMX_VIDEO_AVCLevel31:  return 31;  /* 0x200,   Level 3.1 */
++        case OMX_VIDEO_AVCLevel32:  return 32;  /* 0x400,   Level 3.2 */
++        case OMX_VIDEO_AVCLevel4:   return 40;  /* 0x800,   Level 4 */
++        case OMX_VIDEO_AVCLevel41:  return 41;  /* 0x1000,  Level 4.1 */
++        case OMX_VIDEO_AVCLevel42:  return 42;  /* 0x2000,  Level 4.2 */
++        case OMX_VIDEO_AVCLevel5:   return 50;  /* 0x4000,  Level 5 */
++        case OMX_VIDEO_AVCLevel51:  return 51;  /* 0x8000,  Level 5.1 */
++        default:    return 0;
++    }
++}
++
++OMX_VIDEO_AVCLEVELTYPE H264LevelToOmxType(int level)
++{
++    switch(level)
++    {
++        case 10:    return OMX_VIDEO_AVCLevel1;   /* 0x01,    Level 1 */
++#if 0
++        /* FIXME: dunno how to mean 1b in omxil plugin */
++        case 1b:    return OMX_VIDEO_AVCLevel1b:  /* 0x02,    Level 1b */
++#endif
++        case 11:    return OMX_VIDEO_AVCLevel11;  /* 0x04,    Level 1.1 */
++        case 12:    return OMX_VIDEO_AVCLevel12;  /* 0x08,    Level 1.2 */
++        case 13:    return OMX_VIDEO_AVCLevel13;  /* 0x10,    Level 1.3 */
++        case 20:    return OMX_VIDEO_AVCLevel2;   /* 0x20,    Level 2 */
++        case 21:    return OMX_VIDEO_AVCLevel21;  /* 0x40,    Level 2.1 */
++        case 22:    return OMX_VIDEO_AVCLevel22;  /* 0x80,    Level 2.2 */
++        case 30:    return OMX_VIDEO_AVCLevel3;   /* 0x100,   Level 3 */
++        case 31:    return OMX_VIDEO_AVCLevel31;  /* 0x200,   Level 3.1 */
++        case 32:    return OMX_VIDEO_AVCLevel32;  /* 0x400,   Level 3.2 */
++        case 40:    return OMX_VIDEO_AVCLevel4;   /* 0x800,   Level 4 */
++        case 41:    return OMX_VIDEO_AVCLevel41;  /* 0x1000,  Level 4.1 */
++        case 42:    return OMX_VIDEO_AVCLevel42;  /* 0x2000,  Level 4.2 */
++        case 50:    return OMX_VIDEO_AVCLevel5;   /* 0x4000,  Level 5 */
++        case 51:    return OMX_VIDEO_AVCLevel51;  /* 0x8000,  Level 5.1 */
++        default:    return OMX_VIDEO_AVCLevelMax;
++    }
++}
+-- 
+1.8.3.4
+

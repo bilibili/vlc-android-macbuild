@@ -1,7 +1,7 @@
-From f66d47003431162cfd8f25d8ca3ca4380a740838 Mon Sep 17 00:00:00 2001
+From 87e66ba88f6d74b8dc9b4054b05772f6be16a814 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 15:23:34 +0800
-Subject: [PATCH 10/14] _install_vlc.sh vlc lib install script
+Subject: [PATCH 10/12] _install_vlc.sh vlc lib install script
 
 ---
  _install_vlc.sh | 8 ++++++++

@@ -1,7 +1,7 @@
-From c2d852f2277380dbe16b13844e2ffd77cc8efa71 Mon Sep 17 00:00:00 2001
+From b0c1b7576d2403390ef16d81e22f9da6fdbf540e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 5 Mar 2012 17:18:45 +0800
-Subject: [PATCH 3/3] compile.sh: restore saved contrib package
+Subject: [PATCH 03/12] compile.sh: restore saved contrib package
 
 ---
  compile.sh | 6 ++++++

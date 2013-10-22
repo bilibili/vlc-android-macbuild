@@ -1,14 +1,14 @@
-From dd03c69aaf83bfd5065e8c982c09f23a97f680ef Mon Sep 17 00:00:00 2001
+From ff8517c0bc83fd9b3ae4f62f8993b7e5960c3d39 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 14 Jul 2012 15:15:42 +0800
-Subject: [PATCH 1/8] .gitignore
+Subject: [PATCH 01/12] .gitignore
 
 ---
- .gitignore |    1 +
- 1 个文件被修改，插入 1 行(+)
+ .gitignore | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/.gitignore b/.gitignore
-index 6fed1c6..f1ba9d8 100644
+index 32a12cc..93a51fb 100644
 --- a/.gitignore
 +++ b/.gitignore
 @@ -1,5 +1,6 @@
@@ -19,5 +19,5 @@ index 6fed1c6..f1ba9d8 100644
  .DS_Store
  *.keystore
 -- 
-1.7.10.4
+1.8.3.4
 

@@ -1,17 +1,17 @@
-From 8112071a1d1e6f1c35a026929b0828955096b7e8 Mon Sep 17 00:00:00 2001
+From 63b2eace06027dcdfb1d7e5f92520a141c51067e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 11 Aug 2012 14:27:45 +0800
-Subject: [PATCH 2/2] compile.sh: set CHOST for cross compile
+Subject: [PATCH 02/12] compile.sh: set CHOST for cross compile
 
 ---
  compile.sh | 2 ++
  1 file changed, 2 insertions(+)
 
 diff --git a/compile.sh b/compile.sh
-index b353ef2..06b5764 100755
+index 193966d..243c51e 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -75,6 +75,7 @@ export PLATFORM_SHORT_ARCH
+@@ -79,6 +79,7 @@ export PLATFORM_SHORT_ARCH
  # Add the NDK toolchain to the PATH, needed both for contribs and for building
  # stub libraries
  NDK_TOOLCHAIN_PATH=`echo ${ANDROID_NDK}/toolchains/${PATH_HOST}-${GCCVER}/prebuilt/\`uname|tr A-Z a-z\`-*/bin`
@@ -19,7 +19,7 @@ index b353ef2..06b5764 100755
  export PATH=${NDK_TOOLCHAIN_PATH}:${PATH}
  
  ANDROID_PATH="`pwd`"
-@@ -199,6 +200,7 @@ else
+@@ -203,6 +204,7 @@ else
  fi
  
  echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
@@ -28,5 +28,5 @@ index b353ef2..06b5764 100755
  
  make fetch
 -- 
-1.8.2.1
+1.8.3.4
 

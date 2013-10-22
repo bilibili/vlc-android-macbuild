@@ -1,7 +1,7 @@
-From 5bbe267240c2b99e8002fa135f41b216ffb35030 Mon Sep 17 00:00:00 2001
+From ef65932f9b5cd99306fb8366875196e6666fd310 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
-Subject: [PATCH 04/14] compile.sh: support fastcompile.sh
+Subject: [PATCH 04/12] compile.sh: support fastcompile.sh
 
 ---
  compile.sh     | 12 +++++++++++-

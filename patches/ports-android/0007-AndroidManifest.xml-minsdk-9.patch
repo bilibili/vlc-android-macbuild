@@ -1,7 +1,7 @@
-From fa6f8b16c2fe7e35f7e5018d3c905c704144a01a Mon Sep 17 00:00:00 2001
+From 4a82656503ee51e7429bd66263aeff2e30b34895 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 27 Jul 2013 21:15:12 +0800
-Subject: [PATCH 7/7] AndroidManifest.xml: minsdk=9
+Subject: [PATCH 07/12] AndroidManifest.xml: minsdk=9
 
 ---
  vlc-android/AndroidManifest.xml | 2 +-

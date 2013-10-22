@@ -1,0 +1,50 @@
+From 286fd3fe9b2ccf997bccb791505ee486182fbc9d Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sat, 19 Oct 2013 14:32:32 +0800
+Subject: [PATCH 12/12] aout: reset sample rate default to 4kHz~48kHz
+
+---
+ vlc-android/jni/aout.c | 27 +++++++++++++++++++++++----
+ 1 file changed, 23 insertions(+), 4 deletions(-)
+
+diff --git a/vlc-android/jni/aout.c b/vlc-android/jni/aout.c
+index 859509b..201c62a 100644
+--- a/vlc-android/jni/aout.c
++++ b/vlc-android/jni/aout.c
+@@ -79,10 +79,29 @@ int aout_open(void **opaque, char *format, unsigned *rate, unsigned *nb_channels
+     LOGV ("Number of channels forced to 2, number of samples to %d", FRAME_SIZE);
+     *nb_channels = 2;
+ 
+-    (*p_env)->CallVoidMethod (p_env, p_sys->j_libVlc, methodIdInitAout,
+-                              *rate, *nb_channels, FRAME_SIZE);
+-    if ((*p_env)->ExceptionCheck (p_env))
+-    {
++    int aout_rate = *rate;
++    assert(aout_rate > 0);
++    while (1) {
++        (*p_env)->CallVoidMethod (p_env, p_sys->j_libVlc, methodIdInitAout,
++                                  aout_rate, *nb_channels, FRAME_SIZE);
++        if ((*p_env)->ExceptionCheck (p_env) == 0) {
++            *rate = aout_rate;
++            break;
++        }
++
++        if (aout_rate < 4000) {
++            while (aout_rate < 4000)
++                aout_rate *= 2;
++            LOGE ("failed initAout, try new sample rate %dHz", aout_rate);
++            (*p_env)->ExceptionClear (p_env);
++            continue;
++        } else if (aout_rate > 48000) {
++            aout_rate /= 2;
++            LOGE ("failed initAout, try new sample rate %dHz", aout_rate);
++            (*p_env)->ExceptionClear (p_env);
++            continue;
++        }
++
+         LOGE ("Unable to create audio player!");
+ #ifndef NDEBUG
+         (*p_env)->ExceptionDescribe (p_env);
+-- 
+1.8.3.4
+

@@ -1,0 +1,274 @@
+From f5dd68221d5d24cfe6f27e56e1196817ec879c87 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 4 Sep 2012 17:53:11 +0800
+Subject: [PATCH 16/34] plugin: access: add vsl
+
+---
+ modules/access/Makefile.am |  12 ++++
+ modules/access/vsl/vsl.c   | 159 +++++++++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/vsl.h   |  62 ++++++++++++++++++
+ 3 files changed, 233 insertions(+)
+ create mode 100644 modules/access/vsl/vsl.c
+ create mode 100644 modules/access/vsl/vsl.h
+
+diff --git a/modules/access/Makefile.am b/modules/access/Makefile.am
+index 6d8d3b2..94d771b 100644
+--- a/modules/access/Makefile.am
++++ b/modules/access/Makefile.am
+@@ -274,6 +274,18 @@ access_LTLIBRARIES += libaccess_bd_plugin.la
+ endif
+ 
+ 
++libaccess_vslindex_plugin_la_SOURCES = access/vsl/index.c access/vsl/vsl.c access/vsl/vsl.h
++libaccess_vslindex_plugin_la_CFLAGS = $(AM_CFLAGS)
++libaccess_vslindex_plugin_la_LIBADD = $(SOCKET_LIBS)
++libaccess_vslindex_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(accessdir)'
++access_LTLIBRARIES += libaccess_vslindex_plugin.la
++
++libaccess_vslsegment_plugin_la_SOURCES = access/vsl/segment.c
++libaccess_vslsegment_plugin_la_CFLAGS = $(AM_CFLAGS)
++libaccess_vslsegment_plugin_la_LIBADD = $(SOCKET_LIBS)
++libaccess_vslsegment_plugin_la_LDFLAGS = $(AM_LDFLAGS) -rpath '$(accessdir)'
++access_LTLIBRARIES += libaccess_vslsegment_plugin.la
++
+ ### Digital TV ###
+ 
+ libdtv_plugin_la_SOURCES = \
+diff --git a/modules/access/vsl/vsl.c b/modules/access/vsl/vsl.c
+new file mode 100644
+index 0000000..aca9b01
+--- /dev/null
++++ b/modules/access/vsl/vsl.c
+@@ -0,0 +1,159 @@
++/*****************************************************************************
++ * vsl.c: video segment list access
++ *****************************************************************************
++ *
++ * Authors: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++/*****************************************************************************
++ * Preamble
++ *****************************************************************************/
++
++#ifdef HAVE_CONFIG_H
++# include "config.h"
++#endif
++
++#include <vlc/libvlc_structures.h>
++#include <vlc_demux.h>
++#include <assert.h>
++
++#include "vsl.h"
++
++static vsl_info_t *alloc_VslInfo()
++{
++    vsl_info_t *p_vsl_info = (vsl_info_t *) malloc( sizeof(vsl_info_t) );
++    memset( p_vsl_info, 0, sizeof(vsl_info_t) );
++
++    p_vsl_info->i_order = -1;
++
++    return p_vsl_info;
++}
++
++void free_VslInfo( vsl_info_t *p_vsl_info )
++{
++    if( p_vsl_info == NULL )
++        return;
++
++    VSL_SAFE_FREE( p_vsl_info->p_index_url );
++    VSL_SAFE_FREE( p_vsl_info->p_pseudo_segment_access );
++
++    VSL_SAFE_FREE( p_vsl_info->p_real_access );
++    VSL_SAFE_FREE( p_vsl_info->p_real_access_tag );
++
++    VSL_SAFE_FREE( p_vsl_info );
++}
++
++vsl_info_t *vsl_ResolveInfo( demux_t *p_demux )
++{
++    char        *p_find_real_access_tag = NULL;
++    char        *p_find_segment_order = NULL;
++    vsl_info_t  *p_vsl_info = NULL;
++
++    msg_Dbg( p_demux, "vsl check access: %s", p_demux->psz_access );
++    if( !p_demux->psz_access || !*p_demux->psz_access )
++        goto EXIT_ERROR;
++
++    msg_Dbg( p_demux, "vsl check p_demux: %s", p_demux->psz_demux );
++    if( !p_demux->psz_demux || !*p_demux->psz_demux )
++        goto EXIT_ERROR;
++
++    msg_Dbg( p_demux, "vsl check location: %s", p_demux->psz_location );
++    if( !p_demux->psz_location || !*p_demux->psz_location )
++        goto EXIT_ERROR;
++
++    p_vsl_info = alloc_VslInfo();
++    if( !p_vsl_info )
++        goto EXIT_ERROR;
++
++    p_vsl_info->pfn_resolve = var_GetAddress( p_demux, "segment-list-resolve" );
++    if( !p_vsl_info->pfn_resolve )
++    {
++        msg_Err( p_demux, "segment-list-resolve not set" );
++        goto EXIT_ERROR;
++    }
++
++    p_vsl_info->pfn_release = var_GetAddress( p_demux, "segment-list-release" );
++    if( !p_vsl_info->pfn_release )
++    {
++        msg_Err( p_demux, "segment-list-release not set" );
++        goto EXIT_ERROR;
++    }
++
++    /* parse pseudo access/demux */
++    if( 0 == strcmp( p_demux->psz_access, ACCESS_VSL_INDEX ) )
++        p_vsl_info->p_pseudo_segment_access = strdup( ACCESS_VSL_SEGMENT );
++    else if( 0 == strcmp( p_demux->psz_access, ACCESS_SINA_INDEX ) )
++        p_vsl_info->p_pseudo_segment_access = strdup( ACCESS_SINA_SEGMENT );
++    else if( 0 == strcmp( p_demux->psz_access, ACCESS_YOUKU_INDEX ) )
++        p_vsl_info->p_pseudo_segment_access = strdup( ACCESS_YOUKU_SEGMENT );
++    else
++    {
++        msg_Err( p_demux, "vsl unknown pseudo access %s", p_demux->psz_access );
++        goto EXIT_ERROR;
++    }
++
++    /* parse real access/tag/order */
++    p_find_real_access_tag = strchr( p_demux->psz_demux, '-' );
++    if( !p_find_real_access_tag || !*p_find_real_access_tag )
++    {
++        msg_Err( p_demux, "vsl can not find real access tag in %s",
++                 p_demux->psz_demux );
++        goto EXIT_ERROR;
++    }
++
++    p_vsl_info->p_real_access = strndup( p_demux->psz_demux,
++                                         p_find_real_access_tag - p_demux->psz_demux );
++    p_vsl_info->p_real_access_tag = strdup( p_find_real_access_tag + 1 );
++
++    p_find_segment_order = strchr( p_find_real_access_tag + 1, '-' );
++    if( p_find_segment_order && *p_find_segment_order )
++    {
++        p_vsl_info->i_order = atol( p_find_segment_order + 1 );
++        msg_Dbg( p_demux, "vsl segment order %d", p_vsl_info->i_order );
++    }
++
++    /* save index mrl */
++    if( 0 > asprintf( &p_vsl_info->p_index_mrl, "%s:/%s/%s",
++                      p_demux->psz_access,
++                      p_demux->psz_demux,
++                      p_demux->psz_location ) )
++    {
++        msg_Warn( p_demux, "failed to build vsl mrl" );
++        goto EXIT_ERROR;
++    }
++
++    /* save index url */
++    if( 0 > asprintf( &p_vsl_info->p_index_url, "%s://%s",
++                      p_vsl_info->p_real_access,
++                      p_demux->psz_location ) )
++    {
++        msg_Warn( p_demux, "failed to build vsl url" );
++        goto EXIT_ERROR;
++    }
++
++    return p_vsl_info;
++EXIT_ERROR:
++    free_VslInfo( p_vsl_info );
++    p_vsl_info = NULL;
++
++    return NULL;
++}
++
++libvlc_segment_list_t *vsl_ResolveSegmentList( demux_t *p_demux, vsl_info_t *p_vsl_info )
++{
++    return NULL;
++}
+\ No newline at end of file
+diff --git a/modules/access/vsl/vsl.h b/modules/access/vsl/vsl.h
+new file mode 100644
+index 0000000..de188ac
+--- /dev/null
++++ b/modules/access/vsl/vsl.h
+@@ -0,0 +1,62 @@
++/*****************************************************************************
++ * vsl.h: video segment list access
++ *****************************************************************************
++ *
++ * Authors: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++/*****************************************************************************
++ * Preamble
++ *****************************************************************************/
++
++#ifndef VSL_H
++#define VSL_H
++
++#define ACCESS_VSL_INDEX        "vslindex"
++#define ACCESS_VSL_SEGMENT      "vslsegment"
++
++#define ACCESS_SINA_INDEX       "sinaindex"
++#define ACCESS_SINA_SEGMENT     "sinasegment"
++
++#define ACCESS_YOUKU_INDEX      "youkuindex"
++#define ACCESS_YOUKU_SEGMENT    "youkusegment"
++
++#define VSL_SAFE_FREE( x__ ) do { free( x__ ); ( x__ ) = NULL; } while( 0 )
++
++typedef libvlc_segment_list_t *(*libvlc_segment_list_resolve_cb)( const char *p_mrl );
++typedef void (*libvlc_segment_list_release_cb)( libvlc_segment_list_t *p_segment_lst );
++
++typedef struct {
++    char    *p_index_mrl;
++    char    *p_index_url;
++    char    *p_pseudo_segment_access;       /* vslsegment */
++
++    char    *p_real_access;                 /* http */
++    char    *p_real_access_tag;             /* mp4 */
++
++    int     i_order;                        /* -1 for index */
++
++    libvlc_segment_list_resolve_cb  pfn_resolve;
++    libvlc_segment_list_release_cb  pfn_release;
++} vsl_info_t;
++
++void free_VslInfo( vsl_info_t *p_index_info );
++vsl_info_t *vsl_ResolveInfo( demux_t *p_demux );
++
++libvlc_segment_list_t *vsl_ResolveSegmentList( demux_t *p_demux, vsl_info_t *p_vsl_info );
++
++#endif
+\ No newline at end of file
+-- 
+1.8.3.4
+

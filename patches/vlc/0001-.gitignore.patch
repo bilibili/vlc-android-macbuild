@@ -1,0 +1,25 @@
+From 70b46249750cf0e2cf35c69de9a157bba13cf832 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 22 Oct 2013 15:55:01 +0800
+Subject: [PATCH 01/34] .gitignore
+
+---
+ .gitignore | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/.gitignore b/.gitignore
+index a9d0c62..2ca29c4 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -52,3 +52,8 @@ build-*
+ contrib-*
+ install-*
+ 
++# custom
++contrib/android
++pt
++intl
++android
+-- 
+1.8.3.4
+

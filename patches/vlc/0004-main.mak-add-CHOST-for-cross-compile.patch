@@ -1,0 +1,24 @@
+From 702427877ca82c13798e15630a525fbc8a6dbaa9 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sat, 11 Aug 2012 13:07:07 +0800
+Subject: [PATCH 04/34] main.mak: add CHOST for cross-compile
+
+---
+ contrib/src/main.mak | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/contrib/src/main.mak b/contrib/src/main.mak
+index 2b6bb9d..fd5a924 100644
+--- a/contrib/src/main.mak
++++ b/contrib/src/main.mak
+@@ -253,6 +253,7 @@ endif
+ HOSTTOOLS := \
+ 	CC="$(CC)" CXX="$(CXX)" LD="$(LD)" \
+ 	AR="$(AR)" CCAS="$(CCAS)" RANLIB="$(RANLIB)" STRIP="$(STRIP)" \
++	CHOST="$(CHOST)" \
+ 	PATH="$(PREFIX)/bin:$(PATH)"
+ HOSTVARS := $(HOSTTOOLS) \
+ 	CPPFLAGS="$(CPPFLAGS)" \
+-- 
+1.8.3.4
+

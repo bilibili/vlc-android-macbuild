@@ -1,17 +1,17 @@
-From 70377cdd9f3119075ae7fcd5f405a6e21aa90282 Mon Sep 17 00:00:00 2001
+From 0a2cea2ad6219f9914ef3ffe4a004c049d2c32e1 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
 Subject: [PATCH 2/4] lite-mode: compile.sh: disable contrib
 
 ---
- compile.sh | 29 +++++++++++++++++++++++++++--
- 1 file changed, 27 insertions(+), 2 deletions(-)
+ compile.sh | 32 ++++++++++++++++++++++++++++++--
+ 1 file changed, 30 insertions(+), 2 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index 8c088bf..828f428 100755
+index 3e8c348..335d8d5 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -184,10 +184,35 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
+@@ -188,10 +188,38 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
      --disable-tremor \
      --disable-vorbis \
      --disable-sidplay2 \
@@ -40,6 +40,9 @@ index 8c088bf..828f428 100755
 +    --disable-postproc \
 +    --disable-libmpeg2 \
 +    --disable-a52 \
++    --disable-vncserver \
++    --disable-png \
++    --disable-jpeg \
      --disable-samplerate \
 -    --disable-faad2 \
 +    --enable-faad2 \
@@ -50,5 +53,5 @@ index 8c088bf..828f428 100755
  
  # TODO: mpeg2, theora
 -- 
-1.8.2.1
+1.8.3.4
 
