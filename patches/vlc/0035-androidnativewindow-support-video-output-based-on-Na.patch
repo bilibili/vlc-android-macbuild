@@ -1,7 +1,7 @@
-From 239200b99d08bb3a25035e374cfaea694e0445fd Mon Sep 17 00:00:00 2001
+From 9db7c2097d1caee831cd600d33be0983ecf8d597 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 27 Jul 2013 21:05:28 +0800
-Subject: [PATCH 34/34] androidnativewindow: support video output based on
+Subject: [PATCH 35/35] androidnativewindow: support video output based on
  NativeWindow api
 
 ---

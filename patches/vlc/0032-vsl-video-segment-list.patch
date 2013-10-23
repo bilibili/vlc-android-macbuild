@@ -1,24 +1,24 @@
-From e7395ec5cedca1c2e64201379b412d28d75b5a4e Mon Sep 17 00:00:00 2001
+From ddc1bdef02af182f59e99d899f273fa85a0fbec6 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
-Subject: [PATCH 31/34] vsl: video segment list
+Subject: [PATCH 32/35] vsl: video segment list
 
 ---
- modules/access/vsl/index.c     | 889 ++++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/index.c     | 891 ++++++++++++++++++++++++++++++++++++++++
  modules/access/vsl/segment.c   | 897 +++++++++++++++++++++++++++++++++++++++++
  modules/access/vsl/vsl.c       | 195 ++++-----
  modules/access/vsl/vsl.h       |  74 ++--
  modules/stream_filter/membuf.c | 165 +++++---
- 5 files changed, 2024 insertions(+), 196 deletions(-)
+ 5 files changed, 2026 insertions(+), 196 deletions(-)
  create mode 100644 modules/access/vsl/index.c
  create mode 100644 modules/access/vsl/segment.c
 
 diff --git a/modules/access/vsl/index.c b/modules/access/vsl/index.c
 new file mode 100644
-index 0000000..256d5bf
+index 0000000..ee06174
 --- /dev/null
 +++ b/modules/access/vsl/index.c
-@@ -0,0 +1,889 @@
+@@ -0,0 +1,891 @@
 +/*****************************************************************************
 + * index.c: video segment list index access
 + *****************************************************************************
@@ -251,9 +251,11 @@ index 0000000..256d5bf
 +
 +    if( p_segment->p_demux )
 +        demux_Delete( p_segment->p_demux );
-+
-+    if( p_segment->p_stream )
++    else if( p_segment->p_stream )
 +        stream_Delete( p_segment->p_stream );
++
++    p_segment->p_demux = NULL;
++    p_segment->p_stream = NULL;
 +
 +    VSL_SAFE_FREE( p_segment->p_mrl );
 +

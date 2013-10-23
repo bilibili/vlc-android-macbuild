@@ -1,7 +1,7 @@
-From 84bbd60b9b6863bb7a594c29db83845eb67dd83c Mon Sep 17 00:00:00 2001
+From 4e7f98797b6d2d1d8d187a6cb6174a5646724b91 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 31 May 2013 18:19:47 +0800
-Subject: [PATCH 32/34] ringbuf: support asynchronized ring buffer
+Subject: [PATCH 33/35] ringbuf: support asynchronized ring buffer
 
 ---
  modules/stream_filter/ringbuf.c | 803 ++++++++++++++++++++++++++++++++++++++++

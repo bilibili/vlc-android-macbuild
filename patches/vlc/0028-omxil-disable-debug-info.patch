@@ -1,14 +1,14 @@
-From 1e13bcc214e1b9975518b276ea62504ffd96ee32 Mon Sep 17 00:00:00 2001
+From 381665b9f525004f76a9921b4d45be80a40b593b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 18:43:17 +0800
-Subject: [PATCH 28/34] omxil: disable debug info
+Subject: [PATCH 28/35] omxil: disable debug info
 
 ---
  modules/codec/omxil/omxil.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 013cc05..b920457 100644
+index a1e6c7c..6fc741f 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -42,7 +42,7 @@
