@@ -1,7 +1,7 @@
-From ef65932f9b5cd99306fb8366875196e6666fd310 Mon Sep 17 00:00:00 2001
+From 652e793b9ab310f8301c1aca2a5c1a1015200944 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
-Subject: [PATCH 04/12] compile.sh: support fastcompile.sh
+Subject: [PATCH 4/4] compile.sh: support fastcompile.sh
 
 ---
  compile.sh     | 12 +++++++++++-
@@ -10,10 +10,10 @@ Subject: [PATCH 04/12] compile.sh: support fastcompile.sh
  create mode 100644 fastcompile.sh
 
 diff --git a/compile.sh b/compile.sh
-index c743678..7570011 100755
+index c2d82f1..a350fd9 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -85,6 +85,7 @@ export PATH=${NDK_TOOLCHAIN_PATH}:${PATH}
+@@ -90,6 +90,7 @@ export PATH=${NDK_TOOLCHAIN_PATH}:${PATH}
  ANDROID_PATH="`pwd`"
  
  # 1/ libvlc, libvlccore and its plugins
@@ -21,7 +21,7 @@ index c743678..7570011 100755
  TESTED_HASH=a5c4d7a
  if [ ! -d "vlc" ]; then
      echo "VLC source not found, cloning"
-@@ -113,6 +114,9 @@ EOF
+@@ -118,6 +119,9 @@ EOF
          exit 1
      fi
  fi
@@ -31,15 +31,15 @@ index c743678..7570011 100755
  
  if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
      EXTRA_CFLAGS="-mfpu=vfpv3-d16 -mcpu=cortex-a8"
-@@ -164,6 +168,7 @@ cd ../..
+@@ -169,6 +173,7 @@ cd ../..
  echo "Building the contribs"
  mkdir -p contrib/android
  cd contrib/android
 +if [ -z "${VLC_FAST_COMPILE}" ]; then
- ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout --enable-small \
+ ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout \
      --disable-dca \
      --disable-goom \
-@@ -187,6 +192,7 @@ cd contrib/android
+@@ -192,6 +197,7 @@ cd contrib/android
      --disable-faad2 \
      --disable-harfbuzz \
      --enable-iconv
@@ -47,7 +47,7 @@ index c743678..7570011 100755
  
  # TODO: mpeg2, theora
  
-@@ -203,10 +209,13 @@ else
+@@ -208,10 +214,13 @@ else
      OPTS="--enable-debug"
  fi
  
@@ -61,7 +61,7 @@ index c743678..7570011 100755
  if  test -d "../../../../tarballs" ; then
      echo "fetch local tarballs"
      mkdir -p ../tarballs
-@@ -217,13 +226,14 @@ make fetch
+@@ -222,13 +231,14 @@ make fetch
  # We already have zlib available
  [ -e .zlib ] || (mkdir -p zlib; touch .zlib)
  make $MAKEFLAGS

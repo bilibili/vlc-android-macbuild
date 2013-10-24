@@ -1,14 +1,14 @@
-From e658fc53ba21d23a440a628160282027eb484ae8 Mon Sep 17 00:00:00 2001
+From 914bc0957b38decd493c78c0d172e6ad16ee1b46 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 24 Jun 2012 17:54:36 +0800
 Subject: [PATCH] build for armv5
 
 ---
- compile.sh |    6 ++++++
- 1 个文件被修改，插入 6 行(+)
+ compile.sh | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/compile.sh b/compile.sh
-index 4add5ae..3b7ce2f 100755
+index d025c2e..2cd2f72 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -6,6 +6,12 @@
@@ -21,9 +21,9 @@ index 4add5ae..3b7ce2f 100755
 +export NO_FPU=1
 +export NO_ARMV6=1
 +
- if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" -o -z "$ANDROID_ABI" ]; then
+ if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" ]; then
     echo "You must define ANDROID_NDK, ANDROID_SDK and ANDROID_ABI before starting."
     echo "They must point to your NDK and SDK directories.\n"
 -- 
-1.7.10.4
+1.8.3.4
 

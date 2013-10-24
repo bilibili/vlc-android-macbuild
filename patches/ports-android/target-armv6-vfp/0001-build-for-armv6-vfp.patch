@@ -1,14 +1,14 @@
-From a0eda9076510bd41e5598134a22fe7d8e4342657 Mon Sep 17 00:00:00 2001
+From 536458384bda584a18d055a44009ca53c860761e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 24 Jun 2012 17:54:36 +0800
 Subject: [PATCH] build for armv6-vfp
 
 ---
- compile.sh |    4 ++++
- 1 个文件被修改，插入 4 行(+)
+ compile.sh | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/compile.sh b/compile.sh
-index 3548d3b..6cc5059 100755
+index d025c2e..cdfb702 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -6,6 +6,10 @@
@@ -19,9 +19,9 @@ index 3548d3b..6cc5059 100755
 +export ANDROID_ABI=armeabi
 +export NO_NEON=1
 +
- if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" -o -z "$ANDROID_ABI" ]; then
+ if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" ]; then
     echo "You must define ANDROID_NDK, ANDROID_SDK and ANDROID_ABI before starting."
     echo "They must point to your NDK and SDK directories.\n"
 -- 
-1.7.10.4
+1.8.3.4
 

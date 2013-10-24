@@ -1,20 +1,21 @@
-From ff8517c0bc83fd9b3ae4f62f8993b7e5960c3d39 Mon Sep 17 00:00:00 2001
+From f0929629f0e3839d848122bdabea57f323a7d613 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 14 Jul 2012 15:15:42 +0800
-Subject: [PATCH 01/12] .gitignore
+Subject: [PATCH] .gitignore
 
 ---
- .gitignore | 1 +
- 1 file changed, 1 insertion(+)
+ .gitignore | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/.gitignore b/.gitignore
-index 32a12cc..93a51fb 100644
+index 32a12cc..6566438 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -1,5 +1,6 @@
+@@ -1,5 +1,7 @@
  /vlc/
  /android-libs/*.so
 +/patches/100*.patch
++/pt
  local.properties
  .DS_Store
  *.keystore

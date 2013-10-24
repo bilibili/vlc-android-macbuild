@@ -1,26 +1,26 @@
-From d7cc9e1237f920890213c52f324a3dc24eeac40c Mon Sep 17 00:00:00 2001
+From e5787b7cc44fe1a539a3417e725ff686b13fd360 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 24 Jun 2012 17:23:34 +0800
 Subject: [PATCH] build for x86
 
 ---
- compile.sh |    3 +++
- 1 个文件被修改，插入 3 行(+)
+ compile.sh | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/compile.sh b/compile.sh
-index 3b44def..394948e 100755
+index d025c2e..7cd9339 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -6,6 +6,9 @@
  
  set -e
  
-+# patched for x86 with NEON
++# patched for x86
 +export ANDROID_ABI=x86
 +
- if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" -o -z "$ANDROID_ABI" ]; then
+ if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" ]; then
     echo "You must define ANDROID_NDK, ANDROID_SDK and ANDROID_ABI before starting."
     echo "They must point to your NDK and SDK directories.\n"
 -- 
-1.7.10.4
+1.8.3.4
 
