@@ -1,24 +1,24 @@
-From ddc1bdef02af182f59e99d899f273fa85a0fbec6 Mon Sep 17 00:00:00 2001
+From 6e0122541d5233fb16c3abb44fe881d1e03f950c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
-Subject: [PATCH 32/35] vsl: video segment list
+Subject: [PATCH 32/36] vsl: video segment list
 
 ---
- modules/access/vsl/index.c     | 891 ++++++++++++++++++++++++++++++++++++++++
+ modules/access/vsl/index.c     | 882 ++++++++++++++++++++++++++++++++++++++++
  modules/access/vsl/segment.c   | 897 +++++++++++++++++++++++++++++++++++++++++
  modules/access/vsl/vsl.c       | 195 ++++-----
  modules/access/vsl/vsl.h       |  74 ++--
  modules/stream_filter/membuf.c | 165 +++++---
- 5 files changed, 2026 insertions(+), 196 deletions(-)
+ 5 files changed, 2017 insertions(+), 196 deletions(-)
  create mode 100644 modules/access/vsl/index.c
  create mode 100644 modules/access/vsl/segment.c
 
 diff --git a/modules/access/vsl/index.c b/modules/access/vsl/index.c
 new file mode 100644
-index 0000000..ee06174
+index 0000000..cc14334
 --- /dev/null
 +++ b/modules/access/vsl/index.c
-@@ -0,0 +1,891 @@
+@@ -0,0 +1,882 @@
 +/*****************************************************************************
 + * index.c: video segment list index access
 + *****************************************************************************
@@ -424,21 +424,12 @@ index 0000000..ee06174
 +        {   /* Different segment, close current */
 +            msg_Info( p_demux, "vsl_AssureOpenSegment: change segment" );
 +            if( p_sys->p_segment->p_demux )
-+            {
 +                demux_Delete( p_sys->p_segment->p_demux );
-+                p_sys->p_segment->p_demux = NULL;
-+
-+                /* Reset PCR before use next demux */
-+                // es_out_Control( p_demux->out, ES_OUT_RESET_PCR );
-+                //if( p_sys->p_out_managed )
-+                //    es_out_Control( p_sys->p_out_managed, ES_OUT_POST_DISCONTINUITY );
-+            }
-+            if( p_sys->p_segment->p_stream )
-+            {
++            else if( p_sys->p_segment->p_stream )
 +                stream_Delete( p_sys->p_segment->p_stream );
-+                p_sys->p_segment->p_stream = NULL;
-+            }
 +
++            p_sys->p_segment->p_demux = NULL;
++            p_sys->p_segment->p_stream = NULL;
 +            p_sys->b_segment_changed = true;
 +        }
 +    }
