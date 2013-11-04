@@ -1,7 +1,7 @@
-From 97ffc8a63fe68efbfd2fdcc431f11a46b64475ab Mon Sep 17 00:00:00 2001
+From c321e2d4010a49af4231df5336a8e5b33b4e5a80 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
-Subject: [PATCH 11/12] libvlcjni: another libvlc wrapper
+Subject: [PATCH 11/16] libvlcjni: another libvlc wrapper
 
 ---
  vlc-android/jni/Android.mk                         |   6 +-
@@ -16,10 +16,10 @@ Subject: [PATCH 11/12] libvlcjni: another libvlc wrapper
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |  65 +++
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |  61 +++
  .../jni/libvlcjni_danmaku_readMediaEx.inc.c        | 109 ++++
- vlc-android/jni/libvlcjni_danmaku_vout.c           | 124 +++++
+ vlc-android/jni/libvlcjni_danmaku_vout.c           | 132 +++++
  vlc-android/jni/libvlcjni_fflog.inc.c              |  71 +++
  vlc-android/jni/utils.h                            |   2 +
- 15 files changed, 1735 insertions(+), 2 deletions(-)
+ 15 files changed, 1743 insertions(+), 2 deletions(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.h
@@ -1653,10 +1653,10 @@ index 0000000..a38cd0a
 +#endif//LIBVLCJNI_DANMAKU_READMEDIAEX_INC_C
 diff --git a/vlc-android/jni/libvlcjni_danmaku_vout.c b/vlc-android/jni/libvlcjni_danmaku_vout.c
 new file mode 100644
-index 0000000..11a1101
+index 0000000..d5457c2
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku_vout.c
-@@ -0,0 +1,124 @@
+@@ -0,0 +1,132 @@
 +/*****************************************************************************
 + * vout.c
 + *****************************************************************************
@@ -1752,6 +1752,14 @@ index 0000000..11a1101
 +            (*env)->ExceptionClear(env);
 +        }
 +        fid = (*env)->GetFieldID(env, clz, "mNativeSurface", "I");
++        if (fid == NULL) {
++            jthrowable exp = (*env)->ExceptionOccurred(env);
++            if (exp) {
++                (*env)->DeleteLocalRef(env, exp);
++                (*env)->ExceptionClear(env);
++            }
++            fid = (*env)->GetFieldID(env, clz, "mNativeObject", "I");
++        }
 +    }
 +    vout_android_surf = (void*)(*env)->GetIntField(env, surf, fid);
 +    (*env)->DeleteLocalRef(env, clz);
