@@ -1,16 +1,16 @@
-From 4f95ee9d716c5b2cc25b761e0d762b60b77bd671 Mon Sep 17 00:00:00 2001
+From 121d94019a070c373bde0e8fc38dbb8fb526a8ab Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 14:04:20 +0800
-Subject: [PATCH 02/34] modules: remove unused modules
+Subject: [PATCH 02/36] modules: remove unused modules
 
 ---
  configure.ac                      | 1 +
  modules/Makefile.am               | 1 -
  modules/access/Makefile.am        | 2 ++
  modules/codec/Makefile.am         | 2 ++
- modules/demux/Makefile.am         | 6 ++++++
+ modules/demux/Makefile.am         | 4 ++++
  modules/stream_filter/Makefile.am | 2 ++
- 6 files changed, 13 insertions(+), 1 deletion(-)
+ 6 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
 index d5e2d81..323f9c5 100644
@@ -73,7 +73,7 @@ index bf73069..29d8e6f 100644
  libstl_plugin_la_SOURCES = codec/stl.c
  codec_LTLIBRARIES += libstl_plugin.la
 diff --git a/modules/demux/Makefile.am b/modules/demux/Makefile.am
-index 939d449..f6872a9 100644
+index 939d449..255baf3 100644
 --- a/modules/demux/Makefile.am
 +++ b/modules/demux/Makefile.am
 @@ -120,11 +120,13 @@ libdemux_stl_plugin_la_SOURCES = demux/stl.c
@@ -98,23 +98,7 @@ index 939d449..f6872a9 100644
  libmkv_plugin_la_SOURCES = \
  	demux/mkv/util.hpp demux/mkv/util.cpp \
  	demux/mkv/virtual_segment.hpp demux/mkv/virtual_segment.cpp \
-@@ -180,6 +183,7 @@ libmkv_plugin_la_LIBADD += -lz
- endif
- demux_LTLIBRARIES += $(LTLIBmkv)
- EXTRA_LTLIBRARIES += libmkv_plugin.la
-+endif
- 
- libmp4_plugin_la_SOURCES = demux/mp4/mp4.c demux/mp4/libmp4.c demux/mp4/libmp4.h demux/mp4/id3genres.h
- libmp4_plugin_la_LIBADD = $(LIBM)
-@@ -192,6 +196,7 @@ demux_LTLIBRARIES += libmp4_plugin.la
- libmpgv_plugin_la_SOURCES = demux/mpeg/mpgv.c
- demux_LTLIBRARIES += libmpgv_plugin.la
- 
-+if !MODULE_LITE
- libplaylist_plugin_la_SOURCES = \
- 	demux/playlist/asx.c \
- 	demux/playlist/b4s.c \
-@@ -212,6 +217,7 @@ libplaylist_plugin_la_SOURCES = \
+@@ -212,6 +215,7 @@ libplaylist_plugin_la_SOURCES = \
  	demux/playlist/zpl.c \
  	demux/playlist/playlist.c demux/playlist/playlist.h
  demux_LTLIBRARIES += libplaylist_plugin.la
