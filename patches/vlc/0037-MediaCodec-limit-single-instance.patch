@@ -1,0 +1,48 @@
+From 55d8165b4e9a616718f95c1acd709c5e4ec4fe71 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 19 Dec 2013 11:20:15 +0800
+Subject: [PATCH 37/38] MediaCodec: limit single instance
+
+---
+ modules/codec/omxil/android_mediacodec.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
+index cba0b28..42915aa 100644
+--- a/modules/codec/omxil/android_mediacodec.c
++++ b/modules/codec/omxil/android_mediacodec.c
+@@ -156,6 +156,8 @@ static void CloseDecoder(vlc_object_t *);
+ 
+ static picture_t *DecodeVideo(decoder_t *, block_t **);
+ 
++static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
++
+ /*****************************************************************************
+  * Module descriptor
+  *****************************************************************************/
+@@ -205,6 +207,13 @@ static int OpenDecoder(vlc_object_t *p_this)
+     if ((p_dec->p_sys = p_sys = calloc(1, sizeof(*p_sys))) == NULL)
+         return VLC_ENOMEM;
+ 
++    /* */
++    if (vlc_mutex_trylock(&single_instance) != 0) {
++        msg_Err(p_dec, "Can't start more than one instance at a time");
++        free(p_sys);
++        return VLC_ENOMEM;
++    }
++
+     p_dec->pf_decode_video = DecodeVideo;
+ 
+ 
+@@ -398,6 +407,8 @@ static void CloseDecoder(vlc_object_t *p_this)
+ 
+     free(p_sys->name);
+     free(p_sys);
++
++    vlc_mutex_unlock(&single_instance);
+ }
+ 
+ static void GetOutput(decoder_t *p_dec, JNIEnv *env, picture_t **pp_pic, int loop)
+-- 
+1.8.3.4
+

@@ -1,20 +1,20 @@
-From 9db7c2097d1caee831cd600d33be0983ecf8d597 Mon Sep 17 00:00:00 2001
+From 55fa6de5f0951cfc968a782c04ceae5977b38d6d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 27 Jul 2013 21:05:28 +0800
-Subject: [PATCH 35/35] androidnativewindow: support video output based on
+Subject: [PATCH 35/38] androidnativewindow: support video output based on
  NativeWindow api
 
 ---
- modules/video_output/androidnativewindow.c | 407 +++++++++++++++++++++++++++++
- 1 file changed, 407 insertions(+)
+ modules/video_output/androidnativewindow.c | 394 +++++++++++++++++++++++++++++
+ 1 file changed, 394 insertions(+)
  create mode 100644 modules/video_output/androidnativewindow.c
 
 diff --git a/modules/video_output/androidnativewindow.c b/modules/video_output/androidnativewindow.c
 new file mode 100644
-index 0000000..0ce13f5
+index 0000000..40df3a2
 --- /dev/null
 +++ b/modules/video_output/androidnativewindow.c
-@@ -0,0 +1,407 @@
+@@ -0,0 +1,394 @@
 +/*****************************************************************************
 + * androidnativewindow.c: android video output using native window
 + *****************************************************************************
@@ -124,22 +124,13 @@ index 0000000..0ce13f5
 +static void AndroidUnlockSurface(picture_t *);
 +static int  AndroidRetrieveSurfaceFormat( vout_display_sys_t* );
 +
-+static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
-+
 +static int Open(vlc_object_t *p_this)
 +{
 +    vout_display_t *vd = (vout_display_t *)p_this;
 +
-+    /* */
-+    if (vlc_mutex_trylock(&single_instance) != 0) {
-+        msg_Err(vd, "Can't start more than one instance at a time");
-+        return VLC_EGENERIC;
-+    }
-+
 +    /* Allocate structure */
 +    vout_display_sys_t *sys = (struct vout_display_sys_t*) calloc(1, sizeof(*sys));
 +    if (!sys) {
-+        vlc_mutex_unlock(&single_instance);
 +        return VLC_ENOMEM;
 +    }
 +
@@ -252,7 +243,6 @@ index 0000000..0ce13f5
 +
 +enomem:
 +    free(sys);
-+    vlc_mutex_unlock(&single_instance);
 +    return VLC_ENOMEM;
 +}
 +
@@ -263,7 +253,6 @@ index 0000000..0ce13f5
 +
 +    picture_pool_Delete(sys->pool);
 +    free(sys);
-+    vlc_mutex_unlock(&single_instance);
 +}
 +
 +static picture_pool_t *Pool(vout_display_t *vd, unsigned count)
@@ -362,9 +351,7 @@ index 0000000..0ce13f5
 +        // input size doesn't match the surface size -> request a resize
 +        msg_Warn( sys->vd, "expecting %dx%d, real %dx%d", aligned_width, sh, p_buffer->width, p_buffer->height );
 +        jni_SetAndroidSurfaceSize(aligned_width, sh, sys->fmt.i_visible_width, sys->fmt.i_visible_height, sys->i_sar_num, sys->i_sar_den);
-+        // When using ANativeWindow, one should use ANativeWindow_setBuffersGeometry
-+        // to set the size and format. In our case, these are set via the SurfaceHolder
-+        // in Java, so we seem to manage without calling this ANativeWindow function.
++        ANativeWindow_setBuffersGeometry( picsys->window, aligned_width, sh, picsys->surface_format );
 +        ANativeWindow_unlockAndPost(picsys->window);
 +        return VLC_EGENERIC;
 +    }
