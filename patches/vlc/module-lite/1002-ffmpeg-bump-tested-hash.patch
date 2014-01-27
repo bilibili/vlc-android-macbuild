@@ -1,31 +1,31 @@
-From 2e0d4830a27f6795624009a5d10e3a6f25dca423 Mon Sep 17 00:00:00 2001
+From f31fb1fbd0d9022d33f64f5e4640a4065189f723 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 26 Feb 2013 19:01:29 +0800
 Subject: [PATCH 1002/1002] ffmpeg: bump tested hash
 
 ---
- contrib/src/ffmpeg/rules.mak | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ contrib/src/ffmpeg/rules.mak | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 2a12630..c2ee066 100644
+index b73d992..f23994c 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -1,9 +1,12 @@
- # FFmpeg
+@@ -2,11 +2,11 @@
  
+ #Uncomment the one you want
+ #USE_LIBAV ?= 1
+-#USE_FFMPEG ?= 1
++USE_FFMPEG ?= 1
+ 
+ ifdef USE_FFMPEG
 -HASH=HEAD
-+#HASH=v9.10
+-FFMPEG_SNAPURL := http://git.videolan.org/?p=ffmpeg.git;a=snapshot;h=$(HASH);sf=tgz
 +HASH=ijk-r0.0.6-dev
- 
- #FFMPEG_SNAPURL := http://git.videolan.org/?p=ffmpeg.git;a=snapshot;h=$(HASH);sf=tgz
--FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=$(HASH);sf=tgz
-+#FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=$(HASH);sf=tgz
-+
 +FFMPEG_SNAPURL := https://github.com/bbcallen/FFmpeg/archive/$(HASH).tar.gz
- 
- FFMPEGCONF = \
- 	--cc="$(CC)" \
+ else
+ HASH=HEAD
+ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=$(HASH);sf=tgz
 -- 
 1.8.3.4
 

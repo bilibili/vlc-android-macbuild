@@ -1,4 +1,4 @@
-From e5787b7cc44fe1a539a3417e725ff686b13fd360 Mon Sep 17 00:00:00 2001
+From 94eb285e38d2dd0eb43a65ecaf53aaaf1105c791 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 24 Jun 2012 17:23:34 +0800
 Subject: [PATCH] build for x86
@@ -8,19 +8,18 @@ Subject: [PATCH] build for x86
  1 file changed, 3 insertions(+)
 
 diff --git a/compile.sh b/compile.sh
-index d025c2e..7cd9339 100755
+index 4024d88..785ea2e 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -6,6 +6,9 @@
- 
- set -e
+@@ -1,5 +1,8 @@
+ #! /bin/sh
  
 +# patched for x86
 +export ANDROID_ABI=x86
 +
- if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" ]; then
-    echo "You must define ANDROID_NDK, ANDROID_SDK and ANDROID_ABI before starting."
-    echo "They must point to your NDK and SDK directories.\n"
+ # Read the Android Wiki http://wiki.videolan.org/AndroidCompile
+ # Setup all that stuff correctly.
+ # Get the latest Android SDK Platform or modify numbers in configure.sh and vlc-android/default.properties.
 -- 
 1.8.3.4
 

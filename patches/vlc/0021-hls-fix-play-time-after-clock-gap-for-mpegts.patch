@@ -1,7 +1,7 @@
-From f9f065c0be561f0c9c43363fe536f10ac777632d Mon Sep 17 00:00:00 2001
+From 7402797ed908510444507225a6a52358aff4a71d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:27 +0800
-Subject: [PATCH 21/34] hls: fix play time after clock gap for mpegts
+Subject: [PATCH] hls: fix play time after clock gap for mpegts
 
 ---
  modules/demux/ts.c               | 28 ++++++++++++++++++++--
@@ -9,7 +9,7 @@ Subject: [PATCH 21/34] hls: fix play time after clock gap for mpegts
  2 files changed, 66 insertions(+), 13 deletions(-)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index 939e5d8..9d0671c 100644
+index 7378794..e4867aa 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
 @@ -2225,6 +2225,8 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
@@ -58,7 +58,7 @@ index 939e5d8..9d0671c 100644
          }
  
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index d2fa5af..84579dd 100644
+index 319e8dd..9d064ca 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -64,6 +64,7 @@ vlc_module_end()
@@ -92,7 +92,7 @@ index d2fa5af..84579dd 100644
      segment->duration = duration; /* seconds */
      segment->size = 0; /* bytes */
      segment->sequence = 0;
-@@ -645,7 +648,7 @@ static int parse_SegmentInformation(hls_stream_t *hls, char *p_read, int *durati
+@@ -657,7 +660,7 @@ static int parse_SegmentInformation(hls_stream_t *hls, char *p_read, int *durati
      return VLC_SUCCESS;
  }
  
@@ -101,7 +101,7 @@ index d2fa5af..84579dd 100644
  {
      assert(hls);
      assert(uri);
-@@ -655,7 +658,7 @@ static int parse_AddSegment(hls_stream_t *hls, const int duration, const char *u
+@@ -667,7 +670,7 @@ static int parse_AddSegment(hls_stream_t *hls, const int duration, const char *u
  
      char *psz_uri = relative_URI(hls->url, uri);
  
@@ -110,7 +110,7 @@ index d2fa5af..84579dd 100644
      if (segment)
          segment->sequence = hls->sequence + vlc_array_count(hls->segments) - 1;
      free(psz_uri);
-@@ -1115,7 +1118,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1127,7 +1130,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
          /* */
          bool media_sequence_loaded = false;
          int segment_duration = -1;
@@ -119,7 +119,7 @@ index d2fa5af..84579dd 100644
          do
          {
              /* Next line */
-@@ -1128,10 +1131,6 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1140,10 +1143,6 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
              {
                  segment_duration = 0;
                  err = parse_SegmentInformation(hls, line, &segment_duration);
@@ -130,7 +130,7 @@ index d2fa5af..84579dd 100644
              }
              else if (strncmp(line, "#EXT-X-TARGETDURATION", 21) == 0)
                  err = parse_TargetDuration(s, hls, line);
-@@ -1159,7 +1158,9 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1171,7 +1170,9 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
                  err = parse_EndList(s, hls);
              else if ((strncmp(line, "#", 1) != 0) && (*line != '\0') )
              {
@@ -141,7 +141,7 @@ index d2fa5af..84579dd 100644
                  segment_duration = -1; /* reset duration */
              }
  
-@@ -1171,10 +1172,10 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1183,10 +1184,10 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
  
          } while (err == VLC_SUCCESS);
  
@@ -154,7 +154,7 @@ index d2fa5af..84579dd 100644
          }
  
          free(line);
-@@ -2090,6 +2091,7 @@ static int Open(vlc_object_t *p_this)
+@@ -2102,6 +2103,7 @@ static int Open(vlc_object_t *p_this)
      /* Choose first HLS stream to start with */
      int current = p_sys->playback.stream = p_sys->hls_stream->i_count-1;
      p_sys->playback.segment = p_sys->download.segment = ChooseSegment(s, current);
@@ -162,7 +162,7 @@ index d2fa5af..84579dd 100644
  
      /* manage encryption key if needed */
      hls_ManageSegmentKeys(s, hls_Get(p_sys->hls_stream, current));
-@@ -2340,11 +2342,13 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
+@@ -2352,11 +2354,13 @@ static ssize_t hls_Read(stream_t *s, uint8_t *p_read, unsigned int i_read)
              else
                  segment_RestorePos(segment);
  
@@ -176,7 +176,7 @@ index d2fa5af..84579dd 100644
              vlc_cond_signal(&p_sys->download.wait);
              vlc_mutex_unlock(&p_sys->download.lock_wait);
              continue;
-@@ -2653,6 +2657,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2665,6 +2669,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
  
          vlc_mutex_lock(&segment->lock);
          segment_RestorePos(segment);
@@ -184,7 +184,7 @@ index d2fa5af..84579dd 100644
          vlc_mutex_unlock(&segment->lock);
  
          /* start download at current playback segment */
-@@ -2681,6 +2686,19 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2693,6 +2698,19 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
      return b_found ? VLC_SUCCESS : VLC_EGENERIC;
  }
  
@@ -204,10 +204,10 @@ index d2fa5af..84579dd 100644
  static int Control(stream_t *s, int i_query, va_list args)
  {
      stream_sys_t *p_sys = s->p_sys;
-@@ -2724,6 +2742,17 @@ static int Control(stream_t *s, int i_query, va_list args)
-         case STREAM_GET_SIZE:
-             *(va_arg (args, uint64_t *)) = GetStreamSize(s);
-             break;
+@@ -2740,6 +2758,17 @@ static int Control(stream_t *s, int i_query, va_list args)
+             *va_arg (args, int64_t *) =
+                 var_InheritInteger(s, "network-caching");
+              break;
 +        case STREAM_HTTPLIVE_GET_SEGMENT_START:
 +            {
 +                msg_Warn(s, "STREAM_HTTPLIVE_GET_SEGMENT_START");

@@ -1,17 +1,17 @@
-From db3908b616fcc125c2d34369e303baa6667cb01e Mon Sep 17 00:00:00 2001
+From c590a7107eba0be34bdeb5ed3ffcee5c1cabf10e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
-Subject: [PATCH] lite-mode: ffmpeg: disable modules
+Subject: [PATCH 1001/1002] lite-mode: ffmpeg: disable modules
 
 ---
  contrib/src/ffmpeg/rules.mak | 44 ++++++++++++++++++++++++++++++++++++++++----
  1 file changed, 40 insertions(+), 4 deletions(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 6c04f1f..2a12630 100644
+index 3516b7a..b73d992 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -8,10 +8,46 @@ FFMPEG_SNAPURL := http://git.libav.org/?p=libav.git;a=snapshot;h=$(HASH);sf=tgz
+@@ -15,10 +15,46 @@ endif
  FFMPEGCONF = \
  	--cc="$(CC)" \
  	--disable-doc \
@@ -61,10 +61,10 @@ index 6c04f1f..2a12630 100644
  	--disable-debug \
  	--disable-avdevice \
  	--disable-devices \
-@@ -24,7 +60,7 @@ FFMPEGCONF = \
- #	--disable-ffserver \
- #	--disable-ffplay \
- #	--disable-ffprobe
+@@ -35,7 +71,7 @@ FFMPEGCONF += \
+ 	--disable-iconv
+ endif
+ 
 -DEPS_ffmpeg = zlib gsm openjpeg
 +DEPS_ffmpeg = zlib
  

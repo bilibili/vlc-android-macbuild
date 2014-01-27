@@ -1,4 +1,4 @@
-From 914bc0957b38decd493c78c0d172e6ad16ee1b46 Mon Sep 17 00:00:00 2001
+From 15814b29e70ded0afad2327e736c9d6b7b2badca Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 24 Jun 2012 17:54:36 +0800
 Subject: [PATCH] build for armv5
@@ -8,12 +8,11 @@ Subject: [PATCH] build for armv5
  1 file changed, 6 insertions(+)
 
 diff --git a/compile.sh b/compile.sh
-index d025c2e..2cd2f72 100755
+index 4024d88..b1f3e7c 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -6,6 +6,12 @@
- 
- set -e
+@@ -1,5 +1,11 @@
+ #! /bin/sh
  
 +# patched for armv5
 +export ANDROID_ABI=armeabi
@@ -21,9 +20,9 @@ index d025c2e..2cd2f72 100755
 +export NO_FPU=1
 +export NO_ARMV6=1
 +
- if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" ]; then
-    echo "You must define ANDROID_NDK, ANDROID_SDK and ANDROID_ABI before starting."
-    echo "They must point to your NDK and SDK directories.\n"
+ # Read the Android Wiki http://wiki.videolan.org/AndroidCompile
+ # Setup all that stuff correctly.
+ # Get the latest Android SDK Platform or modify numbers in configure.sh and vlc-android/default.properties.
 -- 
 1.8.3.4
 

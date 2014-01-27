@@ -1,17 +1,17 @@
-From 0a2cea2ad6219f9914ef3ffe4a004c049d2c32e1 Mon Sep 17 00:00:00 2001
+From 13d11b137b6f0b0a8d68caf9bf544f2643cb9539 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
-Subject: [PATCH 2/4] lite-mode: compile.sh: disable contrib
+Subject: [PATCH 2/3] lite-mode: compile.sh: disable contrib
 
 ---
  compile.sh | 32 ++++++++++++++++++++++++++++++--
  1 file changed, 30 insertions(+), 2 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index 3e8c348..335d8d5 100755
+index 41d4734..4024d88 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -188,10 +188,38 @@ if [ -z "${VLC_FAST_COMPILE}" ]; then
+@@ -230,10 +230,38 @@ cd contrib/android
      --disable-tremor \
      --disable-vorbis \
      --disable-sidplay2 \
@@ -49,9 +49,9 @@ index 3e8c348..335d8d5 100755
      --disable-harfbuzz \
 -    --enable-iconv
 +    --disable-iconv
- fi
  
  # TODO: mpeg2, theora
+ 
 -- 
 1.8.3.4
 

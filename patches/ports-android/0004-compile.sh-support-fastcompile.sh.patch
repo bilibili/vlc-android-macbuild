@@ -1,92 +1,23 @@
-From 652e793b9ab310f8301c1aca2a5c1a1015200944 Mon Sep 17 00:00:00 2001
+From cb92c15c451abf4ee155b80bf5c04df0380efde0 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
-Subject: [PATCH 4/4] compile.sh: support fastcompile.sh
+Subject: [PATCH] compile.sh: support fastcompile.sh
 
 ---
- compile.sh     | 12 +++++++++++-
- fastcompile.sh |  4 ++++
- 2 files changed, 15 insertions(+), 1 deletion(-)
+ fastcompile.sh | 4 ++++
+ 1 file changed, 4 insertions(+)
  create mode 100644 fastcompile.sh
 
-diff --git a/compile.sh b/compile.sh
-index c2d82f1..a350fd9 100755
---- a/compile.sh
-+++ b/compile.sh
-@@ -90,6 +90,7 @@ export PATH=${NDK_TOOLCHAIN_PATH}:${PATH}
- ANDROID_PATH="`pwd`"
- 
- # 1/ libvlc, libvlccore and its plugins
-+if [ -z "${VLC_FAST_COMPILE}" ]; then
- TESTED_HASH=a5c4d7a
- if [ ! -d "vlc" ]; then
-     echo "VLC source not found, cloning"
-@@ -118,6 +119,9 @@ EOF
-         exit 1
-     fi
- fi
-+else
-+    cd vlc
-+fi
- 
- if [ ${ANDROID_ABI} = "armeabi-v7a" ] ; then
-     EXTRA_CFLAGS="-mfpu=vfpv3-d16 -mcpu=cortex-a8"
-@@ -169,6 +173,7 @@ cd ../..
- echo "Building the contribs"
- mkdir -p contrib/android
- cd contrib/android
-+if [ -z "${VLC_FAST_COMPILE}" ]; then
- ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout \
-     --disable-dca \
-     --disable-goom \
-@@ -192,6 +197,7 @@ cd contrib/android
-     --disable-faad2 \
-     --disable-harfbuzz \
-     --enable-iconv
-+fi
- 
- # TODO: mpeg2, theora
- 
-@@ -208,10 +214,13 @@ else
-     OPTS="--enable-debug"
- fi
- 
-+if [ -z "${VLC_FAST_COMPILE}" ]; then
- echo "EXTRA_CFLAGS= -g ${EXTRA_CFLAGS}" >> config.mak
- echo "CHOST= ${CHOST}" >> config.mak
-+fi
- export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
- 
-+if [ -z "${VLC_FAST_COMPILE}" ]; then
- if  test -d "../../../../tarballs" ; then
-     echo "fetch local tarballs"
-     mkdir -p ../tarballs
-@@ -222,13 +231,14 @@ make fetch
- # We already have zlib available
- [ -e .zlib ] || (mkdir -p zlib; touch .zlib)
- make $MAKEFLAGS
-+fi
- 
- cd ../.. && mkdir -p android && cd android
- 
- if [ $# -eq 1 ] && [ "$1" = "jni" ]; then
-     CLEAN="jniclean"
-     RELEASEFLAG="vlc-android/obj/local/armeabi-v7a/libvlcjni.so"
--else
-+elif [ -z "${VLC_FAST_COMPILE}" ]; then
-     CLEAN="distclean"
-     echo "Bootstraping"
-     ../bootstrap
 diff --git a/fastcompile.sh b/fastcompile.sh
 new file mode 100644
-index 0000000..14c672b
+index 0000000..8617530
 --- /dev/null
 +++ b/fastcompile.sh
 @@ -0,0 +1,4 @@
 +#! /bin/sh
 +
 +export VLC_FAST_COMPILE=1
-+sh compile.sh jni
++sh compile.sh --build
 -- 
 1.8.3.4
 
