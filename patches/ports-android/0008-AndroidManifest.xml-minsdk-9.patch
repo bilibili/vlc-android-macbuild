@@ -1,14 +1,14 @@
-From 4a82656503ee51e7429bd66263aeff2e30b34895 Mon Sep 17 00:00:00 2001
+From d85a0d7978240e73b902627338c7f403191c1aa2 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 27 Jul 2013 21:15:12 +0800
-Subject: [PATCH 07/12] AndroidManifest.xml: minsdk=9
+Subject: [PATCH 08/13] AndroidManifest.xml: minsdk=9
 
 ---
  vlc-android/AndroidManifest.xml | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/vlc-android/AndroidManifest.xml b/vlc-android/AndroidManifest.xml
-index 6f201ac..5d1649b 100644
+index 6ce888c..48a3176 100644
 --- a/vlc-android/AndroidManifest.xml
 +++ b/vlc-android/AndroidManifest.xml
 @@ -6,7 +6,7 @@

@@ -1,7 +1,7 @@
-From 667d02b7079d5f31c6765b4ccacb201602ed9393 Mon Sep 17 00:00:00 2001
+From 132215ef7da5364cfde59d9598d402e67a2c1ba2 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
-Subject: [PATCH 12/12] libvlcjni: another libvlc wrapper
+Subject: [PATCH 13/13] libvlcjni: another libvlc wrapper
 
 ---
  vlc-android/jni/Android.mk                         |   6 +-
@@ -10,16 +10,16 @@ Subject: [PATCH 12/12] libvlcjni: another libvlc wrapper
  vlc-android/jni/jni_libvlc.h                       |  36 ++
  vlc-android/jni/jni_libvlcevent.c                  |  92 ++++
  vlc-android/jni/jni_libvlcevent.h                  |  32 ++
- vlc-android/jni/jni_vsl.c                          | 312 +++++++++++
+ vlc-android/jni/jni_vsl.c                          | 312 ++++++++++++
  vlc-android/jni/jni_vsl.h                          |  37 ++
- vlc-android/jni/libvlcjni_danmaku.c                | 579 +++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c                | 566 +++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |  65 +++
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |  61 +++
- .../jni/libvlcjni_danmaku_readMediaEx.inc.c        | 109 ++++
- vlc-android/jni/libvlcjni_danmaku_vout.c           | 132 +++++
  vlc-android/jni/libvlcjni_fflog.inc.c              |  71 +++
  vlc-android/jni/utils.h                            |   2 +
- 15 files changed, 1743 insertions(+), 2 deletions(-)
+ vlc-android/jni/vout.c                             |   5 +
+ vlc-android/src/org/videolan/libvlc/LibVLC.java    | 168 +++++-
+ 15 files changed, 1656 insertions(+), 8 deletions(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.h
@@ -30,12 +30,10 @@ Subject: [PATCH 12/12] libvlcjni: another libvlc wrapper
  create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku_events.inc.c
  create mode 100644 vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c
- create mode 100644 vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
- create mode 100644 vlc-android/jni/libvlcjni_danmaku_vout.c
  create mode 100644 vlc-android/jni/libvlcjni_fflog.inc.c
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 7f0236c..e2a4ba2 100644
+index 7f0236c..7cec112 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -3,8 +3,10 @@ include $(CLEAR_VARS)
@@ -45,8 +43,8 @@ index 7f0236c..e2a4ba2 100644
 -LOCAL_SRC_FILES := libvlcjni.c libvlcjni-util.c libvlcjni-track.c libvlcjni-medialist.c aout.c vout.c libvlcjni-equalizer.c
 -LOCAL_SRC_FILES += thumbnailer.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
 +LOCAL_SRC_FILES := libvlcjni-util.c aout.c
-+LOCAL_SRC_FILES += pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
-+LOCAL_SRC_FILES += libvlcjni_danmaku.c libvlcjni_danmaku_vout.c
++LOCAL_SRC_FILES += pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c vout.c
++LOCAL_SRC_FILES += libvlcjni_danmaku.c
 +LOCAL_SRC_FILES += jni_bundle.c jni_libvlcevent.c jni_vsl.c
  LOCAL_SRC_FILES += pipe2.c
  LOCAL_SRC_FILES += wchar/wcpcpy.c
@@ -815,10 +813,10 @@ index 0000000..527277a
 +#endif // JNI_VSL_H
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..28303bf
+index 0000000..ba6e4de
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,579 @@
+@@ -0,0 +1,566 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -860,7 +858,15 @@ index 0000000..28303bf
 +
 +#include "libvlcjni.h"
 +#include "aout.h"
++#include "vout.h"
 +#include "utils.h"
++
++#define VOUT_ANDROID_SURFACE 0
++#define VOUT_OPENGLES2       1
++
++#define HW_ACCELERATION_DISABLED 0
++#define HW_ACCELERATION_DECODING 1
++#define HW_ACCELERATION_FULL     2
 +
 +#define LOG_TAG "VLC/JNI/main"
 +#include "log.h"
@@ -875,6 +881,7 @@ index 0000000..28303bf
 +#define AOUT_AUDIOTRACK      1
 +#define AOUT_OPENSLES        2
 +
++#if 0
 +libvlc_media_t *new_media(jlong instance, JNIEnv *env, jobject thiz, jstring fileLocation, bool noOmx, bool noVideo)
 +{
 +    libvlc_instance_t *libvlc = (libvlc_instance_t*)(intptr_t)instance;
@@ -886,10 +893,10 @@ index 0000000..28303bf
 +        return NULL;
 +
 +    if (!noOmx) {
-+#if 0
 +        jclass cls = (*env)->GetObjectClass(env, thiz);
-+        jmethodID methodId = (*env)->GetMethodID(env, cls, "useIOMX", "()Z");
-+        if ((*env)->CallBooleanMethod(env, thiz, methodId)) {
++        jmethodID methodId = (*env)->GetMethodID(env, cls, "getHardwareAcceleration", "()I");
++        int hardwareAcceleration = (*env)->CallIntMethod(env, thiz, methodId);
++        if (hardwareAcceleration == HW_ACCELERATION_DECODING || hardwareAcceleration == HW_ACCELERATION_FULL) {
 +            /*
 +             * Set higher caching values if using iomx decoding, since some omx
 +             * decoders have a very high latency, and if the preroll data isn't
@@ -903,21 +910,10 @@ index 0000000..28303bf
 +            libvlc_media_add_option(p_md, ":network-caching=1500");
 +            libvlc_media_add_option(p_md, ":codec=mediacodec,iomx,all");
 +        }
-+#endif
 +        if (noVideo)
 +            libvlc_media_add_option(p_md, ":no-video");
 +    }
 +    return p_md;
-+}
-+
-+#if 0
-+// Get the current media list being followed
-+libvlc_media_list_t* getMediaList(JNIEnv *env, jobject thiz) {
-+    jclass clazz = (*env)->GetObjectClass(env, thiz);
-+    jfieldID fieldMP = (*env)->GetFieldID(env, clazz,
-+                                          "mMediaList", "Lorg/videolan/libvlc/MediaList;");
-+    jobject javaML = (*env)->GetObjectField(env, thiz, fieldMP);
-+    return getMediaListFromJava(env, javaML);
 +}
 +#endif
 +
@@ -999,6 +995,7 @@ index 0000000..28303bf
 +    myVm = vm;
 +
 +    pthread_mutex_init(&vout_android_lock, NULL);
++    pthread_cond_init(&vout_android_surf_attached, NULL);
 +
 +    LOGD("JNI interface loaded.");
 +    return JNI_VERSION_1_2;
@@ -1006,6 +1003,7 @@ index 0000000..28303bf
 +
 +void JNI_OnUnload(JavaVM* vm, void* reserved) {
 +    pthread_mutex_destroy(&vout_android_lock);
++    pthread_cond_destroy(&vout_android_surf_attached);
 +}
 +
 +// FIXME: use atomics
@@ -1026,6 +1024,9 @@ index 0000000..28303bf
 +    jclass cls = (*env)->GetObjectClass(env, thiz);
 +    jmethodID methodId = (*env)->GetMethodID(env, cls, "getAout", "()I");
 +    bool use_opensles = (*env)->CallIntMethod(env, thiz, methodId) == AOUT_OPENSLES;
++
++    methodId = (*env)->GetMethodID(env, cls, "getVout", "()I");
++    bool use_opengles2 = (*env)->CallIntMethod(env, thiz, methodId) == VOUT_OPENGLES2;
 +
 +    methodId = (*env)->GetMethodID(env, cls, "timeStretchingEnabled", "()Z");
 +    bool enable_time_stretch = (*env)->CallBooleanMethod(env, thiz, methodId);
@@ -1060,6 +1061,12 @@ index 0000000..28303bf
 +    methodId = (*env)->GetMethodID(env, cls, "isVerboseMode", "()Z");
 +    verbosity = (*env)->CallBooleanMethod(env, thiz, methodId);
 +
++    methodId = (*env)->GetMethodID(env, cls, "getHardwareAcceleration", "()I");
++    int hardwareAcceleration = (*env)->CallIntMethod(env, thiz, methodId);
++    /* With the MediaCodec opaque mode we cannot use the OpenGL ES vout. */
++    if (hardwareAcceleration == HW_ACCELERATION_FULL)
++        use_opengles2 = false;
++
 +    /* Don't add any invalid options, otherwise it causes LibVLC to crash */
 +    const char *argv[] = {
 +        "-I", "dummy",
@@ -1081,7 +1088,9 @@ index 0000000..28303bf
 +        "--avcodec-skip-idct", enable_frame_skip ? "2" : "0",
 +        (networkCaching > 0) ? networkCachingstr : "",
 +        use_opensles ? "--aout=opensles" : "--aout=android_audiotrack",
++        use_opengles2 ? "--vout=gles2" : "--vout=androidsurface",
 +        "--androidsurface-chroma", chromastr != NULL && chromastr[0] != 0 ? chromastr : "RV32",
++        (hardwareAcceleration == HW_ACCELERATION_FULL) ? "" : "--no-mediacodec-dr",
 +    };
 +    libvlc_instance_t *instance = libvlc_new(sizeof(argv) / sizeof(*argv), argv);
 +
@@ -1134,24 +1143,17 @@ index 0000000..28303bf
 +    eventHandlerInstance = getEventHandlerReference(env, thiz, eventHandler);
 +}
 +
-+#include "libvlcjni_danmaku_readMediaEx.inc.c"
-+void Java_org_videolan_libvlc_LibVLC_readMediaEx(JNIEnv *env,
-+                                              jobject thiz, jlong instance, jstring mrl, jarray options)
++void Java_org_videolan_libvlc_LibVLC_playMRL(JNIEnv *env, jobject thiz, jlong instance,
++                                             jstring mrl, jobjectArray mediaOptions)
 +{
-+    create_player_and_play_ex(env, thiz, instance, get_vout_android_gui(), mrl, options);
-+}
-+#if 0
-+static void create_player_and_play(JNIEnv* env, jobject thiz,
-+                                   jlong instance, int position) {
 +    /* Release previous media player, if any */
 +    releaseMediaPlayer(env, thiz);
-+
-+    libvlc_media_list_t* p_mlist = getMediaList(env, thiz);
 +
 +    /* Create a media player playing environment */
 +    libvlc_media_player_t *mp = libvlc_media_player_new((libvlc_instance_t*)(intptr_t)instance);
 +    jobject myJavaLibVLC = (*env)->NewGlobalRef(env, thiz);
 +
++#if 0
 +    //if AOUT_AUDIOTRACK_JAVA, we use amem
 +    jclass cls = (*env)->GetObjectClass(env, thiz);
 +    jmethodID methodId = (*env)->GetMethodID(env, cls, "getAout", "()I");
@@ -1175,77 +1177,83 @@ index 0000000..28303bf
 +    };
 +    for(int i = 0; i < (sizeof(mp_events) / sizeof(*mp_events)); i++)
 +        libvlc_event_attach(ev, mp_events[i], vlc_event_callback, myVm);
++#endif
 +
 +
 +    /* Keep a pointer to this media player */
 +    setLong(env, thiz, "mInternalMediaPlayerInstance", (jlong)(intptr_t)mp);
 +
++#if 0
 +    cls = (*env)->GetObjectClass(env, thiz);
 +    jmethodID methodID = (*env)->GetMethodID(env, cls, "applyEqualizer", "()V");
 +    (*env)->CallVoidMethod(env, thiz, methodID);
++#endif
 +
-+    setInt(env, thiz, "mInternalMediaPlayerIndex", (jint)position);
-+    libvlc_media_list_lock(p_mlist);
-+    libvlc_media_t* p_md = libvlc_media_list_item_at_index(p_mlist, position);
-+    libvlc_media_list_unlock(p_mlist);
++    const char* p_mrl = (*env)->GetStringUTFChars(env, mrl, 0);
++
++    libvlc_media_t* p_md = libvlc_media_new_location((libvlc_instance_t*)(intptr_t)instance, p_mrl);
++    /* media options */
++    if (mediaOptions != NULL)
++    {
++        int stringCount = (*env)->GetArrayLength(env, mediaOptions);
++        for(int i = 0; i < stringCount; i++)
++        {
++            jstring option = (jstring)(*env)->GetObjectArrayElement(env, mediaOptions, i);
++            const char* p_st = (*env)->GetStringUTFChars(env, option, 0);
++            LOGD("  %s", p_st);
++            if (!strncmp(p_st, ":aout=", 6)) {
++                // seems ":aout" does not effect libvlc_media_add_option()
++                const char* aout_name = p_st + 6;
++                if (!strncmp(aout_name, "audiotrack_java", 15)) {
++                    LOGD("    set libvlc_audio_output_set:%s", aout_name);
++                    libvlc_audio_set_callbacks(mp, aout_play, NULL, NULL,
++                                               NULL, NULL, (void*) myJavaLibVLC);
++                    libvlc_audio_set_format_callbacks(mp, aout_open,
++                                                      aout_close);
++                } else {
++                    LOGD("    set libvlc_audio_output_set:%s", aout_name);
++                    libvlc_audio_output_set(mp, aout_name);
++                }
++            } else {
++                libvlc_media_add_option(p_md, p_st); // option
++            }
++            (*env)->ReleaseStringUTFChars(env, option, p_st);
++        }
++    }
++
++    (*env)->ReleaseStringUTFChars(env, mrl, p_mrl);
++
++    // FIXME: do not use get_vout_android_gui() for java_mp
++    libvlc_media_player_set_vsl_callback(mp, get_vout_android_gui(), //
++                                         jvsl_load, //
++                                         jvsl_load_segment, //
++                                         jvsl_get_count, //
++                                         jvsl_get_mrl, //
++                                         jvsl_get_url, //
++                                         jvsl_get_duration, //
++                                         jvsl_get_bytes);
++
 +    libvlc_media_player_set_media(mp, p_md);
++    /* No need to keep the media now */
++    libvlc_media_release(p_md);
++
++    /* Connect the event manager */
++    libvlc_event_manager_t *ev = libvlc_media_player_event_manager(mp);
++    for (int i = 0; i < (sizeof(mp_events) / sizeof(*mp_events)); ++i)
++        libvlc_event_attach(ev, mp_events[i], vlc_event_callback, myVm);
++
++    p_md = libvlc_media_player_get_media(mp);
++    if (p_md) {
++        ev = libvlc_media_event_manager(p_md);
++        for (int i = 0; i < sizeof(md_events) / sizeof(*md_events); i++) {
++            libvlc_event_attach(ev, md_events[i], vlc_event_callback, myVm);
++        }
++    }
++
 +    libvlc_media_player_play(mp);
 +}
 +
-+jint Java_org_videolan_libvlc_LibVLC_readMedia(JNIEnv *env, jobject thiz,
-+                                            jlong instance, jstring mrl, jboolean novideo)
-+{
-+    /* Create a new item */
-+    libvlc_media_t *m = new_media(instance, env, thiz, mrl, false, novideo);
-+    if (!m)
-+    {
-+        LOGE("readMedia: Could not create the media!");
-+        return -1;
-+    }
-+
-+    libvlc_media_list_t* p_mlist = getMediaList(env, thiz);
-+
-+    libvlc_media_list_lock(p_mlist);
-+    if(libvlc_media_list_add_media(p_mlist, m) != 0) {
-+        LOGE("readMedia: Could not add to the media list!");
-+        libvlc_media_list_unlock(p_mlist);
-+        libvlc_media_release(m);
-+        return -1;
-+    }
-+    int position = libvlc_media_list_index_of_item(p_mlist, m);
-+    libvlc_media_list_unlock(p_mlist);
-+
-+    /* No need to keep the media now */
-+    libvlc_media_release(m);
-+
-+    create_player_and_play(env, thiz, instance, position);
-+
-+    return position;
-+}
-+
-+void Java_org_videolan_libvlc_LibVLC_playIndex(JNIEnv *env, jobject thiz,
-+                                            jlong instance, int position) {
-+    create_player_and_play(env, thiz, instance, position);
-+}
-+
-+void Java_org_videolan_libvlc_LibVLC_getMediaListItems(
-+                JNIEnv *env, jobject thiz, jobject arrayList) {
-+    jclass arrayClass = (*env)->FindClass(env, "java/util/ArrayList");
-+    jmethodID methodID = (*env)->GetMethodID(env, arrayClass, "add", "(Ljava/lang/Object;)Z");
-+    jstring str;
-+
-+    libvlc_media_list_t* p_mlist = getMediaList(env, thiz);
-+    libvlc_media_list_lock( p_mlist );
-+    for(int i = 0; i < libvlc_media_list_count( p_mlist ); i++) {
-+        char* mrl = libvlc_media_get_mrl( libvlc_media_list_item_at_index( p_mlist, i ) );
-+        str = (*env)->NewStringUTF(env, mrl);
-+        (*env)->CallBooleanMethod(env, arrayList, methodID, str);
-+        (*env)->DeleteLocalRef(env, str);
-+        free(mrl);
-+    }
-+    libvlc_media_list_unlock( p_mlist );
-+}
-+
++#if 0
 +jfloat Java_org_videolan_libvlc_LibVLC_getRate(JNIEnv *env, jobject thiz) {
 +    libvlc_media_player_t* mp = getMediaPlayer(env, thiz);
 +    if(mp)
@@ -1305,29 +1313,6 @@ index 0000000..28303bf
 +}
 +
 +#if 0
-+void Java_org_videolan_libvlc_LibVLC_previous(JNIEnv *env, jobject thiz)
-+{
-+    int current_position = getInt(env, thiz, "mInternalMediaPlayerIndex");
-+
-+    if(current_position-1 >= 0) {
-+        setInt(env, thiz, "mInternalMediaPlayerIndex", (jint)(current_position-1));
-+        create_player_and_play(env, thiz,
-+             getLong(env, thiz, "mLibVlcInstance"), current_position-1);
-+    }
-+}
-+
-+void Java_org_videolan_libvlc_LibVLC_next(JNIEnv *env, jobject thiz)
-+{
-+    libvlc_media_list_t* p_mlist = getMediaList(env, thiz);
-+    int current_position = getInt(env, thiz, "mInternalMediaPlayerIndex");
-+
-+    if(current_position+1 < libvlc_media_list_count(p_mlist)) {
-+        setInt(env, thiz, "mInternalMediaPlayerIndex", (jint)(current_position+1));
-+        create_player_and_play(env, thiz,
-+             getLong(env, thiz, "mLibVlcInstance"), current_position+1);
-+    }
-+}
-+
 +jint Java_org_videolan_libvlc_LibVLC_getVolume(JNIEnv *env, jobject thiz)
 +{
 +    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
@@ -1536,259 +1521,6 @@ index 0000000..ab052f3
 +}
 +
 +#endif//LIBVLCJNI_DANMAKU_NATIVEINITEX_INC_C
-diff --git a/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c b/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
-new file mode 100644
-index 0000000..a38cd0a
---- /dev/null
-+++ b/vlc-android/jni/libvlcjni_danmaku_readMediaEx.inc.c
-@@ -0,0 +1,109 @@
-+/*****************************************************************************
-+ * libvlcjni_danmaku_readMediaEx.inc.c
-+ *****************************************************************************
-+ * Copyright (C) 2012 Rui Zhang
-+ *
-+ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU Lesser General Public License as published by
-+ * the Free Software Foundation; either version 2.1 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
-+ *****************************************************************************/
-+
-+#ifndef LIBVLCJNI_DANMAKU_READMEDIAEX_INC_C
-+#define LIBVLCJNI_DANMAKU_READMEDIAEX_INC_C
-+
-+void create_player_and_play_ex(JNIEnv *env, jobject thiz, jlong instance,
-+        jobject gui, jstring mrl, jarray options) {
-+    /* Release previous media player, if any */
-+    releaseMediaPlayer(env, thiz);
-+
-+    /* Create a new item */
-+    libvlc_media_t *m = new_media(instance, env, thiz, mrl, false, false);
-+    if (!m) {
-+        LOGE("readMediaEx: Could not create the media!");
-+        return;
-+    }
-+
-+    jobject myJavaLibVLC = (*env)->NewGlobalRef(env, thiz);
-+
-+    /* Create a media player playing environment */
-+    libvlc_media_player_t *mp = libvlc_media_player_new(
-+            (libvlc_instance_t*)(intptr_t)instance);
-+
-+    int user_argc = (*env)->GetArrayLength(env, options);
-+    int i = 0;
-+    LOGD("libvlc_media_add_option");
-+    for (i = 0; i < user_argc; i++) {
-+        jstring opt = (*env)->GetObjectArrayElement(env, options, i);
-+        if (opt) {
-+            const char* optString = (char *) (*env)->GetStringUTFChars(env, opt,
-+                    NULL);
-+            if (optString) {
-+                LOGD("  %s", optString);
-+                if (!strncmp(optString, ":aout=", 6)) {
-+                    // seems ":aout" does not effect libvlc_media_add_option()
-+                    const char* aout_name = optString + 6;
-+                    if (!strncmp(aout_name, "audiotrack_java", 15)) {
-+                        LOGD("    set libvlc_audio_output_set:%s", aout_name);
-+                        libvlc_audio_set_callbacks(mp, aout_play, NULL, NULL,
-+                                NULL, NULL, (void*) myJavaLibVLC);
-+                        libvlc_audio_set_format_callbacks(mp, aout_open,
-+                                aout_close);
-+                    } else {
-+                        LOGD("    set libvlc_audio_output_set:%s", aout_name);
-+                        libvlc_audio_output_set(mp, aout_name);
-+                    }
-+                } else {
-+                    libvlc_media_add_option(m, optString);
-+                }
-+
-+                (*env)->ReleaseStringUTFChars(env, opt, optString);
-+            }
-+        }
-+    }
-+
-+    libvlc_media_player_set_vsl_callback(mp, gui, //
-+            jvsl_load, //
-+            jvsl_load_segment, //
-+            jvsl_get_count, //
-+            jvsl_get_mrl, //
-+            jvsl_get_url, //
-+            jvsl_get_duration, //
-+            jvsl_get_bytes);
-+
-+    libvlc_media_player_set_media(mp, m);
-+
-+    /* No need to keep the media now */
-+    libvlc_media_release(m);
-+
-+    /* Connect the event manager */
-+    libvlc_event_manager_t *ev = libvlc_media_player_event_manager(mp);
-+    for (i = 0; i < (sizeof(mp_events) / sizeof(*mp_events)); ++i)
-+        libvlc_event_attach(ev, mp_events[i], vlc_event_callback, myVm);
-+
-+    libvlc_media_t *md = libvlc_media_player_get_media(mp);
-+    if (md) {
-+        ev = libvlc_media_event_manager(md);
-+        for (i = 0; i < sizeof(md_events) / sizeof(*md_events); i++) {
-+            libvlc_event_attach(ev, md_events[i], vlc_event_callback, myVm);
-+        }
-+    }
-+
-+    /* Keep a pointer to this media player */
-+    setLong(env, thiz, "mInternalMediaPlayerInstance", (jlong)(intptr_t) mp);
-+
-+    libvlc_media_player_play(mp);
-+}
-+
-+#endif//LIBVLCJNI_DANMAKU_READMEDIAEX_INC_C
-diff --git a/vlc-android/jni/libvlcjni_danmaku_vout.c b/vlc-android/jni/libvlcjni_danmaku_vout.c
-new file mode 100644
-index 0000000..d5457c2
---- /dev/null
-+++ b/vlc-android/jni/libvlcjni_danmaku_vout.c
-@@ -0,0 +1,132 @@
-+/*****************************************************************************
-+ * vout.c
-+ *****************************************************************************
-+ * Copyright © 2010-2013 VLC authors and VideoLAN
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU Lesser General Public License as published by
-+ * the Free Software Foundation; either version 2.1 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
-+ *****************************************************************************/
-+
-+#include <vlc/vlc.h>
-+#include <vlc_common.h>
-+
-+#include <jni.h>
-+#include <android/native_window_jni.h>
-+
-+/** Unique Java VM instance, as defined in libvlcjni.c */
-+extern JavaVM *myVm;
-+
-+pthread_mutex_t vout_android_lock;
-+static void *vout_android_surf = NULL;
-+static void *vout_android_gui = NULL;
-+static jobject vout_android_java_surf = NULL;
-+static ANativeWindow *vout_android_native_window = NULL;
-+
-+void *get_vout_android_gui() {
-+    return vout_android_gui;
-+}
-+
-+void *jni_LockAndGetAndroidSurface() {
-+    pthread_mutex_lock(&vout_android_lock);
-+    return vout_android_surf;
-+}
-+
-+jobject jni_LockAndGetAndroidJavaSurface() {
-+    pthread_mutex_lock(&vout_android_lock);
-+    return vout_android_java_surf;
-+}
-+
-+ANativeWindow *jni_ObtainAndroidNativeWindow() {
-+    ANativeWindow *window = NULL;
-+    pthread_mutex_lock(&vout_android_lock);
-+    if (vout_android_native_window != NULL) {
-+        ANativeWindow_acquire(vout_android_native_window);
-+        window = vout_android_native_window;
-+    }
-+    pthread_mutex_unlock(&vout_android_lock);
-+    return window;
-+}
-+
-+void jni_UnlockAndroidSurface() {
-+    pthread_mutex_unlock(&vout_android_lock);
-+}
-+
-+void jni_SetAndroidSurfaceSize(int width, int height, int visible_width, int visible_height, int sar_num, int sar_den)
-+{
-+    if (vout_android_gui == NULL)
-+        return;
-+
-+    JNIEnv *p_env;
-+
-+    (*myVm)->AttachCurrentThread (myVm, &p_env, NULL);
-+    jclass cls = (*p_env)->GetObjectClass (p_env, vout_android_gui);
-+    jmethodID methodId = (*p_env)->GetMethodID (p_env, cls, "setSurfaceSize", "(IIII)V");
-+
-+    (*p_env)->CallVoidMethod (p_env, vout_android_gui, methodId, width, height, sar_num, sar_den);
-+
-+    (*p_env)->DeleteLocalRef(p_env, cls);
-+    (*myVm)->DetachCurrentThread (myVm);
-+}
-+
-+void Java_org_videolan_libvlc_LibVLC_attachSurface(JNIEnv *env, jobject thiz, jobject surf, jobject gui, jint width, jint height) {
-+    jclass clz;
-+    jfieldID fid;
-+
-+    pthread_mutex_lock(&vout_android_lock);
-+    clz = (*env)->GetObjectClass(env, surf);
-+    fid = (*env)->GetFieldID(env, clz, "mSurface", "I");
-+    if (fid == NULL) {
-+        jthrowable exp = (*env)->ExceptionOccurred(env);
-+        if (exp) {
-+            (*env)->DeleteLocalRef(env, exp);
-+            (*env)->ExceptionClear(env);
-+        }
-+        fid = (*env)->GetFieldID(env, clz, "mNativeSurface", "I");
-+        if (fid == NULL) {
-+            jthrowable exp = (*env)->ExceptionOccurred(env);
-+            if (exp) {
-+                (*env)->DeleteLocalRef(env, exp);
-+                (*env)->ExceptionClear(env);
-+            }
-+            fid = (*env)->GetFieldID(env, clz, "mNativeObject", "I");
-+        }
-+    }
-+    vout_android_surf = (void*)(*env)->GetIntField(env, surf, fid);
-+    (*env)->DeleteLocalRef(env, clz);
-+
-+    if (vout_android_gui != gui)
-+        vout_android_gui = (*env)->NewGlobalRef(env, gui);
-+
-+    if (vout_android_native_window) {
-+        ANativeWindow_release(vout_android_native_window);
-+        vout_android_native_window = NULL;
-+    }
-+    if (surf)
-+        vout_android_native_window = ANativeWindow_fromSurface(env, surf);
-+
-+    pthread_mutex_unlock(&vout_android_lock);
-+}
-+
-+void Java_org_videolan_libvlc_LibVLC_detachSurface(JNIEnv *env, jobject thiz) {
-+    pthread_mutex_lock(&vout_android_lock);
-+    vout_android_surf = NULL;
-+    if (vout_android_gui != NULL)
-+        (*env)->DeleteGlobalRef(env, vout_android_gui);
-+    vout_android_gui = NULL;
-+    if (vout_android_native_window) {
-+        ANativeWindow_release(vout_android_native_window);
-+        vout_android_native_window = NULL;
-+    }
-+    pthread_mutex_unlock(&vout_android_lock);
-+}
 diff --git a/vlc-android/jni/libvlcjni_fflog.inc.c b/vlc-android/jni/libvlcjni_fflog.inc.c
 new file mode 100644
 index 0000000..632c6f2
@@ -1877,6 +1609,529 @@ index f8502d9..182099b 100644
 +void *get_vout_android_gui();
 +
  #endif // LIBVLCJNI_UTILS_H
+diff --git a/vlc-android/jni/vout.c b/vlc-android/jni/vout.c
+index cac3213..17d291f 100644
+--- a/vlc-android/jni/vout.c
++++ b/vlc-android/jni/vout.c
+@@ -33,6 +33,11 @@ static void *vout_android_gui = NULL;
+ static jobject vout_android_java_surf = NULL;
+ static jobject vout_android_subtitles_surf = NULL;
+ 
++// FIXME: this is VlcMediaPlayer
++extern void *get_vout_android_gui() {
++    return vout_android_gui;
++}
++
+ void *jni_LockAndGetSubtitlesSurface() {
+     pthread_mutex_lock(&vout_android_lock);
+     while (vout_android_subtitles_surf == NULL)
+diff --git a/vlc-android/src/org/videolan/libvlc/LibVLC.java b/vlc-android/src/org/videolan/libvlc/LibVLC.java
+index 8838d04..68291d8 100644
+--- a/vlc-android/src/org/videolan/libvlc/LibVLC.java
++++ b/vlc-android/src/org/videolan/libvlc/LibVLC.java
+@@ -21,7 +21,14 @@
+ package org.videolan.libvlc;
+ 
+ import java.util.ArrayList;
+-import java.util.Map;
++
++import org.videolan.libvlc.LibVlcException;
++
++import tv.danmaku.pragma.Pragma;
++import tv.danmaku.android.annotations.CalledByNative;
++import tv.danmaku.android.util.CollectionHelper;
++import tv.danmaku.android.util.DebugLog;
++//import tv.danmaku.bili.pluginapk.PluginApkManager;
+ 
+ import android.content.Context;
+ import android.os.Build;
+@@ -30,12 +37,18 @@ import android.view.Surface;
+ 
+ public class LibVLC {
+     private static final String TAG = "VLC/LibVLC";
++
++    private static boolean mLibIomxLoaded = false;
++    private static boolean mLibVlcLoaded = false;
++
++    /*- MERGE
+     public static final int AOUT_AUDIOTRACK_JAVA = 0;
+     public static final int AOUT_AUDIOTRACK = 1;
+     public static final int AOUT_OPENSLES = 2;
+ 
+     public static final int VOUT_ANDROID_SURFACE = 0;
+     public static final int VOUT_OPEGLES2 = 1;
++    */
+ 
+     private static LibVLC sInstance;
+ 
+@@ -45,12 +58,16 @@ public class LibVLC {
+     private int mInternalMediaPlayerIndex = 0; // Read-only, reserved for JNI
+     private long mInternalMediaPlayerInstance = 0; // Read-only, reserved for JNI
+ 
++    /*- MERGE
+     private MediaList mMediaList; // Pointer to media list being followed
+     private MediaList mPrimaryList; // Primary/default media list; see getPrimaryMediaList()
++    */
+ 
+     /** Buffer for VLC messages */
++    /*- MERGE
+     private StringBuffer mDebugLogBuffer;
+     private boolean mIsBufferingLog = false;
++    */
+ 
+     private Aout mAout;
+ 
+@@ -58,6 +75,7 @@ public class LibVLC {
+     //private WakeLock mWakeLock;
+ 
+     /** Settings */
++    /*- MERGE
+     private int hardwareAcceleration = -1;
+     private String subtitlesEncoding = "";
+     private int aout = LibVlcUtil.isGingerbreadOrLater() ? AOUT_OPENSLES : AOUT_AUDIOTRACK_JAVA;
+@@ -69,15 +87,19 @@ public class LibVLC {
+     private float[] equalizer = null;
+     private boolean frameSkip = false;
+     private int networkCaching = 0;
++    */
+ 
+     /** Check in libVLC already initialized otherwise crash */
+     private boolean mIsInitialized = false;
++
+     public native void attachSurface(Surface surface, IVideoPlayer player);
+ 
+     public native void detachSurface();
+ 
++    /*- MERGE
+     public native void attachSubtitlesSurface(Surface surface);
+     public native void detachSubtitlesSurface();
++    */
+ 
+     /* Load library before object instantiation */
+     static {
+@@ -103,6 +125,37 @@ public class LibVLC {
+             System.exit(1);
+         }
+     }
++    private static void loadLib(Context context, LibVlcLibraryLoader libLoader)
++            throws LibVlcException {
++        synchronized (LibVLC.class) {
++            if (!mLibIomxLoaded) {
++                try {
++                    libLoader.loadVlcLibIomx(context);
++                } catch (Throwable t) {
++                    DebugLog.w(TAG, "Unable to load the iomx library: " + t);
++                    throw new LibVlcException(t);
++                }
++            }
++
++            if (mLibVlcLoaded)
++                return;
++
++            try {
++                DebugLog.d(TAG, "loading vlcjni");
++                libLoader.loadLibVlc(context);
++                DebugLog.d(TAG, "vlcjni loaded: ");
++                mLibVlcLoaded = true;
++            } catch (UnsatisfiedLinkError ule) {
++                DebugLog.e(TAG, "Can't load vlcjni library: " + ule);
++                throw new LibVlcException(ule);
++            } catch (SecurityException se) {
++                DebugLog.e(TAG,
++                        "Encountered a security issue when loading vlcjni library: "
++                                + se);
++                throw new LibVlcException(se);
++            }
++        }
++    }
+ 
+     /**
+      * Singleton constructor of libVLC Without surface and vout to create the
+@@ -111,11 +164,23 @@ public class LibVLC {
+      * @return libVLC instance
+      * @throws LibVlcException
+      */
+-    public static LibVLC getInstance() throws LibVlcException {
++    public static LibVLC getInstance(Context context,
++            LibVlcLibraryLoader libLoader) throws LibVlcException {
+         synchronized (LibVLC.class) {
+             if (sInstance == null) {
+                 /* First call */
++                loadLib(context, libLoader);
+                 sInstance = new LibVLC();
++
++                ArrayList<String> params = new ArrayList<String>();
++                CollectionHelper.Append(params, LibVLCOptions.sDefaultParameters);
++
++                DebugLog.v(TAG, "libvlc arguments:");
++                for (String par : params) {
++                    DebugLog.v(TAG, "    " + par);
++                }
++
++                sInstance.initEx(params.toArray(new String[params.size()]));
+             }
+         }
+ 
+@@ -160,25 +225,32 @@ public class LibVLC {
+      *
+      * @return The media list object being followed
+      */
++    /*- MERGE
+     public MediaList getMediaList() {
+         return mMediaList;
+     }
++    */
++
+ 
+     /**
+      * Set the media list for LibVLC to follow.
+      *
+      * @param mediaList The media list object to follow
+      */
++    /*- MERGE
+     public void setMediaList(MediaList mediaList) {
+         mMediaList = mediaList;
+     }
++    */
+ 
+     /**
+      * Sets LibVLC to follow the default media list (see below)
+      */
++    /*- MERGE
+     public void setMediaList() {
+         mMediaList = mPrimaryList;
+     }
++    */
+ 
+     /**
+      * Gets the primary media list, or the "currently playing" list.
+@@ -194,9 +266,11 @@ public class LibVLC {
+      *
+      * @return The primary media list
+      */
++    /*- MERGE
+     public MediaList getPrimaryMediaList() {
+         return mPrimaryList;
+     }
++    */
+ 
+     /**
+      * Give to LibVLC the surface to draw the video.
+@@ -204,6 +278,7 @@ public class LibVLC {
+      */
+     public native void setSurface(Surface f);
+ 
++    /*-
+     public static synchronized void restart(Context context) {
+         if (sInstance != null) {
+             try {
+@@ -214,11 +289,13 @@ public class LibVLC {
+             }
+         }
+     }
++    */
+ 
+     /**
+      * those get/is* are called from native code to get settings values.
+      */
+ 
++    /*- MERGE
+     public int getHardwareAcceleration() {
+         return this.hardwareAcceleration;
+     }
+@@ -276,13 +353,13 @@ public class LibVLC {
+     public int getDeblocking() {
+         int ret = deblocking;
+         if(deblocking < 0) {
+-            /**
++             **
+              * Set some reasonable deblocking defaults:
+              *
+              * Skip all (4) for armv6 and MIPS by default
+              * Skip non-ref (1) for all armv7 more than 1.2 Ghz and more than 2 cores
+              * Skip non-key (3) for all devices that don't meet anything above
+-             */
++             *
+             LibVlcUtil.MachineSpecs m = LibVlcUtil.getMachineSpecs();
+             if( (m.hasArmV6 && !(m.hasArmV7)) || m.hasMips )
+                 ret = 4;
+@@ -348,14 +425,15 @@ public class LibVLC {
+     public void setNetworkCaching(int networkcaching) {
+         this.networkCaching = networkcaching;
+     }
++    */
+ 
+     /**
+      * Initialize the libVLC class.
+-     *
+      * This function must be called before using any libVLC functions.
+      *
+      * @throws LibVlcException
+      */
++    /*- MERGE
+     public void init(Context context) throws LibVlcException {
+         Log.v(TAG, "Initializing LibVLC");
+         mDebugLogBuffer = new StringBuffer();
+@@ -370,9 +448,19 @@ public class LibVLC {
+             mIsInitialized = true;
+         }
+     }
++    */
++    private void initEx(String[] params) throws LibVlcException {
++        DebugLog.v(TAG, "Initializing LibVLC");
++        if (!mIsInitialized) {
++            nativeInitEx(Pragma.DEBUG, params);
++            setEventHandler(EventHandler.getInstance());
++            mIsInitialized = true;
++        }
++    }
+ 
+     /**
+      * Destroy this libVLC instance
++     *
+      * @note You must call it before exiting
+      */
+     public void destroy() {
+@@ -422,6 +510,7 @@ public class LibVLC {
+      *
+      * @param position The index of the media
+      */
++    /*- MERGE
+     public void playIndex(int position) {
+         String mrl = mMediaList.getMRL(position);
+         if (mrl == null)
+@@ -430,12 +519,14 @@ public class LibVLC {
+         mInternalMediaPlayerIndex = position;
+         playMRL(mLibVlcInstance, mrl, options);
+     }
++    */
+ 
+     /**
+      * Play an MRL directly.
+      *
+      * @param mrl MRL of the media to play.
+      */
++    /*- MERGE
+     public void playMRL(String mrl) {
+         // index=-1 will return options from libvlc instance without relying on MediaList
+         String[] options = mMediaList.getMediaOptions(-1);
+@@ -446,38 +537,62 @@ public class LibVLC {
+     public TrackInfo[] readTracksInfo(String mrl) {
+         return readTracksInfo(mLibVlcInstance, mrl);
+     }
++    */
+ 
+     /**
+      * Get a media thumbnail.
+      */
++    /*- MERGE
+     public byte[] getThumbnail(String mrl, int i_width, int i_height) {
+         return getThumbnail(mLibVlcInstance, mrl, i_width, i_height);
+     }
++    */
+ 
+     /**
+      * Return true if there is a video track in the file
+      */
++    /*- MERGE
+     public boolean hasVideoTrack(String mrl) throws java.io.IOException {
+         return hasVideoTrack(mLibVlcInstance, mrl);
+     }
++    */
+ 
+     /**
+      * Sets the speed of playback (1 being normal speed, 2 being twice as fast)
+      *
+      * @param rate
+      */
++    /*- MERGE
+     public native void setRate(float rate);
++    */
+ 
+     /**
+      * Get the current playback speed
+      */
++    /*- MERGE
+     public native float getRate();
++    */
++
++    public void readMediaEx(String mrl, String[] options) {
++        DebugLog.v(TAG, "Reading " + mrl);
++
++        DebugLog.v(TAG, "libvlcplayer options:");
++        for (String opt : options) {
++            DebugLog.v(TAG, "    " + opt);
++        }
++
++        readMediaEx(mLibVlcInstance, mrl, options);
++    }
++
++    public native void changeVerbosity(boolean verbose);
+ 
+     /**
+      * Initialize the libvlc C library
++     *
+      * @return a pointer to the libvlc instance
+      */
+-    private native void nativeInit() throws LibVlcException;
++    private native void nativeInitEx(boolean verbose, String[] params)
++            throws LibVlcException;
+ 
+     /**
+      * Close the libvlc C library
+@@ -488,6 +603,7 @@ public class LibVLC {
+     /**
+      * Start buffering to the mDebugLogBuffer.
+      */
++    /*- MERGE
+     public native void startDebugBuffer();
+     public native void stopDebugBuffer();
+     public String getBufferContent() {
+@@ -501,11 +617,29 @@ public class LibVLC {
+     public boolean isDebugBuffering() {
+         return mIsBufferingLog;
+     }
++    */
+ 
+     /**
+      * Play an mrl
+      */
++    /*- MERGE
+     private native void playMRL(long instance, String mrl, String[] mediaOptions);
++    */
++
++    /**
++     * Read a media
++     *
++     * @param instance
++     *            : the instance of libVLC
++     * @param mrl
++     *            : the media mrl
++     */
++    private native int readMediaEx(long instance, String mrl, String[] options);
++
++    /**
++     * Return true if there is currently a running media player.
++     */
++    public native boolean hasMediaPlayer();
+ 
+     /**
+      * Returns true if any media is playing
+@@ -535,13 +669,17 @@ public class LibVLC {
+     /**
+      * Gets volume as integer
+      */
++    /*- MERGE
+     public native int getVolume();
++    */
+ 
+     /**
+      * Sets volume as integer
+      * @param volume: Volume level passed as integer
+      */
++    /*- MERGE
+     public native int setVolume(int volume);
++    */
+ 
+     /**
+      * Gets the current movie time (in ms).
+@@ -578,29 +716,38 @@ public class LibVLC {
+      * Get the libVLC version
+      * @return the libVLC version string
+      */
++    /*- MERGE
+     public native String version();
++    */
+ 
+     /**
+      * Get the libVLC compiler
+      * @return the libVLC compiler string
+      */
++    /*- MERGE
+     public native String compiler();
++    */
+ 
+     /**
+      * Get the libVLC changeset
+      * @return the libVLC changeset string
+      */
++    /*- MERGE
+     public native String changeset();
++    */
+ 
+     /**
+      * Get a media thumbnail.
+      * @return a bytearray with the RGBA thumbnail data inside.
+      */
++    /*- MERGE
+     private native byte[] getThumbnail(long instance, String mrl, int i_width, int i_height);
++    */
+ 
+     /**
+      * Return true if there is a video track in the file
+      */
++    /*- MERGE
+     private native boolean hasVideoTrack(long instance, String mrl);
+ 
+     private native TrackInfo[] readTracksInfo(long instance, String mrl);
+@@ -628,6 +775,7 @@ public class LibVLC {
+     public native int getSpuTracksCount();
+ 
+     public static native String nativeToURI(String path);
++    */
+ 
+     /**
+      * Quickly converts path to URIs, which are mandatory in libVLC.
+@@ -636,6 +784,7 @@ public class LibVLC {
+      *            The path to be converted.
+      * @return A URI representation of path
+      */
++    /*- MERGE
+     public static String PathToURI(String path) {
+         if(path == null) {
+             throw new NullPointerException("Cannot convert null path!");
+@@ -646,34 +795,41 @@ public class LibVLC {
+     public static native void nativeReadDirectory(String path, ArrayList<String> res);
+ 
+     public native static boolean nativeIsPathDirectory(String path);
++    */
+ 
+      /**
+       * Expand and continue playing the current media.
+       *
+       * @return the index of the media was expanded, and -1 if no media was expanded
+       */
++    /*- MERGE
+     public int expandAndPlay() {
+         int r = mMediaList.expandMedia(mInternalMediaPlayerIndex);
+         if(r == 0)
+             this.playIndex(mInternalMediaPlayerIndex);
+         return r;
+     }
++    */
+ 
+     /**
+      * Expand the current media.
+      * @return the index of the media was expanded, and -1 if no media was expanded
+      */
++    /*-
+     public int expand() {
+         return mMediaList.expandMedia(mInternalMediaPlayerIndex);
+     }
++    */
+ 
+     private native void setEventHandler(EventHandler eventHandler);
+ 
+     private native void detachEventHandler();
+ 
++    /*- MERGE
+     public native float[] getBands();
+ 
+     public native String[] getPresets();
+ 
+     public native float[] getPreset(int index);
++    */
+ }
 -- 
 1.8.3.4
 

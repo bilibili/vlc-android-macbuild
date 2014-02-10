@@ -1,7 +1,7 @@
-From 74026ec8f148f14bb041c0f466db5c6a05913f79 Mon Sep 17 00:00:00 2001
+From d6829e8e276139fe531f3f166bc85dac681ffe42 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 27 Jul 2013 21:15:27 +0800
-Subject: [PATCH 09/12] Android.mk: link libandroid
+Subject: [PATCH 10/13] Android.mk: link libandroid
 
 ---
  vlc-android/jni/Android.mk | 1 +

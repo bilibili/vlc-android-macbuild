@@ -1,7 +1,7 @@
-From 1f5c90336a1ac2c24e8229e7e6bcfe275cd7cebe Mon Sep 17 00:00:00 2001
+From e3b8963c2eb67abdc7e631076cb4a2b010a0f939 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 28 Jan 2014 13:52:42 +0800
-Subject: [PATCH 08/12] Android.mk: include contrib
+Subject: [PATCH 09/13] Android.mk: include contrib
 
 ---
  vlc-android/jni/Android.mk | 1 +
