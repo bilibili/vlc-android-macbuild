@@ -1,24 +1,25 @@
-From 5a280151031f108d5ef375c1583d73780fabcfb4 Mon Sep 17 00:00:00 2001
+From be35e99f51e0a946b6831e19e4a38a99c9a4af5c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH 3/3] lite-mode: configure.sh: disable modules
+Subject: [PATCH] lite-mode: configure.sh: disable modules
 
 ---
  configure.sh | 22 ++++++++++++++--------
  1 file changed, 14 insertions(+), 8 deletions(-)
 
 diff --git a/configure.sh b/configure.sh
-index 5b3dd33..99ed633 100755
+index 978b028..f3da3cd 100755
 --- a/configure.sh
 +++ b/configure.sh
-@@ -47,17 +47,20 @@ NM="${CROSS_COMPILE}nm" \
+@@ -47,18 +47,21 @@ NM="${CROSS_COMPILE}nm" \
  STRIP="${CROSS_COMPILE}strip" \
  RANLIB="${CROSS_COMPILE}ranlib" \
  AR="${CROSS_COMPILE}ar" \
 -sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $EXTRA_PARAMS \
--                --enable-live555 --enable-realrtsp \
 +MODULE_LITE=1 \
 +sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-linux $EXTRA_PARAMS \
+                 --disable-nls \
+-                --enable-live555 --enable-realrtsp \
 +                --disable-live555 --disable-realrtsp \
                  --enable-avformat \
                  --enable-swscale \
@@ -37,7 +38,7 @@ index 5b3dd33..99ed633 100755
                  --disable-vlc --disable-shared \
                  --disable-update-check \
                  --disable-vlm \
-@@ -93,10 +96,10 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+@@ -94,10 +97,10 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
                  --disable-skins2 \
                  --disable-mtp \
                  --disable-notify \
@@ -50,7 +51,7 @@ index 5b3dd33..99ed633 100755
                  --disable-caca \
                  --disable-glx \
                  --enable-egl \
-@@ -105,7 +108,10 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+@@ -106,7 +109,10 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
                  --disable-projectm \
                  --disable-sout \
                  --disable-vorbis \
