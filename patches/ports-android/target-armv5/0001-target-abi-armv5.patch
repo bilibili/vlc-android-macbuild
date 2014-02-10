@@ -1,0 +1,26 @@
+From 6a85d14f4b5c0ffc7025680b18c1ec1e100d6af5 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 10 Feb 2014 14:55:48 +0800
+Subject: [PATCH] target-abi: armv5
+
+---
+ target-abi.sh | 7 +++++++
+ 1 file changed, 7 insertions(+)
+ create mode 100644 target-abi.sh
+
+diff --git a/target-abi.sh b/target-abi.sh
+new file mode 100644
+index 0000000..816339b
+--- /dev/null
++++ b/target-abi.sh
+@@ -0,0 +1,7 @@
++#! /bin/sh
++
++# armv5
++export ANDROID_ABI=armeabi
++export NO_NEON=1
++export NO_FPU=1
++export NO_ARMV6=1
+-- 
+1.8.3.4
+

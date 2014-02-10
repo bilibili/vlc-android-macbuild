@@ -1,0 +1,24 @@
+From cfcacba211464f3109218c9d42656c024ed5ff08 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 10 Feb 2014 14:55:48 +0800
+Subject: [PATCH] target-abi: armv6-vfp
+
+---
+ target-abi.sh | 5 +++++
+ 1 file changed, 5 insertions(+)
+ create mode 100644 target-abi.sh
+
+diff --git a/target-abi.sh b/target-abi.sh
+new file mode 100644
+index 0000000..16cf981
+--- /dev/null
++++ b/target-abi.sh
+@@ -0,0 +1,5 @@
++#! /bin/sh
++
++# armv6-vfp
++export ANDROID_ABI=armeabi
++export NO_NEON=1
+-- 
+1.8.3.4
+

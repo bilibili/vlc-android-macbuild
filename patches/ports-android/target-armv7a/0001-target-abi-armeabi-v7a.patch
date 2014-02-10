@@ -1,0 +1,23 @@
+From bd339c60f494cb001d3a490a514e5ff14e996164 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 10 Feb 2014 14:55:48 +0800
+Subject: [PATCH] target-abi: armv7a
+
+---
+ target-abi.sh | 4 ++++
+ 1 file changed, 4 insertions(+)
+ create mode 100644 target-abi.sh
+
+diff --git a/target-abi.sh b/target-abi.sh
+new file mode 100644
+index 0000000..a498485
+--- /dev/null
++++ b/target-abi.sh
+@@ -0,0 +1,4 @@
++#! /bin/sh
++
++# armv7a
++export ANDROID_ABI=armeabi-v7a
+-- 
+1.8.3.4
+

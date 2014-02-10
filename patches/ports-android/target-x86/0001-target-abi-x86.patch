@@ -1,0 +1,23 @@
+From 147d515fb6afa693acf4e5162e28a41e24464a18 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 10 Feb 2014 14:55:48 +0800
+Subject: [PATCH] target-abi: x86
+
+---
+ target-abi.sh | 4 ++++
+ 1 file changed, 4 insertions(+)
+ create mode 100644 target-abi.sh
+
+diff --git a/target-abi.sh b/target-abi.sh
+new file mode 100644
+index 0000000..3eda8b0
+--- /dev/null
++++ b/target-abi.sh
+@@ -0,0 +1,4 @@
++#! /bin/sh
++
++# x86
++export ANDROID_ABI=x86
+-- 
+1.8.3.4
+
