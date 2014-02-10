@@ -1,17 +1,17 @@
-From c590a7107eba0be34bdeb5ed3ffcee5c1cabf10e Mon Sep 17 00:00:00 2001
+From ea4d6156db87adb6796b4c48a24f51d87ae59305 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
 Subject: [PATCH 1001/1002] lite-mode: ffmpeg: disable modules
 
 ---
- contrib/src/ffmpeg/rules.mak | 44 ++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 40 insertions(+), 4 deletions(-)
+ contrib/src/ffmpeg/rules.mak | 45 ++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 41 insertions(+), 4 deletions(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 3516b7a..b73d992 100644
+index 3516b7a..c8e577b 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -15,10 +15,46 @@ endif
+@@ -15,10 +15,47 @@ endif
  FFMPEGCONF = \
  	--cc="$(CC)" \
  	--disable-doc \
@@ -37,6 +37,7 @@ index 3516b7a..b73d992 100644
 +	--enable-decoder=h263 \
 +	--enable-decoder=h263i \
 +	--enable-decoder=h264 \
++	--enable-decoder=hevc \
 +	--enable-decoder=mp3 \
 +	--enable-decoder=mp3adu \
 +	--enable-decoder=mp3adufloat \
@@ -61,7 +62,7 @@ index 3516b7a..b73d992 100644
  	--disable-debug \
  	--disable-avdevice \
  	--disable-devices \
-@@ -35,7 +71,7 @@ FFMPEGCONF += \
+@@ -35,7 +72,7 @@ FFMPEGCONF += \
  	--disable-iconv
  endif
  

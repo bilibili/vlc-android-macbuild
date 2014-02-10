@@ -1,4 +1,4 @@
-From f31fb1fbd0d9022d33f64f5e4640a4065189f723 Mon Sep 17 00:00:00 2001
+From cdd95540edd3c1fbabaf79bff9fbceaa19ed28f8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 26 Feb 2013 19:01:29 +0800
 Subject: [PATCH 1002/1002] ffmpeg: bump tested hash
@@ -8,7 +8,7 @@ Subject: [PATCH 1002/1002] ffmpeg: bump tested hash
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index b73d992..f23994c 100644
+index c8e577b..a8bd72b 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
 @@ -2,11 +2,11 @@
