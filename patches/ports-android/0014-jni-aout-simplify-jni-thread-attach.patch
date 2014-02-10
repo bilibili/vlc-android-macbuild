@@ -1,0 +1,132 @@
+From b11e1b93167a5986235a1b43f0734fb4293f2d5c Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Mon, 10 Feb 2014 17:57:15 +0800
+Subject: [PATCH 14/19] jni/aout: simplify jni thread attach
+
+---
+ vlc-android/jni/aout.c | 31 +++++++++++++------------------
+ 1 file changed, 13 insertions(+), 18 deletions(-)
+
+diff --git a/vlc-android/jni/aout.c b/vlc-android/jni/aout.c
+index bc146b4..7b8d129 100644
+--- a/vlc-android/jni/aout.c
++++ b/vlc-android/jni/aout.c
+@@ -28,6 +28,7 @@
+ #include <vlc/vlc.h>
+ 
+ #include "aout.h"
++#include "jni_libvlc.h"
+ 
+ #define LOG_TAG "VLC/JNI/aout"
+ #include "log.h"
+@@ -45,6 +46,8 @@ typedef struct
+ /** Unique Java VM instance, as defined in libvlcjni.c */
+ extern JavaVM *myVm;
+ 
++static JavaVMAttachArgs g_aout_thr_args = {JNI_VERSION_1_2, "vlc-aout", NULL};
++
+ int aout_open(void **opaque, char *format, unsigned *rate, unsigned *nb_channels)
+ {
+     LOGI ("Opening the JNI audio output");
+@@ -59,8 +62,8 @@ int aout_open(void **opaque, char *format, unsigned *rate, unsigned *nb_channels
+     LOGI ("Parameters: %u channels, FOURCC '%4.4s',  sample rate: %uHz",
+           *nb_channels, format, *rate);
+ 
+-    JNIEnv *p_env;
+-    if ((*myVm)->AttachCurrentThread (myVm, &p_env, NULL) != 0)
++    JNIEnv *p_env = NULL;
++    if (SDL_AndroidJni_SetupThreadEnv(&p_env, &g_aout_thr_args) != 0)
+     {
+         LOGE("Could not attach the display thread to the JVM !");
+         goto eattach;
+@@ -141,11 +144,9 @@ int aout_open(void **opaque, char *format, unsigned *rate, unsigned *nb_channels
+     // Get the play methodId
+     p_sys->play = (*p_env)->GetMethodID (p_env, cls, "playAudio", "([BI)V");
+     assert (p_sys->play != NULL);
+-    (*myVm)->DetachCurrentThread (myVm);
+     return 0;
+ 
+ error:
+-    (*myVm)->DetachCurrentThread (myVm);
+ eattach:
+     *opaque = NULL;
+     free (p_sys);
+@@ -159,13 +160,13 @@ enomem:
+ void aout_play(void *opaque, const void *samples, unsigned count, int64_t pts)
+ {
+     aout_sys_t *p_sys = opaque;
+-    JNIEnv *p_env;
++    JNIEnv *p_env = NULL;
+ 
+     /* How ugly: we constantly attach/detach this thread to/from the JVM
+      * because it will be killed before aout_close is called.
+      * aout_close will actually be called in an different thread!
+      */
+-    (*myVm)->AttachCurrentThread (myVm, &p_env, NULL);
++    SDL_AndroidJni_SetupThreadEnv(&p_env, &g_aout_thr_args);
+ 
+     (*p_env)->SetByteArrayRegion (p_env, p_sys->buffer, 0,
+                                   2 /*nb_channels*/ * count * sizeof (uint16_t),
+@@ -185,8 +186,6 @@ void aout_play(void *opaque, const void *samples, unsigned count, int64_t pts)
+                               2 /*nb_channels*/ * count * sizeof (uint16_t),
+                               FRAME_SIZE);
+     // FIXME: check for errors
+-
+-    (*myVm)->DetachCurrentThread (myVm);
+ }
+ 
+ void aout_pause(void *opaque, int64_t pts)
+@@ -195,8 +194,8 @@ void aout_pause(void *opaque, int64_t pts)
+     aout_sys_t *p_sys = opaque;
+     assert(p_sys);
+ 
+-    JNIEnv *p_env;
+-    (*myVm)->AttachCurrentThread (myVm, &p_env, NULL);
++    JNIEnv *p_env = NULL;
++    SDL_AndroidJni_SetupThreadEnv(&p_env, &g_aout_thr_args);
+ 
+     // Call the pause function.
+     jclass cls = (*p_env)->GetObjectClass (p_env, p_sys->j_libVlc);
+@@ -212,8 +211,6 @@ void aout_pause(void *opaque, int64_t pts)
+ #endif
+         (*p_env)->ExceptionClear (p_env);
+     }
+-
+-    (*myVm)->DetachCurrentThread (myVm);
+ }
+ 
+ void aout_close(void *opaque)
+@@ -223,8 +220,8 @@ void aout_close(void *opaque)
+     assert(p_sys);
+     assert(p_sys->buffer);
+ 
+-    JNIEnv *p_env;
+-    (*myVm)->AttachCurrentThread (myVm, &p_env, NULL);
++    JNIEnv *p_env = NULL;
++    SDL_AndroidJni_SetupThreadEnv(&p_env, &g_aout_thr_args);
+ 
+     // Call the close function.
+     jclass cls = (*p_env)->GetObjectClass (p_env, p_sys->j_libVlc);
+@@ -242,17 +239,15 @@ void aout_close(void *opaque)
+     }
+ 
+     (*p_env)->DeleteGlobalRef (p_env, p_sys->buffer);
+-    (*myVm)->DetachCurrentThread (myVm);
+     free (p_sys);
+ }
+ 
+ int aout_get_native_sample_rate(void)
+ {
+-    JNIEnv *p_env;
+-    (*myVm)->AttachCurrentThread (myVm, &p_env, NULL);
++    JNIEnv *p_env = NULL;
++    SDL_AndroidJni_SetupThreadEnv(&p_env, &g_aout_thr_args);
+     jclass cls = (*p_env)->FindClass (p_env, "android/media/AudioTrack");
+     jmethodID method = (*p_env)->GetStaticMethodID (p_env, cls, "getNativeOutputSampleRate", "(I)I");
+     int sample_rate = (*p_env)->CallStaticIntMethod (p_env, cls, method, 3); // AudioManager.STREAM_MUSIC
+-    (*myVm)->DetachCurrentThread (myVm);
+     return sample_rate;
+ }
+-- 
+1.8.3.4
+
