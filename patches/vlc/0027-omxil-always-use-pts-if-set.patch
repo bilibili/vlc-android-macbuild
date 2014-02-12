@@ -1,7 +1,7 @@
-From d7780919ad146c9ffa05033ec950bef01c7503e9 Mon Sep 17 00:00:00 2001
+From d8a12fdbe4c3f03af5a4a7fc7faa0c82c9a16b22 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 30 Oct 2012 20:58:35 +0800
-Subject: [PATCH 29/35] omxil: always use pts if set
+Subject: [PATCH 27/35] omxil: always use pts if set
 
 revert commit 1f18696f679fe520b64d60cb933fe50d3dfc3215
 ---
@@ -9,7 +9,7 @@ revert commit 1f18696f679fe520b64d60cb933fe50d3dfc3215
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 6fc741f..1cb16e2 100644
+index b012b24..5b51005 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -1534,7 +1534,7 @@ more_input:

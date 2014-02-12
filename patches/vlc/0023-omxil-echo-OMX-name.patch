@@ -1,14 +1,14 @@
-From 3e73637ced895b45b073fea99ded517699a0ab80 Mon Sep 17 00:00:00 2001
+From 97a716ee01005c81dfc11aa0d22a346fc620f490 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 18:21:32 +0800
-Subject: [PATCH 25/34] omxil: echo OMX name
+Subject: [PATCH 23/35] omxil: echo OMX name
 
 ---
  modules/codec/omxil/omxil.c | 5 +++++
  1 file changed, 5 insertions(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 4c92e57..d41a6c7 100644
+index ff46df4..cd4ad9f 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -1194,6 +1194,11 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )

@@ -1,17 +1,17 @@
-From 3999becd927e07277ca8330bd022b0133fb717e4 Mon Sep 17 00:00:00 2001
+From a7298f4c9e0284152ef9228ac6968907147e50d7 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 11:20:15 +0800
-Subject: [PATCH 05/34] core: tcp: recalculate timeout for EINTR
+Subject: [PATCH 05/35] core: tcp: recalculate timeout for EINTR
 
 ---
  src/network/tcp.c | 52 ++++++++++++++++++++++++++++++++++++++++++++++++----
  1 file changed, 48 insertions(+), 4 deletions(-)
 
 diff --git a/src/network/tcp.c b/src/network/tcp.c
-index 78ab113..13e5459 100644
+index 083861d..95ae279 100644
 --- a/src/network/tcp.c
 +++ b/src/network/tcp.c
-@@ -152,6 +152,7 @@ int net_Connect( vlc_object_t *p_this, const char *psz_host, int i_port,
+@@ -149,6 +149,7 @@ int net_Connect( vlc_object_t *p_this, const char *psz_host, int i_port,
      if (timeout < 0)
          timeout = -1;
  
@@ -19,7 +19,7 @@ index 78ab113..13e5459 100644
      for (struct addrinfo *ptr = res; ptr != NULL; ptr = ptr->ai_next)
      {
          int fd = net_Socket( p_this, ptr->ai_family,
-@@ -177,10 +178,53 @@ int net_Connect( vlc_object_t *p_this, const char *psz_host, int i_port,
+@@ -175,10 +176,53 @@ int net_Connect( vlc_object_t *p_this, const char *psz_host, int i_port,
                  { .fd = evfd, .events = POLLIN },
              };
  

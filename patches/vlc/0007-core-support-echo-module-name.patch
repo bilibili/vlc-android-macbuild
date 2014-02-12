@@ -1,7 +1,7 @@
-From 68cd64788072df67fe37124c210200dd70291042 Mon Sep 17 00:00:00 2001
+From 009c12feeec9146166869d502a1ec429af4efa2b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 15:42:47 +0800
-Subject: [PATCH 07/34] core: support echo module name
+Subject: [PATCH 07/35] core: support echo module name
 
 ---
  include/vlc/libvlc_events.h |  8 ++++++++
@@ -40,7 +40,7 @@ index 411f8a7..f5583ae 100644
          /* media list */
          struct
 diff --git a/include/vlc_input.h b/include/vlc_input.h
-index 58af9d4..2b8f690 100644
+index 4cf17f8..e541e68 100644
 --- a/include/vlc_input.h
 +++ b/include/vlc_input.h
 @@ -396,6 +396,9 @@ typedef enum input_event_type_e
@@ -82,10 +82,10 @@ index c8e55ff..624ac3b 100644
      /* Attach a var callback to the global object to provide the glue between
       * vout_thread that generates the event and media_player that re-emits it
 diff --git a/src/input/decoder.c b/src/input/decoder.c
-index b7e2ff9..f042692 100644
+index d7caf2d..5fa1d4c 100644
 --- a/src/input/decoder.c
 +++ b/src/input/decoder.c
-@@ -294,6 +294,25 @@ static decoder_t *decoder_New( vlc_object_t *p_parent, input_thread_t *p_input,
+@@ -272,6 +272,25 @@ static decoder_t *decoder_New( vlc_object_t *p_parent, input_thread_t *p_input,
          return NULL;
      }
  
@@ -111,7 +111,7 @@ index b7e2ff9..f042692 100644
      p_dec->p_owner->p_clock = p_clock;
      assert( p_dec->fmt_out.i_cat != UNKNOWN_ES );
  
-@@ -753,6 +772,9 @@ static decoder_t * CreateDecoder( vlc_object_t *p_parent,
+@@ -721,6 +740,9 @@ static decoder_t * CreateDecoder( vlc_object_t *p_parent,
      if( p_dec == NULL )
          return NULL;
  
@@ -172,10 +172,10 @@ index 3991453..40bb585 100644
  /* TODO rename Item* */
  void input_SendEventMeta( input_thread_t *p_input );
 diff --git a/src/input/var.c b/src/input/var.c
-index 4d38237..fc4f0b1 100644
+index 01ee59e..52edf14 100644
 --- a/src/input/var.c
 +++ b/src/input/var.c
-@@ -506,6 +506,14 @@ void input_ConfigVarInit ( input_thread_t *p_input )
+@@ -508,6 +508,14 @@ void input_ConfigVarInit ( input_thread_t *p_input )
      var_Create( p_input, "cache-total", VLC_VAR_FLOAT );
      var_SetFloat( p_input, "cache-total", 0.0 );
  

@@ -1,7 +1,7 @@
-From 121d94019a070c373bde0e8fc38dbb8fb526a8ab Mon Sep 17 00:00:00 2001
+From fd3a7e1dff2a57eab7f9d7d7b5d1415af095d27c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 14:04:20 +0800
-Subject: [PATCH 02/36] modules: remove unused modules
+Subject: [PATCH 02/35] modules: remove unused modules
 
 ---
  configure.ac                      | 1 +
@@ -13,10 +13,10 @@ Subject: [PATCH 02/36] modules: remove unused modules
  6 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index d5e2d81..323f9c5 100644
+index fc3429c..7a99d4f 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -302,6 +302,7 @@ AS_IF([test "$SYS" = linux],[
+@@ -321,6 +321,7 @@ AS_IF([test "$SYS" = linux],[
      ])
  ])
  AM_CONDITIONAL(HAVE_ANDROID, test "${HAVE_ANDROID}" = "1")
@@ -37,10 +37,10 @@ index dc0fb39..14a8748 100644
  include audio_mixer/Makefile.am
  include audio_output/Makefile.am
 diff --git a/modules/access/Makefile.am b/modules/access/Makefile.am
-index 6b48799..6d8d3b2 100644
+index c655a47..ca9d9fe 100644
 --- a/modules/access/Makefile.am
 +++ b/modules/access/Makefile.am
-@@ -143,6 +143,7 @@ if HAVE_QTKIT
+@@ -150,6 +150,7 @@ if HAVE_QTKIT
  access_LTLIBRARIES += libqtcapture_plugin.la
  endif
  
@@ -48,7 +48,7 @@ index 6b48799..6d8d3b2 100644
  libv4l2_plugin_la_SOURCES = \
  	access/v4l2/linux/videodev2.h \
  	access/v4l2/linux/v4l2-common.h \
-@@ -270,6 +271,7 @@ EXTRA_LTLIBRARIES += liblibbluray_plugin.la
+@@ -277,6 +278,7 @@ EXTRA_LTLIBRARIES += liblibbluray_plugin.la
  
  libaccess_bd_plugin_la_SOURCES = access/bd/bd.c access/bd/mpls.c access/bd/mpls.h access/bd/clpi.c access/bd/clpi.h
  access_LTLIBRARIES += libaccess_bd_plugin.la
@@ -57,10 +57,10 @@ index 6b48799..6d8d3b2 100644
  
  ### Digital TV ###
 diff --git a/modules/codec/Makefile.am b/modules/codec/Makefile.am
-index bf73069..29d8e6f 100644
+index 8535bac..da296d3 100644
 --- a/modules/codec/Makefile.am
 +++ b/modules/codec/Makefile.am
-@@ -138,9 +138,11 @@ codec_LTLIBRARIES += libdvbsub_plugin.la
+@@ -147,9 +147,11 @@ codec_LTLIBRARIES += libdvbsub_plugin.la
  libscte27_plugin_la_SOURCES = codec/scte27.c
  codec_LTLIBRARIES += libscte27_plugin.la
  
@@ -73,7 +73,7 @@ index bf73069..29d8e6f 100644
  libstl_plugin_la_SOURCES = codec/stl.c
  codec_LTLIBRARIES += libstl_plugin.la
 diff --git a/modules/demux/Makefile.am b/modules/demux/Makefile.am
-index 939d449..255baf3 100644
+index 6eb646d..1036bcc 100644
 --- a/modules/demux/Makefile.am
 +++ b/modules/demux/Makefile.am
 @@ -120,11 +120,13 @@ libdemux_stl_plugin_la_SOURCES = demux/stl.c
@@ -90,7 +90,7 @@ index 939d449..255baf3 100644
  
  libcaf_plugin_la_SOURCES = demux/caf.c
  libcaf_plugin_la_LIBADD = $(LIBM)
-@@ -160,6 +162,7 @@ demux_LTLIBRARIES += libes_plugin.la
+@@ -162,6 +164,7 @@ demux_LTLIBRARIES += libes_plugin.la
  libh264_plugin_la_SOURCES = demux/mpeg/h264.c
  demux_LTLIBRARIES += libh264_plugin.la
  
@@ -98,7 +98,7 @@ index 939d449..255baf3 100644
  libmkv_plugin_la_SOURCES = \
  	demux/mkv/util.hpp demux/mkv/util.cpp \
  	demux/mkv/virtual_segment.hpp demux/mkv/virtual_segment.cpp \
-@@ -212,6 +215,7 @@ libplaylist_plugin_la_SOURCES = \
+@@ -215,6 +218,7 @@ libplaylist_plugin_la_SOURCES = \
  	demux/playlist/zpl.c \
  	demux/playlist/playlist.c demux/playlist/playlist.h
  demux_LTLIBRARIES += libplaylist_plugin.la

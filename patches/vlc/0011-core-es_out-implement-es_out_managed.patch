@@ -1,14 +1,14 @@
-From 8d5d2a917b1ce276a4b0bff0738d17f5db214b69 Mon Sep 17 00:00:00 2001
+From 86c96b51a624cfe141bd6dddeb09c10c58d505ed Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:20 +0800
-Subject: [PATCH 11/34] core: es_out: implement es_out_managed
+Subject: [PATCH 11/35] core: es_out: implement es_out_managed
 
 ---
  include/vlc_es_out.h         |   3 +
  include/vlc_es_out_managed.h |  40 ++++++++++
- src/input/es_out_managed.c   | 184 +++++++++++++++++++++++++++++++++++++++++++
+ src/input/es_out_managed.c   | 185 +++++++++++++++++++++++++++++++++++++++++++
  src/input/es_out_timeshift.c |   3 +
- 4 files changed, 230 insertions(+)
+ 4 files changed, 231 insertions(+)
  create mode 100644 include/vlc_es_out_managed.h
  create mode 100644 src/input/es_out_managed.c
 
@@ -75,10 +75,10 @@ index 0000000..70dca5d
 \ No newline at end of file
 diff --git a/src/input/es_out_managed.c b/src/input/es_out_managed.c
 new file mode 100644
-index 0000000..d74058b
+index 0000000..0f24536
 --- /dev/null
 +++ b/src/input/es_out_managed.c
-@@ -0,0 +1,184 @@
+@@ -0,0 +1,185 @@
 +/*****************************************************************************
 + * es_out_managed.c
 + *****************************************************************************
@@ -227,6 +227,7 @@ index 0000000..d74058b
 +        }
 +
 +        vlc_array_destroy( p_es_fmt_cache );
++        p_out->p_sys->p_es_fmt_cache = NULL;
 +    }
 +
 +    free( p_out->p_sys );
@@ -265,10 +266,10 @@ index 0000000..d74058b
 +}
 \ No newline at end of file
 diff --git a/src/input/es_out_timeshift.c b/src/input/es_out_timeshift.c
-index 0864efb..d1b0a68 100644
+index 72ed0d2..83c2c12 100644
 --- a/src/input/es_out_timeshift.c
 +++ b/src/input/es_out_timeshift.c
-@@ -608,6 +608,7 @@ static int ControlLocked( es_out_t *p_out, int i_query, va_list args )
+@@ -606,6 +606,7 @@ static int ControlLocked( es_out_t *p_out, int i_query, va_list args )
      case ES_OUT_SET_TIMES:
      case ES_OUT_SET_JITTER:
      case ES_OUT_SET_EOS:
@@ -276,7 +277,7 @@ index 0864efb..d1b0a68 100644
      {
          ts_cmd_t cmd;
          if( CmdInitControl( &cmd, i_query, args, p_sys->b_delayed ) )
-@@ -1330,6 +1331,7 @@ static int CmdInitControl( ts_cmd_t *p_cmd, int i_query, va_list args, bool b_co
+@@ -1328,6 +1329,7 @@ static int CmdInitControl( ts_cmd_t *p_cmd, int i_query, va_list args, bool b_co
  
      case ES_OUT_RESET_PCR:           /* no arg */
      case ES_OUT_SET_EOS:
@@ -284,7 +285,7 @@ index 0864efb..d1b0a68 100644
          break;
  
      case ES_OUT_SET_META:        /* arg1=const vlc_meta_t* */
-@@ -1467,6 +1469,7 @@ static int CmdExecuteControl( es_out_t *p_out, ts_cmd_t *p_cmd )
+@@ -1465,6 +1467,7 @@ static int CmdExecuteControl( es_out_t *p_out, ts_cmd_t *p_cmd )
  
      case ES_OUT_RESET_PCR:           /* no arg */
      case ES_OUT_SET_EOS:

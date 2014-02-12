@@ -1,17 +1,17 @@
-From 380929fc95662b599b39614beb201d154f8bd556 Mon Sep 17 00:00:00 2001
+From a998acf8218847a61a53d260b0ec2a82c1d4c15d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 23 Oct 2013 21:22:05 +0800
-Subject: [PATCH 30/35] mediacodec: disable OMX.MTK.VIDEO.DECODER.AVC
+Subject: [PATCH 28/35] mediacodec: disable OMX.MTK.VIDEO.DECODER.AVC
 
 ---
  modules/codec/omxil/android_mediacodec.c | 22 +++++++++++++++-------
  1 file changed, 15 insertions(+), 7 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index d8cf09f..cba0b28 100644
+index 499f1f5..fe0832f 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -284,13 +284,21 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -306,13 +306,21 @@ static int OpenDecoder(vlc_object_t *p_this)
              jobject name = (*env)->CallObjectMethod(env, info, p_sys->get_name);
              jsize name_len = (*env)->GetStringUTFLength(env, name);
              const char *name_ptr = (*env)->GetStringUTFChars(env, name, NULL);

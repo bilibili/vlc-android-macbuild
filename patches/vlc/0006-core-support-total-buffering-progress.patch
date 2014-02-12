@@ -1,7 +1,7 @@
-From f4f634d543ab8d5acea4f100fac96384c0b7c984 Mon Sep 17 00:00:00 2001
+From 17cc7bdd26580d767e8a52a88cd2d27cd8b17daf Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 1 Jul 2012 18:44:58 +0800
-Subject: [PATCH 06/34] core: support total buffering progress
+Subject: [PATCH 06/35] core: support total buffering progress
 
 ---
  include/vlc/libvlc_events.h |  8 +++++++-
@@ -40,7 +40,7 @@ index ae1a94b..411f8a7 100644
          /* media list */
          struct
 diff --git a/include/vlc_input.h b/include/vlc_input.h
-index 832c76c..58af9d4 100644
+index 53e22b6..4cf17f8 100644
 --- a/include/vlc_input.h
 +++ b/include/vlc_input.h
 @@ -393,6 +393,9 @@ typedef enum input_event_type_e
@@ -114,10 +114,10 @@ index c8f1071..3991453 100644
  /* TODO rename Item* */
  void input_SendEventMeta( input_thread_t *p_input );
 diff --git a/src/input/stream.c b/src/input/stream.c
-index 4e29dea..c2b5456 100644
+index 18e77e2..e261f5b 100644
 --- a/src/input/stream.c
 +++ b/src/input/stream.c
-@@ -631,7 +631,8 @@ static int AStreamControl( stream_t *s, int i_query, va_list args )
+@@ -636,7 +636,8 @@ static int AStreamControl( stream_t *s, int i_query, va_list args )
                  AStreamControlReset( s );
              return ret;
          }
@@ -128,10 +128,10 @@ index 4e29dea..c2b5456 100644
          default:
              msg_Err( s, "invalid stream_vaControl query=0x%x", i_query );
 diff --git a/src/input/var.c b/src/input/var.c
-index 6ec28f0..4d38237 100644
+index 3e722f4..01ee59e 100644
 --- a/src/input/var.c
 +++ b/src/input/var.c
-@@ -503,6 +503,9 @@ void input_ConfigVarInit ( input_thread_t *p_input )
+@@ -505,6 +505,9 @@ void input_ConfigVarInit ( input_thread_t *p_input )
      var_Create( p_input, "cache", VLC_VAR_FLOAT );
      var_SetFloat( p_input, "cache", 0.0 );
  

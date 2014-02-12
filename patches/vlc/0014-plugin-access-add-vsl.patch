@@ -1,7 +1,7 @@
-From f5dd68221d5d24cfe6f27e56e1196817ec879c87 Mon Sep 17 00:00:00 2001
+From 29bd17ff911afc95bc38be8039474f9ed8dcec07 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:53:11 +0800
-Subject: [PATCH 16/34] plugin: access: add vsl
+Subject: [PATCH 14/35] plugin: access: add vsl
 
 ---
  modules/access/Makefile.am |  12 ++++
@@ -12,10 +12,10 @@ Subject: [PATCH 16/34] plugin: access: add vsl
  create mode 100644 modules/access/vsl/vsl.h
 
 diff --git a/modules/access/Makefile.am b/modules/access/Makefile.am
-index 6d8d3b2..94d771b 100644
+index ca9d9fe..d19c228 100644
 --- a/modules/access/Makefile.am
 +++ b/modules/access/Makefile.am
-@@ -274,6 +274,18 @@ access_LTLIBRARIES += libaccess_bd_plugin.la
+@@ -281,6 +281,18 @@ access_LTLIBRARIES += libaccess_bd_plugin.la
  endif
  
  

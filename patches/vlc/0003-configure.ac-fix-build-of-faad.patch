@@ -1,17 +1,17 @@
-From db6a5ccef35a1647117d0333f475c874ace5acc2 Mon Sep 17 00:00:00 2001
+From ff0db52e29d07251024cc1768a2772880b03c449 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 21:54:18 +0800
-Subject: [PATCH 03/34] configure.ac: fix build of faad
+Subject: [PATCH 03/35] configure.ac: fix build of faad
 
 ---
  configure.ac | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 323f9c5..b96dd34 100644
+index 7a99d4f..35bc422 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -647,7 +647,7 @@ AC_CHECK_FUNC(getopt_long,, [
+@@ -666,7 +666,7 @@ AC_CHECK_FUNC(getopt_long,, [
  AC_SUBST(GNUGETOPT_LIBS)
  
  AC_CHECK_LIB(m,cos,[

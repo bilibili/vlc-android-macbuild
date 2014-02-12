@@ -1,14 +1,15 @@
-From 5fe65ae0ee38e9fa972294356d86e30fb8ecec0d Mon Sep 17 00:00:00 2001
-From: bbcallen <bbcallen@gmail.com>
+From 174eec468fb08a92df4a364c0655f219e3544be8 Mon Sep 17 00:00:00 2001
+From: Zhang Rui <bbcallen@gmail.com>
 Date: Mon, 10 Feb 2014 18:00:59 +0800
-Subject: [PATCH] MediaCodec: simplify jni thread attach/detach
+Subject: [PATCH 35/35] MediaCodec: simplify jni thread attach/detach
 
+Avoid repeatly AttachCurrentThread()/DetachCurrentThread()
 ---
  modules/codec/omxil/android_mediacodec.c | 57 +++++++++++++++++++++++++-------
  1 file changed, 45 insertions(+), 12 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 9de9fad..7e94a8b 100644
+index 9de9fad..cbca603 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
 @@ -202,6 +202,47 @@ static int jstrcmp(JNIEnv* env, jobject str, const char* str2)
@@ -19,7 +20,7 @@ index 9de9fad..7e94a8b 100644
 +static pthread_once_t g_key_once = PTHREAD_ONCE_INIT;
 +static JavaVMAttachArgs g_vlc_thr_args = {JNI_VERSION_1_2, "MediaCodec", NULL};
 +
-+static void VlcJniThreadDestroy(void* value)
++static void vlcjni_thread_destroy(void* value)
 +{
 +    JNIEnv *env = (JNIEnv*) value;
 +    if (env != NULL) {
@@ -28,18 +29,18 @@ index 9de9fad..7e94a8b 100644
 +    }
 +}
 +
-+static void VlcMakeThreadKey()
++static void vlcjni_make_thread_key()
 +{
-+    pthread_key_create(&g_thread_key, VlcJniThreadDestroy);
++    pthread_key_create(&g_thread_key, vlcjni_thread_destroy);
 +}
 +
-+jint VlcSetupThreadEnv(JNIEnv **p_env)
++static jint vlcjni_setup_thread_env(JNIEnv **p_env)
 +{
 +    JavaVM *jvm = myVm;
 +    if (!jvm)
 +        return -1;
 +
-+    pthread_once(&g_key_once, VlcMakeThreadKey);
++    pthread_once(&g_key_once, vlcjni_make_thread_key);
 +
 +    JNIEnv *env = (JNIEnv*) pthread_getspecific(g_thread_key);
 +    if (env) {
@@ -64,7 +65,7 @@ index 9de9fad..7e94a8b 100644
  
      JNIEnv* env = NULL;
 -    (*myVm)->AttachCurrentThread(myVm, &env, NULL);
-+    VlcSetupThreadEnv(&env);
++    vlcjni_setup_thread_env(&env);
  
      for (int i = 0; classes[i].name; i++) {
          *(jclass*)((uint8_t*)p_sys + classes[i].offset) =
@@ -85,7 +86,7 @@ index 9de9fad..7e94a8b 100644
      if (p_sys->direct_rendering)
          InvalidateAllPictures(p_dec);
 -    (*myVm)->AttachCurrentThread(myVm, &env, NULL);
-+    VlcSetupThreadEnv(&env);
++    vlcjni_setup_thread_env(&env);
      if (p_sys->input_buffers)
          (*env)->DeleteGlobalRef(env, p_sys->input_buffers);
      if (p_sys->output_buffers)
@@ -102,7 +103,7 @@ index 9de9fad..7e94a8b 100644
      /* Release the MediaCodec buffer. */
      JNIEnv *env = NULL;
 -    (*myVm)->AttachCurrentThread(myVm, &env, NULL);
-+    VlcSetupThreadEnv(&env);
++    vlcjni_setup_thread_env(&env);
      (*env)->CallVoidMethod(env, p_sys->codec, p_sys->release_output_buffer, i_index, b_render);
      if ((*env)->ExceptionOccurred(env)) {
          msg_Err(p_dec, "Exception in MediaCodec.releaseOutputBuffer (DisplayBuffer)");
@@ -118,7 +119,7 @@ index 9de9fad..7e94a8b 100644
      block_t *p_block = *pp_block;
  
 -    (*myVm)->AttachCurrentThread(myVm, &env, NULL);
-+    VlcSetupThreadEnv(&env);
++    vlcjni_setup_thread_env(&env);
  
      if (p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED)) {
          block_Release(p_block);

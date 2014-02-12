@@ -1,14 +1,14 @@
-From 66f0559f019e4e0699c9cd8d5eb7eb1b33cfb022 Mon Sep 17 00:00:00 2001
+From 23fe5de148561aafcdd7caf295a58cc7d9bb45b3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 24 Oct 2013 16:29:21 +0800
-Subject: [PATCH 36/38] avcodec: do not align dimensions on android
+Subject: [PATCH 32/35] avcodec: do not align dimensions on android
 
 ---
  modules/codec/avcodec/video.c | 2 ++
  1 file changed, 2 insertions(+)
 
 diff --git a/modules/codec/avcodec/video.c b/modules/codec/avcodec/video.c
-index 2660c0f..66ca4f8 100644
+index fea22bb..0341e3a 100644
 --- a/modules/codec/avcodec/video.c
 +++ b/modules/codec/avcodec/video.c
 @@ -129,12 +129,14 @@ static inline picture_t *ffmpeg_NewPictBuf( decoder_t *p_dec,

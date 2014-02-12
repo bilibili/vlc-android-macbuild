@@ -1,19 +1,19 @@
-From 1e74b483b1f29c58bd3a1379b7ed6cf2be4af90a Mon Sep 17 00:00:00 2001
+From aa3e147ab687615ccf6ebfa2d4912e65cf396890 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 31 May 2013 18:19:47 +0800
-Subject: [PATCH] ringbuf: support asynchronized ring buffer
+Subject: [PATCH 31/35] ringbuf: support asynchronized ring buffer
 
 ---
- modules/stream_filter/ringbuf.c | 803 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 803 insertions(+)
+ modules/stream_filter/ringbuf.c | 822 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 822 insertions(+)
  create mode 100644 modules/stream_filter/ringbuf.c
 
 diff --git a/modules/stream_filter/ringbuf.c b/modules/stream_filter/ringbuf.c
 new file mode 100644
-index 0000000..9d68aab
+index 0000000..bb43e88
 --- /dev/null
 +++ b/modules/stream_filter/ringbuf.c
-@@ -0,0 +1,803 @@
+@@ -0,0 +1,822 @@
 +/*****************************************************************************
 + * ringbuf.c: Stream ring buffer in memory
 + *****************************************************************************
@@ -86,7 +86,10 @@ index 0000000..9d68aab
 +
 +#define RING_SEEK_THRESHOLD ( 1 * 1024 * 1024 )
 +
-+#define BYTES_PER_READ ( 32 * 1024 )
++// 32K/s
++#define BYTES_PER_READ ( 8 * 1024 )
++#define MAX_DELAY_PER_READ ( 1000 * 1000 / 4 )
++
 +#define SHORT_SEEK_RANGE ( 128 * 1024 )
 +
 +#define COND_POLL_TIME ( 1000 * 1000 )
@@ -138,7 +141,9 @@ index 0000000..9d68aab
 +static stream_sys_t *sys_Alloc( void );
 +static void sys_Free( stream_sys_t** );
 +
-+#define msg_RBuf msg_Dbg
++#define msg_RBuf( p_this, ... )
++#define msg_WBuf( p_this, ... )
++#define msg_VVV  msg_Err
 +
 +/****************************************************************************
 + * Open/Close
@@ -337,9 +342,8 @@ index 0000000..9d68aab
 +
 +    if( b_start_wait )
 +    {
-+        mtime_t wait_time = mdate() - start_wait_time;
 +        msg_RBuf( p_stream, "ringbuf: WaitBufferForRead_l(%d) wait end (%"PRId64" ms): %"PRId64" + %d",
-+                  i_read, (int64_t) wait_time / 1000, p_sys->i_stream_offset,
++                  i_read, (int64_t) ( mdate() - start_wait_time ) / 1000, p_sys->i_stream_offset,
 +                  p_sys->i_buffer_size );
 +    }
 +
@@ -448,7 +452,7 @@ index 0000000..9d68aab
 +
 +        if( !b_start_wait )
 +        {
-+            msg_RBuf( p_stream, "ringbuf: WaitBufferForWrite_l(%d) wait start: %d",
++            msg_WBuf( p_stream, "ringbuf: WaitBufferForWrite_l(%d) wait start: %d",
 +                      i_buffer, p_sys->i_buffer_size );
 +            b_start_wait = true;
 +            start_wait_time = mdate();
@@ -461,9 +465,8 @@ index 0000000..9d68aab
 +
 +    if( b_start_wait )
 +    {
-+        mtime_t wait_time = mdate() - start_wait_time;
-+        msg_RBuf( p_stream, "ringbuf: WaitBufferForWrite_l(%d) wait end(%"PRId64" ms): %d",
-+                  i_buffer, (int64_t) wait_time / 1000, p_sys->i_buffer_size );
++        msg_WBuf( p_stream, "ringbuf: WaitBufferForWrite_l(%d) wait end(%"PRId64" ms): %d",
++                  i_buffer, (int64_t) ( mdate() - start_wait_time ) / 1000, p_sys->i_buffer_size );
 +    }
 +
 +    return i_buffer;
@@ -535,6 +538,10 @@ index 0000000..9d68aab
 +    stream_sys_t *p_sys = p_stream->p_sys;
 +    stream_t *p_source = p_stream->p_source;
 +    uint8_t buf[BYTES_PER_READ];
++    mtime_t start_wait_time = mdate();
++    mtime_t end_wait_time = mdate();
++    mtime_t stream_read_used_time = 0;
++    mtime_t stream_idle_used_time = 0;
 +
 +    while( !p_sys->b_abort && !p_sys->b_error )
 +    {
@@ -658,7 +665,19 @@ index 0000000..9d68aab
 +
 +        vlc_testcancel();
 +        int i_step_read = sizeof( buf );
++
++        start_wait_time = mdate();
++        stream_idle_used_time = start_wait_time - end_wait_time;
++        if ( stream_idle_used_time >= MAX_DELAY_PER_READ)
++            msg_Warn(p_stream, "BufferThread: idle too long (%d ms)", (int)(stream_idle_used_time / 1000));
++
 +        int i_read_ret = stream_Read( p_source, buf, i_step_read );
++
++        end_wait_time = mdate();
++        stream_read_used_time = end_wait_time - start_wait_time;
++        if ( stream_read_used_time >= MAX_DELAY_PER_READ)
++            msg_Warn(p_stream, "BufferThread: stream_Read too late (%d ms)", (int)(stream_read_used_time / 1000));
++
 +        if( i_read_ret < 0 )
 +        {
 +            p_sys->b_error = true;

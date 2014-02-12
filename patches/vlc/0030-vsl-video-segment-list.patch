@@ -1,7 +1,7 @@
-From 6e0122541d5233fb16c3abb44fe881d1e03f950c Mon Sep 17 00:00:00 2001
+From da3db21b7642d395eb9adcb66f13560f43a2eba8 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
-Subject: [PATCH 32/36] vsl: video segment list
+Subject: [PATCH 30/35] vsl: video segment list
 
 ---
  modules/access/vsl/index.c     | 882 ++++++++++++++++++++++++++++++++++++++++
@@ -904,7 +904,7 @@ index 0000000..cc14334
 \ No newline at end of file
 diff --git a/modules/access/vsl/segment.c b/modules/access/vsl/segment.c
 new file mode 100644
-index 0000000..1db1796
+index 0000000..098590c
 --- /dev/null
 +++ b/modules/access/vsl/segment.c
 @@ -0,0 +1,897 @@
@@ -1276,7 +1276,7 @@ index 0000000..1db1796
 +    if( i_read_ret <= 0 )
 +        p_access->info.b_eof = true;
 +
-+    return i_read_ret;
++    return 0;
 +}
 +
 +static int stream_ReadSeek( stream_t *p_stream, uint64_t i_seek_forward_bytes ) {

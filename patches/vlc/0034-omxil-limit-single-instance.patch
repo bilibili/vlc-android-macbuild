@@ -1,14 +1,14 @@
-From c2b3a925e09c770a21675470a7f29b1427f2ec22 Mon Sep 17 00:00:00 2001
+From 5b2de7174fbfd279b91e267b222800796d72326d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Dec 2013 11:20:25 +0800
-Subject: [PATCH 38/38] omxil: limit single instance
+Subject: [PATCH 34/35] omxil: limit single instance
 
 ---
  modules/codec/omxil/omxil.c | 12 ++++++++++++
  1 file changed, 12 insertions(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 1cb16e2..075f78e 100644
+index 5b51005..30e3f8c 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -74,6 +74,8 @@ static OMX_ERRORTYPE OmxEmptyBufferDone( OMX_HANDLETYPE, OMX_PTR,

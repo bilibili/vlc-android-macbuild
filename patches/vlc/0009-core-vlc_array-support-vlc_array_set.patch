@@ -1,7 +1,7 @@
-From c76f30fb3c8070208ed5e86017ccd6b9cae4466b Mon Sep 17 00:00:00 2001
+From be145e488e762e2362b7fe40b71b6452e7356565 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 19 Jun 2012 17:04:09 +0800
-Subject: [PATCH 09/34] core: vlc_array: support vlc_array_set
+Subject: [PATCH 09/35] core: vlc_array: support vlc_array_set
 
 ---
  include/vlc_arrays.h | 6 ++++++
