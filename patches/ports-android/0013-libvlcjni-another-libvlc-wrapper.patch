@@ -1,4 +1,4 @@
-From 1fd91382bcc0a4001546d7fec69169ccf5484561 Mon Sep 17 00:00:00 2001
+From c0f43c5e49e20c287c09490c1a4ba00d7db0276b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
 Subject: [PATCH 13/19] libvlcjni: another libvlc wrapper
@@ -13,14 +13,14 @@ Subject: [PATCH 13/19] libvlcjni: another libvlc wrapper
  vlc-android/jni/jni_libvlcevent.h                  |  32 ++
  vlc-android/jni/jni_vsl.c                          | 300 +++++++++++
  vlc-android/jni/jni_vsl.h                          |  37 ++
- vlc-android/jni/libvlcjni_danmaku.c                | 566 +++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c                | 567 +++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |  65 +++
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |  61 +++
  vlc-android/jni/libvlcjni_fflog.inc.c              |  71 +++
  vlc-android/jni/utils.h                            |   2 +
- vlc-android/jni/vout.c                             |   5 +
+ vlc-android/jni/vout.c                             |   9 +
  vlc-android/src/org/videolan/libvlc/LibVLC.java    | 168 +++++-
- 16 files changed, 1718 insertions(+), 8 deletions(-)
+ 16 files changed, 1723 insertions(+), 8 deletions(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.c
@@ -883,10 +883,10 @@ index 0000000..527277a
 +#endif // JNI_VSL_H
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..ba6e4de
+index 0000000..ae3cca0
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,566 @@
+@@ -0,0 +1,567 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -1052,6 +1052,7 @@ index 0000000..ba6e4de
 +        LOGE("EventHandler: failed to get the callback method");
 +    }
 +
++    (*env)->DeleteLocalRef(env, cls);
 +end:
 +    jbundle_destroy(env, &javaBundle);
 +
@@ -1680,7 +1681,7 @@ index f8502d9..182099b 100644
 +
  #endif // LIBVLCJNI_UTILS_H
 diff --git a/vlc-android/jni/vout.c b/vlc-android/jni/vout.c
-index cac3213..17d291f 100644
+index cac3213..18aca83 100644
 --- a/vlc-android/jni/vout.c
 +++ b/vlc-android/jni/vout.c
 @@ -33,6 +33,11 @@ static void *vout_android_gui = NULL;
@@ -1695,6 +1696,26 @@ index cac3213..17d291f 100644
  void *jni_LockAndGetSubtitlesSurface() {
      pthread_mutex_lock(&vout_android_lock);
      while (vout_android_subtitles_surf == NULL)
+@@ -42,15 +47,19 @@ void *jni_LockAndGetSubtitlesSurface() {
+ 
+ void *jni_LockAndGetAndroidSurface() {
+     pthread_mutex_lock(&vout_android_lock);
++#if 0
+     while (vout_android_surf == NULL)
+         pthread_cond_wait(&vout_android_surf_attached, &vout_android_lock);
++#endif
+     return vout_android_surf;
+ }
+ 
+ jobject jni_LockAndGetAndroidJavaSurface() {
+     pthread_mutex_lock(&vout_android_lock);
++#if 0
+     while (vout_android_java_surf == NULL)
+         pthread_cond_wait(&vout_android_surf_attached, &vout_android_lock);
++#endif
+     return vout_android_java_surf;
+ }
+ 
 diff --git a/vlc-android/src/org/videolan/libvlc/LibVLC.java b/vlc-android/src/org/videolan/libvlc/LibVLC.java
 index 8838d04..68291d8 100644
 --- a/vlc-android/src/org/videolan/libvlc/LibVLC.java

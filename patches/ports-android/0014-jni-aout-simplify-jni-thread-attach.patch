@@ -1,4 +1,4 @@
-From b11e1b93167a5986235a1b43f0734fb4293f2d5c Mon Sep 17 00:00:00 2001
+From b875f9e1a3803389f6faf7c5f30d7d2daff139de Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 10 Feb 2014 17:57:15 +0800
 Subject: [PATCH 14/19] jni/aout: simplify jni thread attach
