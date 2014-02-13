@@ -1,7 +1,7 @@
-From b23da0a74d30afe0f771e6d77f76af0d81c61825 Mon Sep 17 00:00:00 2001
+From e78d95477b5f0bda2c9cbad9cb21e7ee610227b9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Dec 2013 11:20:15 +0800
-Subject: [PATCH 33/35] MediaCodec: limit single instance
+Subject: [PATCH 33/37] MediaCodec: limit single instance
 
 ---
  modules/codec/omxil/android_mediacodec.c | 10 ++++++++++

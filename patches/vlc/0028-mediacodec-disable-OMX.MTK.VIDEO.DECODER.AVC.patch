@@ -1,7 +1,7 @@
-From a998acf8218847a61a53d260b0ec2a82c1d4c15d Mon Sep 17 00:00:00 2001
+From 9c62232ac5818e5e66bfc9e1808d30a0b7275461 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 23 Oct 2013 21:22:05 +0800
-Subject: [PATCH 28/35] mediacodec: disable OMX.MTK.VIDEO.DECODER.AVC
+Subject: [PATCH 28/37] mediacodec: disable OMX.MTK.VIDEO.DECODER.AVC
 
 ---
  modules/codec/omxil/android_mediacodec.c | 22 +++++++++++++++-------

@@ -1,0 +1,102 @@
+From e5d24eb13ba7cffdf214ac256594cef8056f7f9c Mon Sep 17 00:00:00 2001
+From: Zhang Rui <bbcallen@gmail.com>
+Date: Thu, 13 Feb 2014 12:05:49 +0800
+Subject: [PATCH 37/37] MediaCodec: only enable direct render in white list
+
+---
+ modules/codec/omxil/android_mediacodec.c | 52 ++++++++++++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
+
+diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
+index fe48bc3..6155191 100644
+--- a/modules/codec/omxil/android_mediacodec.c
++++ b/modules/codec/omxil/android_mediacodec.c
+@@ -84,6 +84,7 @@ struct decoder_sys_t
+     ArchitectureSpecificCopyData architecture_specific_data;
+ 
+     /* Direct rendering members. */
++    bool force_direct_rendering;
+     bool direct_rendering;
+     int i_output_buffers; /**< number of MediaCodec output buffers */
+     picture_t** inflight_picture; /**< stores the inflight picture for each output buffer or NULL */
+@@ -178,6 +179,10 @@ static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
+ #define DIRECTRENDERING_LONGTEXT N_(\
+         "Enable Android direct rendering using opaque buffers.")
+ 
++#define FORCE_DIRECTRENDERING_TEXT N_("Android force direct rendering")
++#define FORCE_DIRECTRENDERING_LONGTEXT N_(\
++        "Force enable Android direct rendering using opaque buffers.")
++
+ #define CFG_PREFIX "mediacodec-"
+ 
+ vlc_module_begin ()
+@@ -186,11 +191,36 @@ vlc_module_begin ()
+     set_subcategory( SUBCAT_INPUT_VCODEC )
+     set_section( N_("Decoding") , NULL )
+     set_capability( "decoder", 0 ) /* Only enabled via commandline arguments */
++    add_bool(CFG_PREFIX "force-dr", false,
++             FORCE_DIRECTRENDERING_TEXT, FORCE_DIRECTRENDERING_LONGTEXT, false)
+     add_bool(CFG_PREFIX "dr", true,
+              DIRECTRENDERING_TEXT, DIRECTRENDERING_LONGTEXT, true)
+     set_callbacks( OpenDecoder, CloseDecoder )
+ vlc_module_end ()
+ 
++static const char *support_direct_render(const char *name)
++{
++    // All devices 'should' be capiable of surface rendering
++    // but that seems to be hit or miss as most odd name devices
++    // cannot surface render.
++    static const char *s_decoders[] = {
++        "OMX.Nvidia.",
++        "OMX.rk.",
++        "OMX.qcom.",
++
++        "OMX.Exynos.",
++
++        // "OMX.SEC.AVC.Decoder", // too slow on Nexus S
++    };
++    for (int i = 0; i < sizeof(s_decoders) / sizeof(s_decoders[0]); ++i)
++    {
++        const char *decoder = s_decoders[i];
++        if (!strncmp(decoder, name, strlen(decoder)))
++            return decoder;
++    }
++    return NULL;
++}
++
+ static int jstrcmp(JNIEnv* env, jobject str, const char* str2)
+ {
+     jsize len = (*env)->GetStringUTFLength(env, str);
+@@ -412,7 +442,29 @@ static int OpenDecoder(vlc_object_t *p_this)
+         (*env)->DeleteLocalRef(env, bytebuf);
+     }
+ 
++    p_sys->force_direct_rendering = var_InheritBool(p_dec, CFG_PREFIX "force-dr");
+     p_sys->direct_rendering = var_InheritBool(p_dec, CFG_PREFIX "dr");
++    msg_Info(p_dec, "%s=%s %s=%s",
++             CFG_PREFIX "force-dr", p_sys->force_direct_rendering ? "true" : "false",
++             CFG_PREFIX "dr", p_sys->direct_rendering ? "true" : "false");
++    if (p_sys->force_direct_rendering) {
++        p_sys->direct_rendering = true;
++    }
++
++    if (p_sys->direct_rendering) {
++        const char *matched = support_direct_render(p_sys->name);
++        if (matched) {
++            msg_Info(p_dec, "hw-rendering %s (in white-list %s)", p_sys->name, matched);
++        } else if (p_sys->force_direct_rendering) {
++            msg_Info(p_dec, "hw-rendering %s (force, not in white-list)", p_sys->name);
++        } else {
++            msg_Info(p_dec, "sw-rendering %s (not in white-list)", p_sys->name);
++            p_sys->direct_rendering = false;
++        }
++    } else {
++        msg_Info(p_dec, "sw-rendering %s (by config)", p_sys->name);
++    }
++
+     if (p_sys->direct_rendering) {
+         jobject surf = jni_LockAndGetAndroidJavaSurface();
+         if (surf) {
+-- 
+1.8.3.4
+

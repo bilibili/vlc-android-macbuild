@@ -1,19 +1,19 @@
-From aa3e147ab687615ccf6ebfa2d4912e65cf396890 Mon Sep 17 00:00:00 2001
+From 8b0bd8fcdb3a5adf52323665676abfbd6fec94c4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 31 May 2013 18:19:47 +0800
-Subject: [PATCH 31/35] ringbuf: support asynchronized ring buffer
+Subject: [PATCH 31/37] ringbuf: support asynchronized ring buffer
 
 ---
- modules/stream_filter/ringbuf.c | 822 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 822 insertions(+)
+ modules/stream_filter/ringbuf.c | 846 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 846 insertions(+)
  create mode 100644 modules/stream_filter/ringbuf.c
 
 diff --git a/modules/stream_filter/ringbuf.c b/modules/stream_filter/ringbuf.c
 new file mode 100644
-index 0000000..bb43e88
+index 0000000..950f156
 --- /dev/null
 +++ b/modules/stream_filter/ringbuf.c
-@@ -0,0 +1,822 @@
+@@ -0,0 +1,846 @@
 +/*****************************************************************************
 + * ringbuf.c: Stream ring buffer in memory
 + *****************************************************************************
@@ -149,6 +149,15 @@ index 0000000..bb43e88
 + * Open/Close
 + ****************************************************************************/
 +
++static bool StreamNeedAbort( stream_t *p_stream )
++{
++    stream_sys_t *p_sys = p_stream->p_sys;
++    if( p_sys->b_abort || p_sys->b_error || !vlc_object_alive( p_stream ) )
++        return true;
++
++    return false;
++}
++
 +static int Open( vlc_object_t *obj )
 +{
 +    stream_t *p_stream = (stream_t *)obj;
@@ -224,7 +233,7 @@ index 0000000..bb43e88
 +        vlc_cond_broadcast( &p_sys->wakeup_read_cond );
 +        vlc_cleanup_run( );
 +
-+        vlc_cancel( p_sys->buffer_thread );
++        // vlc_cancel( p_sys->buffer_thread );
 +        vlc_join( p_sys->buffer_thread, NULL );
 +    }
 +
@@ -299,16 +308,8 @@ index 0000000..bb43e88
 +    int i_data_ready = i_read;
 +    while( p_sys->b_seek_request || i_read > p_sys->i_buffer_size )
 +    {
-+        if( p_sys->b_abort )
-+        {
-+            msg_Warn( p_stream, "ringbuf: WaitBufferForRead_l(%d) abort", i_read );
-+            i_data_ready = -1;
-+            break;
-+        }
-+
-+        if( p_sys->b_error )
-+        {
-+            msg_Warn( p_stream, "ringbuf: WaitBufferForRead_l(%d) error", i_read );
++        if( StreamNeedAbort( p_stream ) ) {
++            msg_Warn( p_stream, "ringbuf: WaitBufferForRead_l need abort" );
 +            i_data_ready = -1;
 +            break;
 +        }
@@ -331,13 +332,21 @@ index 0000000..bb43e88
 +            start_wait_time = mdate();
 +        }
 +
-+        vlc_testcancel();
++        // vlc_testcancel();
++        if( StreamNeedAbort( p_stream ) ) {
++            msg_Warn( p_stream, "ringbuf: WaitBufferForRead_l need abort" );
++            i_data_ready = -1;
++            break;
++        }
++
 +        if( !p_sys->b_seek_request )
 +        {
 +            vlc_cond_broadcast( &p_sys->wakeup_write_cond );
 +        }
 +
++        // msg_Warn( p_stream, "ringbuf: WaitBufferForRead_l: vlc_cond_timedwait" );
 +        vlc_cond_timedwait( &p_sys->wakeup_read_cond, &p_sys->buffer_mutex, mdate() + COND_POLL_TIME );
++        // msg_Warn( p_stream, "ringbuf: WaitBufferForRead_l: vlc_cond_timedwait return" );
 +    }
 +
 +    if( b_start_wait )
@@ -430,16 +439,8 @@ index 0000000..bb43e88
 +    int i_buffer = i_write;
 +    while( p_sys->i_buffer_size + i_buffer > RING_TOTAL_CAPACITY - RING_BUFF_RW_GUARD_GAP - RING_BUFF_SEEK_GUARD_GAP)
 +    {
-+        if( p_sys->b_abort )
-+        {
-+            msg_Warn( p_stream, "ringbuf: WaitBufferForWrite_l(%d) abort", i_write );
-+            i_buffer = -1;
-+            break;
-+        }
-+
-+        if( p_sys->b_error )
-+        {
-+            msg_Warn( p_stream, "ringbuf: WaitBufferForWrite_l(%d) error", i_write );
++        if( StreamNeedAbort( p_stream ) ) {
++            msg_Warn( p_stream, "ringbuf: WaitBufferForWrite_l need abort" );
 +            i_buffer = -1;
 +            break;
 +        }
@@ -458,9 +459,17 @@ index 0000000..bb43e88
 +            start_wait_time = mdate();
 +        }
 +
-+        vlc_testcancel();
++        // vlc_testcancel();
++        if( StreamNeedAbort( p_stream ) ) {
++            msg_Warn( p_stream, "ringbuf: WaitBufferForWrite_l need abort" );
++            i_buffer = -1;
++            break;
++        }
++
 +        vlc_cond_broadcast( &p_sys->wakeup_read_cond );
++        // msg_Warn( p_stream, "ringbuf: WaitBufferForWrite_l: vlc_cond_timedwait" );
 +        vlc_cond_timedwait( &p_sys->wakeup_write_cond, &p_sys->buffer_mutex, mdate() + COND_POLL_TIME );
++        // msg_Warn( p_stream, "ringbuf: WaitBufferForRead_l: vlc_cond_timedwait end" );
 +    }
 +
 +    if( b_start_wait )
@@ -543,7 +552,7 @@ index 0000000..bb43e88
 +    mtime_t stream_read_used_time = 0;
 +    mtime_t stream_idle_used_time = 0;
 +
-+    while( !p_sys->b_abort && !p_sys->b_error )
++    while( !StreamNeedAbort( p_stream ) )
 +    {
 +        uint64_t i_source_offset = stream_Tell( p_stream->p_source );
 +        if( i_source_offset >= p_sys->i_stream_size )
@@ -559,14 +568,18 @@ index 0000000..bb43e88
 +            vlc_mutex_lock( &p_sys->buffer_mutex );
 +            mutex_cleanup_push( &p_sys->buffer_mutex );
 +            p_sys->b_buffered_eos = true;
-+            while( !p_sys->b_abort && !p_sys->b_error && !p_sys->b_seek_request )
++            while( !StreamNeedAbort( p_stream ) && !p_sys->b_seek_request )
 +            {
++                // msg_Warn( p_stream, "ringbuf: BufferThread: vlc_cond_timedwait" );
 +                vlc_cond_timedwait( &p_sys->wakeup_write_cond, &p_sys->buffer_mutex, mdate() + COND_POLL_TIME );
++                // msg_Warn( p_stream, "ringbuf: BufferThread: vlc_cond_timedwait end" );
 +            }
 +            vlc_cleanup_run( );
 +
-+            if( p_sys->b_abort || p_sys->b_error )
++            if( StreamNeedAbort( p_stream ) ) {
++                msg_Warn( p_stream, "ringbuf: BufferThread need abort" );
 +                break;
++            }
 +
 +            p_sys->b_buffered_eos = false;
 +        }
@@ -619,7 +632,12 @@ index 0000000..bb43e88
 +            {
 +                if( b_long_seek )
 +                {
-+                    vlc_testcancel();
++                    // vlc_testcancel();
++                    if( StreamNeedAbort( p_stream ) ) {
++                        msg_Warn( p_stream, "ringbuf: BufferThread need abort" );
++                        break;
++                    }
++
 +                    msg_RBuf( p_stream, "stream seek to %"PRId64, p_sys->i_seek_pos );
 +                    int i_seek_ret = stream_Seek( p_stream->p_source, p_sys->i_seek_pos );
 +                    if( i_seek_ret < 0 )
@@ -663,7 +681,12 @@ index 0000000..bb43e88
 +            }
 +        }
 +
-+        vlc_testcancel();
++        // vlc_testcancel();
++        if( StreamNeedAbort( p_stream ) ) {
++            msg_Warn( p_stream, "ringbuf: BufferThread need abort" );
++            break;
++        }
++
 +        int i_step_read = sizeof( buf );
 +
 +        start_wait_time = mdate();
@@ -712,6 +735,7 @@ index 0000000..bb43e88
 +    vlc_cond_broadcast( &p_sys->wakeup_read_cond );
 +    vlc_mutex_unlock( &p_sys->buffer_mutex );
 +
++    msg_Warn( p_stream, "ringbuf: BufferThread return" );
 +    return NULL;
 +}
 +

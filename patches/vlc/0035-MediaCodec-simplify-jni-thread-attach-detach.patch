@@ -1,7 +1,7 @@
-From 174eec468fb08a92df4a364c0655f219e3544be8 Mon Sep 17 00:00:00 2001
+From 1a8578489c80bf5ca7fefc8525463ff90bbcd5e6 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Mon, 10 Feb 2014 18:00:59 +0800
-Subject: [PATCH 35/35] MediaCodec: simplify jni thread attach/detach
+Subject: [PATCH 35/37] MediaCodec: simplify jni thread attach/detach
 
 Avoid repeatly AttachCurrentThread()/DetachCurrentThread()
 ---

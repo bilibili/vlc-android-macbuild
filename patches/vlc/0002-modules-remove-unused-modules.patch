@@ -1,7 +1,7 @@
-From fd3a7e1dff2a57eab7f9d7d7b5d1415af095d27c Mon Sep 17 00:00:00 2001
+From d9c2baa12207118c8c08dbff0700df918e9ffc60 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 14:04:20 +0800
-Subject: [PATCH 02/35] modules: remove unused modules
+Subject: [PATCH 02/37] modules: remove unused modules
 
 ---
  configure.ac                      | 1 +

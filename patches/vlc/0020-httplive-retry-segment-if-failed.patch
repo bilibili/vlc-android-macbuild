@@ -1,7 +1,7 @@
-From c27d71c99ce24551169ba640a93cd8a888e4245a Mon Sep 17 00:00:00 2001
+From 70394c136d9385a684178ca0d8b64678b61ee48e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 29 Jul 2012 16:44:03 +0800
-Subject: [PATCH 20/35] httplive: retry segment if failed
+Subject: [PATCH 20/37] httplive: retry segment if failed
 
 ---
  modules/stream_filter/httplive.c | 9 ++++++++-

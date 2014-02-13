@@ -1,7 +1,7 @@
-From f79a9f6264dc3c2b250387a49a9719a6ea0e5c1f Mon Sep 17 00:00:00 2001
+From 7cb73c38797cd620f2fd70705c774eb3516ccdf2 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 15:55:01 +0800
-Subject: [PATCH 01/35] .gitignore
+Subject: [PATCH 01/37] .gitignore
 
 ---
  .gitignore | 5 +++++

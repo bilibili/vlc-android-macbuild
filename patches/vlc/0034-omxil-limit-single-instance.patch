@@ -1,7 +1,7 @@
-From 5b2de7174fbfd279b91e267b222800796d72326d Mon Sep 17 00:00:00 2001
+From 6bcf83f98f2a2a30759afdc78ed123315718ae28 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Dec 2013 11:20:25 +0800
-Subject: [PATCH 34/35] omxil: limit single instance
+Subject: [PATCH 34/37] omxil: limit single instance
 
 ---
  modules/codec/omxil/omxil.c | 12 ++++++++++++

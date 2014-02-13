@@ -1,7 +1,7 @@
-From ff0db52e29d07251024cc1768a2772880b03c449 Mon Sep 17 00:00:00 2001
+From 5e9e9f93497d4dbb5189cd7bbe642d2f7e9faa25 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 21:54:18 +0800
-Subject: [PATCH 03/35] configure.ac: fix build of faad
+Subject: [PATCH 03/37] configure.ac: fix build of faad
 
 ---
  configure.ac | 2 +-
