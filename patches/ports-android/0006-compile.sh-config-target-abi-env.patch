@@ -1,14 +1,14 @@
-From 428748c2e6ce74991e418cc0e354783ef9331a68 Mon Sep 17 00:00:00 2001
+From 754b2fed973d739bddc0f49892f1f78acd2abab1 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 10 Feb 2014 14:55:42 +0800
-Subject: [PATCH 06/13] compile.sh: config target abi env
+Subject: [PATCH 06/15] compile.sh: config target abi env
 
 ---
  compile.sh | 3 +++
  1 file changed, 3 insertions(+)
 
 diff --git a/compile.sh b/compile.sh
-index 41d4734..c69048a 100755
+index ae0808a..440758e 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -1,5 +1,8 @@

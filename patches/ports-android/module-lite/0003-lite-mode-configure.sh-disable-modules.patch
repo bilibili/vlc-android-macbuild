@@ -1,14 +1,14 @@
-From be35e99f51e0a946b6831e19e4a38a99c9a4af5c Mon Sep 17 00:00:00 2001
+From 48347ae4c3af9f2fc59e6386eeafe5ac57195ff9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH] lite-mode: configure.sh: disable modules
+Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
 
 ---
  configure.sh | 22 ++++++++++++++--------
  1 file changed, 14 insertions(+), 8 deletions(-)
 
 diff --git a/configure.sh b/configure.sh
-index 978b028..f3da3cd 100755
+index 978b028..0a12294 100755
 --- a/configure.sh
 +++ b/configure.sh
 @@ -47,18 +47,21 @@ NM="${CROSS_COMPILE}nm" \
@@ -17,7 +17,7 @@ index 978b028..f3da3cd 100755
  AR="${CROSS_COMPILE}ar" \
 -sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $EXTRA_PARAMS \
 +MODULE_LITE=1 \
-+sh $VLC_SOURCEDIR/configure --host=arm-linux-androideabi --build=x86_64-unknown-linux $EXTRA_PARAMS \
++sh $VLC_SOURCEDIR/configure --host=${TARGET_TUPLE} --build=x86_64-unknown-linux $EXTRA_PARAMS \
                  --disable-nls \
 -                --enable-live555 --enable-realrtsp \
 +                --disable-live555 --disable-realrtsp \

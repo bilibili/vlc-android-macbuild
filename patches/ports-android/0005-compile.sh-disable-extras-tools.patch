@@ -1,14 +1,14 @@
-From 1bc7d48a940c8c209fa7c7b3b579191e2c893637 Mon Sep 17 00:00:00 2001
+From 061546459620a43cc3f6ed7ebb5d26203b2ae14f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 20 May 2013 22:29:57 +0800
-Subject: [PATCH 05/13] compile.sh: disable extras/tools
+Subject: [PATCH 05/15] compile.sh: disable extras/tools
 
 ---
  compile.sh | 12 ++++++------
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index 660968e..41d4734 100755
+index 1b63f09..ae0808a 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -187,12 +187,12 @@ then

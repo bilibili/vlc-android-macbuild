@@ -1,14 +1,14 @@
-From e365250d37665038f83f6a5417048ecd397aa7f8 Mon Sep 17 00:00:00 2001
+From adb11af9459414b45bffb9fa13aade4c6ada0b0c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
-Subject: [PATCH] lite-mode: compile.sh: disable contrib
+Subject: [PATCH 2/4] lite-mode: compile.sh: disable contrib
 
 ---
  compile.sh | 33 +++++++++++++++++++++++++++++++--
  1 file changed, 31 insertions(+), 2 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index 440758e..919bf4e 100755
+index 9679cc2..478eaae 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -233,10 +233,39 @@ cd contrib/android

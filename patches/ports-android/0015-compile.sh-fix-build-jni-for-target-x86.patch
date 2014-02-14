@@ -1,0 +1,25 @@
+From 018a590a336990e4be0ffad059afe576a9f92224 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Fri, 14 Feb 2014 17:18:01 +0800
+Subject: [PATCH 15/15] compile.sh: fix build jni for target x86
+
+---
+ compile.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/compile.sh b/compile.sh
+index 440758e..9679cc2 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -275,7 +275,7 @@ cd ../.. && mkdir -p android && cd android
+ 
+ if [ $# -eq 1 ] && [ "$1" = "jni" ]; then
+     CLEAN="jniclean"
+-    TARGET="vlc-android/obj/local/armeabi-v7a/libvlcjni.so"
++    TARGET="vlc-android/obj/local/$ANDROID_ABI/libvlcjni.so"
+ else
+     CLEAN="distclean"
+     echo "Bootstraping"
+-- 
+1.8.3.4
+

@@ -1,14 +1,14 @@
-From e4c116ed5853a4dd67dbd36eeb4de3c3f0ee26d3 Mon Sep 17 00:00:00 2001
+From f1e79b541d36992c2fd31d179eca78393cfe3189 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 8 May 2012 11:30:23 +0800
-Subject: [PATCH 07/13] Makefile: do not build apk
+Subject: [PATCH 07/15] Makefile: do not build apk
 
 ---
  Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index d907dec..2d8f2c4 100644
+index 73f4409..bb33ecd 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -45,7 +45,7 @@ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)

@@ -1,14 +1,14 @@
-From bf3dc5049890525d49225539c88b74a556f74785 Mon Sep 17 00:00:00 2001
+From 9874e15819a8e06a552847b42214a02f2e46a206 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 11 Aug 2012 14:27:45 +0800
-Subject: [PATCH 02/13] compile.sh: set CHOST for cross compile
+Subject: [PATCH 02/15] compile.sh: set CHOST for cross compile
 
 ---
  compile.sh | 2 ++
  1 file changed, 2 insertions(+)
 
 diff --git a/compile.sh b/compile.sh
-index 6fcae9d..68335c1 100755
+index 86cf38f..6247a75 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -101,6 +101,7 @@ export PLATFORM_SHORT_ARCH
