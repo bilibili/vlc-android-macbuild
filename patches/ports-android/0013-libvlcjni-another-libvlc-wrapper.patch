@@ -1,18 +1,19 @@
-From c0f43c5e49e20c287c09490c1a4ba00d7db0276b Mon Sep 17 00:00:00 2001
+From e23a7200cc4b49c457a5be4f43a89ef571d328f1 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
 Subject: [PATCH 13/19] libvlcjni: another libvlc wrapper
 
 ---
  vlc-android/jni/Android.mk                         |   6 +-
- vlc-android/jni/jni_bundle.c                       | 150 ++++++
- vlc-android/jni/jni_bundle.h                       |  61 +++
+ vlc-android/jni/jni_bundle.c                       | 162 ++++++
+ vlc-android/jni/jni_bundle.h                       |  60 +++
  vlc-android/jni/jni_libvlc.c                       |  72 +++
  vlc-android/jni/jni_libvlc.h                       |  38 ++
  vlc-android/jni/jni_libvlcevent.c                  |  92 ++++
  vlc-android/jni/jni_libvlcevent.h                  |  32 ++
  vlc-android/jni/jni_vsl.c                          | 300 +++++++++++
  vlc-android/jni/jni_vsl.h                          |  37 ++
+ vlc-android/jni/libvlcjni-util.c                   |  17 +-
  vlc-android/jni/libvlcjni_danmaku.c                | 567 +++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |  65 +++
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |  61 +++
@@ -20,7 +21,7 @@ Subject: [PATCH 13/19] libvlcjni: another libvlc wrapper
  vlc-android/jni/utils.h                            |   2 +
  vlc-android/jni/vout.c                             |   9 +
  vlc-android/src/org/videolan/libvlc/LibVLC.java    | 168 +++++-
- 16 files changed, 1723 insertions(+), 8 deletions(-)
+ 17 files changed, 1748 insertions(+), 11 deletions(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.c
@@ -53,10 +54,10 @@ index 7f0236c..54639ee 100644
  LOCAL_SRC_FILES += wchar/wcpncpy.c
 diff --git a/vlc-android/jni/jni_bundle.c b/vlc-android/jni/jni_bundle.c
 new file mode 100644
-index 0000000..a99751e
+index 0000000..3722cea
 --- /dev/null
 +++ b/vlc-android/jni/jni_bundle.c
-@@ -0,0 +1,150 @@
+@@ -0,0 +1,162 @@
 +/*****************************************************************************
 + * jni_bundle.c
 + *****************************************************************************
@@ -86,14 +87,27 @@ index 0000000..a99751e
 +
 +#include "jni_bundle.h"
 +
++static jclass g_cls_bundle;
++
++static jclass jbundle_get_class(JNIEnv *env)
++{
++    if (!g_cls_bundle) {
++        jclass cls_bundle = (*env)->FindClass(env, "android/os/Bundle");
++        g_cls_bundle = (*env)->NewGlobalRef(env, cls_bundle);
++        (*env)->DeleteLocalRef(env, cls_bundle);
++    }
++
++    return g_cls_bundle;
++}
++
 +JavaBundle *jbundle_init(JNIEnv *env, JavaBundle *p_bundle) {
 +    memset(p_bundle, 0, sizeof(JavaBundle));
 +
-+    p_bundle->clsBundle = (*env)->FindClass(env, "android/os/Bundle");
-+    jmethodID clsCtor = (*env)->GetMethodID(env, p_bundle->clsBundle, "<init>",
++    jclass cls_bundle = jbundle_get_class(env);
++    jmethodID clsCtor = (*env)->GetMethodID(env, cls_bundle, "<init>",
 +            "()V");
 +
-+    p_bundle->bundle = (*env)->NewObject(env, p_bundle->clsBundle, clsCtor);
++    p_bundle->bundle = (*env)->NewObject(env, cls_bundle, clsCtor);
 +    p_bundle->needReleaseBundle = true;
 +    return p_bundle;
 +}
@@ -101,7 +115,6 @@ index 0000000..a99751e
 +JavaBundle *jbundle_attach(JNIEnv *env, JavaBundle *p_bundle, jobject jbundle) {
 +    memset(p_bundle, 0, sizeof(JavaBundle));
 +
-+    p_bundle->clsBundle = (*env)->FindClass(env, "android/os/Bundle");
 +    p_bundle->bundle = jbundle;
 +    p_bundle->needReleaseBundle = false;
 +    return p_bundle;
@@ -118,7 +131,7 @@ index 0000000..a99751e
 +void jbundle_put_int(JNIEnv *env, JavaBundle *p_bundle, const char *key,
 +        int value) {
 +    if (p_bundle->putInt == NULL) {
-+        p_bundle->putInt = (*env)->GetMethodID(env, p_bundle->clsBundle,
++        p_bundle->putInt = (*env)->GetMethodID(env, jbundle_get_class(env),
 +                "putInt", "(Ljava/lang/String;I)V");
 +    }
 +
@@ -131,7 +144,7 @@ index 0000000..a99751e
 +int jbundle_get_int(JNIEnv *env, JavaBundle *p_bundle, const char *key,
 +        int default_value) {
 +    if (p_bundle->getInt == NULL) {
-+        p_bundle->getInt = (*env)->GetMethodID(env, p_bundle->clsBundle,
++        p_bundle->getInt = (*env)->GetMethodID(env, jbundle_get_class(env),
 +                "getInt", "(Ljava/lang/String;I)I");
 +    }
 +
@@ -145,7 +158,7 @@ index 0000000..a99751e
 +int64_t jbundle_get_long(JNIEnv *env, JavaBundle *p_bundle, const char *key,
 +        int64_t default_value) {
 +    if (p_bundle->getLong == NULL) {
-+        p_bundle->getLong = (*env)->GetMethodID(env, p_bundle->clsBundle,
++        p_bundle->getLong = (*env)->GetMethodID(env, jbundle_get_class(env),
 +                "getLong", "(Ljava/lang/String;J)J");
 +    }
 +
@@ -159,7 +172,7 @@ index 0000000..a99751e
 +void jbundle_put_float(JNIEnv *env, JavaBundle *p_bundle, const char *key,
 +        float value) {
 +    if (p_bundle->putFloat == NULL) {
-+        p_bundle->putFloat = (*env)->GetMethodID(env, p_bundle->clsBundle,
++        p_bundle->putFloat = (*env)->GetMethodID(env, jbundle_get_class(env),
 +                "putFloat", "(Ljava/lang/String;F)V");
 +    }
 +
@@ -172,7 +185,7 @@ index 0000000..a99751e
 +void jbundle_put_string(JNIEnv *env, JavaBundle *p_bundle, const char *key,
 +        const char *value) {
 +    if (p_bundle->putString == NULL) {
-+        p_bundle->putString = (*env)->GetMethodID(env, p_bundle->clsBundle,
++        p_bundle->putString = (*env)->GetMethodID(env, jbundle_get_class(env),
 +                "putString", "(Ljava/lang/String;Ljava/lang/String;)V");
 +    }
 +
@@ -186,7 +199,7 @@ index 0000000..a99751e
 +
 +char *jbundle_get_string(JNIEnv *env, JavaBundle *p_bundle, const char *key) {
 +    if (p_bundle->getString == NULL) {
-+        p_bundle->getString = (*env)->GetMethodID(env, p_bundle->clsBundle,
++        p_bundle->getString = (*env)->GetMethodID(env, jbundle_get_class(env),
 +                "getString", "(Ljava/lang/String;)Ljava/lang/String;");
 +    }
 +
@@ -209,10 +222,10 @@ index 0000000..a99751e
 +}
 diff --git a/vlc-android/jni/jni_bundle.h b/vlc-android/jni/jni_bundle.h
 new file mode 100644
-index 0000000..13c9ee4
+index 0000000..f32054c
 --- /dev/null
 +++ b/vlc-android/jni/jni_bundle.h
-@@ -0,0 +1,61 @@
+@@ -0,0 +1,60 @@
 +/*****************************************************************************
 + * jni_bundle.h
 + *****************************************************************************
@@ -241,7 +254,6 @@ index 0000000..13c9ee4
 +#include "jni_libvlc.h"
 +
 +typedef struct {
-+    jclass clsBundle;
 +    jobject bundle;
 +    bool needReleaseBundle;
 +
@@ -881,6 +893,78 @@ index 0000000..527277a
 +int64_t jvsl_get_bytes(void *p_cb_data, int i_order);
 +
 +#endif // JNI_VSL_H
+diff --git a/vlc-android/jni/libvlcjni-util.c b/vlc-android/jni/libvlcjni-util.c
+index 37f4d2d..0c4da3c 100644
+--- a/vlc-android/jni/libvlcjni-util.c
++++ b/vlc-android/jni/libvlcjni-util.c
+@@ -43,7 +43,9 @@ jint getInt(JNIEnv *env, jobject thiz, const char* field) {
+     jclass clazz = (*env)->GetObjectClass(env, thiz);
+     jfieldID fieldMP = (*env)->GetFieldID(env, clazz,
+                                           field, "I");
+-    return (*env)->GetIntField(env, thiz, fieldMP);
++    jint ret = (*env)->GetIntField(env, thiz, fieldMP);
++    (*env)->DeleteLocalRef(env, clazz);
++    return ret;
+ }
+ void setInt(JNIEnv *env, jobject item, const char* field, jint value) {
+     jclass cls;
+@@ -58,13 +60,16 @@ void setInt(JNIEnv *env, jobject item, const char* field, jint value) {
+         return;
+ 
+     (*env)->SetIntField(env, item, fieldId, value);
++    (*env)->DeleteLocalRef(env, cls);
+ }
+ 
+ jlong getLong(JNIEnv *env, jobject thiz, const char* field) {
+     jclass clazz = (*env)->GetObjectClass(env, thiz);
+     jfieldID fieldMP = (*env)->GetFieldID(env, clazz,
+                                           field, "J");
+-    return (*env)->GetLongField(env, thiz, fieldMP);
++    jlong ret = (*env)->GetLongField(env, thiz, fieldMP);
++    (*env)->DeleteLocalRef(env, clazz);
++    return ret;
+ }
+ void setLong(JNIEnv *env, jobject item, const char* field, jlong value) {
+     jclass cls;
+@@ -79,6 +84,7 @@ void setLong(JNIEnv *env, jobject item, const char* field, jlong value) {
+         return;
+ 
+     (*env)->SetLongField(env, item, fieldId, value);
++    (*env)->DeleteLocalRef(env, cls);
+ }
+ 
+ void setFloat(JNIEnv *env, jobject item, const char* field, jfloat value) {
+@@ -94,6 +100,7 @@ void setFloat(JNIEnv *env, jobject item, const char* field, jfloat value) {
+         return;
+ 
+     (*env)->SetFloatField(env, item, fieldId, value);
++    (*env)->DeleteLocalRef(env, cls);
+ }
+ void setString(JNIEnv *env, jobject item, const char* field, const char* text) {
+     jclass cls;
+@@ -113,6 +120,7 @@ void setString(JNIEnv *env, jobject item, const char* field, const char* text) {
+     if (jstr == NULL)
+         return;
+     (*env)->SetObjectField(env, item, fieldId, jstr);
++    (*env)->DeleteLocalRef(env, cls);
+ }
+ 
+ void arrayListGetIDs(JNIEnv *env, jclass* p_class, jmethodID* p_add, jmethodID* p_remove) {
+@@ -140,10 +148,13 @@ jobject getEventHandlerReference(JNIEnv *env, jobject thiz, jobject eventHandler
+     jmethodID methodID = (*env)->GetMethodID(env, cls, "callback", "(ILandroid/os/Bundle;)V");
+     if (!methodID) {
+         LOGE("setEventHandler: failed to get the callback method");
++        (*env)->DeleteLocalRef(env, cls);
+         return NULL;
+     }
+ 
+-    return (*env)->NewGlobalRef(env, eventHandler);
++    jobject ref = (*env)->NewGlobalRef(env, eventHandler);
++    (*env)->DeleteLocalRef(env, cls);
++    return ref;
+ }
+ 
+ static void debug_buffer_log(void *data, int level, const char *fmt, va_list ap)
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
 index 0000000..ae3cca0
