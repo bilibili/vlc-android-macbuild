@@ -1,14 +1,14 @@
-From 3f35681c322c01e2bf580394a35d954a6d58f2ee Mon Sep 17 00:00:00 2001
+From aa706ff1112466ed0ba94e3fafc4c5c18cd554af Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:20 +0800
 Subject: [PATCH 11/37] core: es_out: implement es_out_managed
 
 ---
  include/vlc_es_out.h         |   3 +
- include/vlc_es_out_managed.h |  40 ++++++++++
- src/input/es_out_managed.c   | 185 +++++++++++++++++++++++++++++++++++++++++++
+ include/vlc_es_out_managed.h |  40 +++++++++
+ src/input/es_out_managed.c   | 200 +++++++++++++++++++++++++++++++++++++++++++
  src/input/es_out_timeshift.c |   3 +
- 4 files changed, 231 insertions(+)
+ 4 files changed, 246 insertions(+)
  create mode 100644 include/vlc_es_out_managed.h
  create mode 100644 src/input/es_out_managed.c
 
@@ -75,10 +75,10 @@ index 0000000..70dca5d
 \ No newline at end of file
 diff --git a/src/input/es_out_managed.c b/src/input/es_out_managed.c
 new file mode 100644
-index 0000000..0f24536
+index 0000000..92b95ab
 --- /dev/null
 +++ b/src/input/es_out_managed.c
-@@ -0,0 +1,185 @@
+@@ -0,0 +1,200 @@
 +/*****************************************************************************
 + * es_out_managed.c
 + *****************************************************************************
@@ -139,6 +139,21 @@ index 0000000..0f24536
 +    return NULL;
 +}
 +
++static es_out_id_t *EsFmtCacheFindByCategory( es_out_t *p_out, int i_cat )
++{
++    es_out_sys_t *p_sys = p_out->p_sys;
++
++    vlc_array_t *p_es_fmt_cache = p_sys->p_es_fmt_cache;
++    for( int i = 0; i < vlc_array_count( p_sys->p_es_fmt_cache ); ++i )
++    {
++        es_out_fmt_entry *entry = (es_out_fmt_entry *) vlc_array_item_at_index( p_es_fmt_cache, i );
++        if( entry->fmt.i_cat == i_cat )
++            return entry->p_es_id;
++    }
++
++    return NULL;
++}
++
 +static void EsFmtCacheAdd( es_out_t *p_out, es_out_id_t* p_es_id, const es_format_t *p_fmt )
 +{
 +    es_out_sys_t *p_sys = p_out->p_sys;
@@ -159,15 +174,15 @@ index 0000000..0f24536
 +static es_out_id_t *EsOutAdd( es_out_t *p_out, const es_format_t *p_fmt )
 +{
 +    assert( p_out );
-+    es_out_id_t *p_es_id = EsFmtCacheFind( p_out, p_fmt );
++    es_out_id_t *p_es_id = EsFmtCacheFindByCategory( p_out, p_fmt->i_cat );
 +    if( p_es_id )
 +    {
-+        msg_Info( p_out->p_sys->p_demux, "EsOutAdd reuse" );
++        msg_Info( p_out->p_sys->p_demux, "EsOutAdd reuse: cat=%d", p_fmt->i_cat );
 +        return p_es_id;
 +    }
 +    else
 +    {
-+        msg_Info( p_out->p_sys->p_demux, "EsOutAdd for the 1st time" );
++        msg_Info( p_out->p_sys->p_demux, "EsOutAdd for the 1st time: cat=%d", p_fmt->i_cat );
 +    }
 +
 +    p_es_id = es_out_Add( p_out->p_sys->p_backend_out, p_fmt );
