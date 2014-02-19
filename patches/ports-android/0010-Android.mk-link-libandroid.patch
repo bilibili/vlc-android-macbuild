@@ -1,14 +1,14 @@
-From 5d87e1829f63c8dc58a74087796206d61055daac Mon Sep 17 00:00:00 2001
+From 8c80773557e05288b78dd510bc5f15a8eeeaf15a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 27 Jul 2013 21:15:27 +0800
-Subject: [PATCH 10/15] Android.mk: link libandroid
+Subject: [PATCH] Android.mk: link libandroid
 
 ---
  vlc-android/jni/Android.mk | 1 +
  1 file changed, 1 insertion(+)
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 4bde57f..ddd6ba9 100644
+index 39003ff..7e1225b 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -66,6 +66,7 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
@@ -17,7 +17,7 @@ index 4bde57f..ddd6ba9 100644
  	-ldl -lz -lm -llog \
 +	-landroid \
  	-ldvbpsi -lebml -lmatroska -ltag \
- 	-logg -lFLAC -ltheora \
+ 	-logg -lFLAC -ltheora -lvorbis \
  	-lmpeg2 -la52 \
 -- 
 1.8.3.4

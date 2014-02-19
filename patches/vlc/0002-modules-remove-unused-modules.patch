@@ -1,7 +1,7 @@
-From d9c2baa12207118c8c08dbff0700df918e9ffc60 Mon Sep 17 00:00:00 2001
+From 807ea6a3e8717c209eb9a67ba39ea860c5be2fc9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 14:04:20 +0800
-Subject: [PATCH 02/37] modules: remove unused modules
+Subject: [PATCH] modules: remove unused modules
 
 ---
  configure.ac                      | 1 +
@@ -13,7 +13,7 @@ Subject: [PATCH 02/37] modules: remove unused modules
  6 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index fc3429c..7a99d4f 100644
+index 872abce..b8442fc 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -321,6 +321,7 @@ AS_IF([test "$SYS" = linux],[
@@ -37,7 +37,7 @@ index dc0fb39..14a8748 100644
  include audio_mixer/Makefile.am
  include audio_output/Makefile.am
 diff --git a/modules/access/Makefile.am b/modules/access/Makefile.am
-index c655a47..ca9d9fe 100644
+index 4d461d3..75e0cce 100644
 --- a/modules/access/Makefile.am
 +++ b/modules/access/Makefile.am
 @@ -150,6 +150,7 @@ if HAVE_QTKIT
@@ -73,7 +73,7 @@ index 8535bac..da296d3 100644
  libstl_plugin_la_SOURCES = codec/stl.c
  codec_LTLIBRARIES += libstl_plugin.la
 diff --git a/modules/demux/Makefile.am b/modules/demux/Makefile.am
-index 6eb646d..1036bcc 100644
+index 0cab9eb..00ffdcc 100644
 --- a/modules/demux/Makefile.am
 +++ b/modules/demux/Makefile.am
 @@ -120,11 +120,13 @@ libdemux_stl_plugin_la_SOURCES = demux/stl.c
@@ -95,10 +95,10 @@ index 6eb646d..1036bcc 100644
  demux_LTLIBRARIES += libh264_plugin.la
  
 +if !MODULE_LITE
- libmkv_plugin_la_SOURCES = \
- 	demux/mkv/util.hpp demux/mkv/util.cpp \
- 	demux/mkv/virtual_segment.hpp demux/mkv/virtual_segment.cpp \
-@@ -215,6 +218,7 @@ libplaylist_plugin_la_SOURCES = \
+ libhevc_plugin_la_SOURCES = demux/mpeg/hevc.c
+ demux_LTLIBRARIES += libhevc_plugin.la
+ 
+@@ -218,6 +221,7 @@ libplaylist_plugin_la_SOURCES = \
  	demux/playlist/zpl.c \
  	demux/playlist/playlist.c demux/playlist/playlist.h
  demux_LTLIBRARIES += libplaylist_plugin.la

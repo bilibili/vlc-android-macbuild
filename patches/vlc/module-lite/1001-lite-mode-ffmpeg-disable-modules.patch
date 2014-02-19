@@ -1,28 +1,28 @@
-From ea4d6156db87adb6796b4c48a24f51d87ae59305 Mon Sep 17 00:00:00 2001
+From 0fc5b3b17ebc10a8617fbdfb22d7d733fb17925c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
-Subject: [PATCH 1001/1002] lite-mode: ffmpeg: disable modules
+Subject: [PATCH] lite-mode: ffmpeg: disable modules
 
 ---
- contrib/src/ffmpeg/rules.mak | 45 ++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 41 insertions(+), 4 deletions(-)
+ contrib/src/ffmpeg/rules.mak | 46 ++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 42 insertions(+), 4 deletions(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 3516b7a..c8e577b 100644
+index 5f73239..385752d 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -15,10 +15,47 @@ endif
+@@ -15,9 +15,47 @@ endif
  FFMPEGCONF = \
  	--cc="$(CC)" \
  	--disable-doc \
+-	--disable-encoder=vorbis \
+-	--enable-libgsm \
+-	--enable-libopenjpeg \
 +	--enable-runtime-cpudetect \
 +	--disable-network \
 +	--disable-protocols \
 +	--disable-decoder=libvpx \
- 	--disable-decoder=bink \
--	--disable-encoder=vorbis \
--	--enable-libgsm \
--	--enable-libopenjpeg \
++	--disable-decoder=bink \
 +	--disable-encoders \
 +	--disable-libgsm \
 +	--disable-libopenjpeg \
@@ -62,7 +62,7 @@ index 3516b7a..c8e577b 100644
  	--disable-debug \
  	--disable-avdevice \
  	--disable-devices \
-@@ -35,7 +72,7 @@ FFMPEGCONF += \
+@@ -34,7 +72,7 @@ FFMPEGCONF += \
  	--disable-iconv
  endif
  

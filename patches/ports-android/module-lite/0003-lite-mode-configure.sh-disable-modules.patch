@@ -1,14 +1,14 @@
-From 48347ae4c3af9f2fc59e6386eeafe5ac57195ff9 Mon Sep 17 00:00:00 2001
+From 11f32ac72b457db6001027381eb2d73da922819d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
+Subject: [PATCH 3/3] lite-mode: configure.sh: disable modules
 
 ---
- configure.sh | 22 ++++++++++++++--------
- 1 file changed, 14 insertions(+), 8 deletions(-)
+ configure.sh | 24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
 
 diff --git a/configure.sh b/configure.sh
-index 978b028..0a12294 100755
+index 50ecbb3..0a12294 100755
 --- a/configure.sh
 +++ b/configure.sh
 @@ -47,18 +47,21 @@ NM="${CROSS_COMPILE}nm" \
@@ -51,11 +51,13 @@ index 978b028..0a12294 100755
                  --disable-caca \
                  --disable-glx \
                  --enable-egl \
-@@ -106,7 +109,10 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+@@ -105,8 +108,11 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+                 --disable-goom \
                  --disable-projectm \
                  --disable-sout \
-                 --disable-vorbis \
+-                --enable-vorbis \
 -                --disable-faad \
++                --disable-vorbis \
 +                --enable-faad \
                  --disable-x264 \
 +                --disable-postproc \

@@ -1,19 +1,19 @@
-From 00499f94de7d402e4c9a3d45584d45e24d31f918 Mon Sep 17 00:00:00 2001
+From 116e4e1b387cbf1e96611902d8986bfdc1b3871d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH 18/37] hls: fix position and length for streaming mpegts
- segments hls
+Subject: [PATCH] hls: fix position and length for streaming mpegts segments
+ hls
 
 ---
- modules/demux/ts.c               | 54 ++++++++++++++++++++++++++++++++++++++++
+ modules/demux/ts.c               | 55 ++++++++++++++++++++++++++++++++++++++++
  modules/stream_filter/httplive.c | 19 ++++++++++++++
- 2 files changed, 73 insertions(+)
+ 2 files changed, 74 insertions(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index f6c6fef..7378794 100644
+index 093618e..1a6b6a3 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
-@@ -334,6 +334,14 @@ struct demux_sys_t
+@@ -330,6 +330,14 @@ struct demux_sys_t
  
      /* */
      bool        b_start_record;
@@ -28,10 +28,11 @@ index f6c6fef..7378794 100644
  };
  
  static int Demux    ( demux_t *p_demux );
-@@ -817,6 +825,13 @@ static int Open( vlc_object_t *p_this )
+@@ -787,6 +795,14 @@ static int Open( vlc_object_t *p_this )
+         if( p_demux->pf_demux( p_demux ) != 1 )
              break;
      }
- 
++
 +    /* obtain total duration parsed from m3u file */
 +    p_sys->i_httplive_total_duration = var_InheritInteger( p_demux->s, "httplive-total-duration" );
 +
@@ -42,7 +43,7 @@ index f6c6fef..7378794 100644
      return VLC_SUCCESS;
  }
  
-@@ -1114,6 +1129,20 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+@@ -1058,6 +1074,20 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
              {
                  *pi64 = 0;
              }
@@ -63,7 +64,7 @@ index f6c6fef..7378794 100644
          }
          else
          {
-@@ -1131,6 +1160,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+@@ -1075,6 +1105,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
              {
                  *pi64 = 0;
              }
@@ -75,7 +76,7 @@ index f6c6fef..7378794 100644
          }
          else
          {
-@@ -2191,8 +2225,26 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2155,8 +2190,26 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
      if( i_pcr < 0 )
          return;
  
@@ -102,7 +103,7 @@ index f6c6fef..7378794 100644
  
      /* Search program and set the PCR */
      for( int i = 0; i < p_sys->i_pmt; i++ )
-@@ -2298,6 +2350,8 @@ static bool GatherData( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2262,6 +2315,8 @@ static bool GatherData( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
              msg_Warn( p_demux, "discontinuity received 0x%x instead of 0x%x (pid=%d)",
                        i_cc, ( pid->i_cc + 1 )&0x0f, pid->i_pid );
  
@@ -112,7 +113,7 @@ index f6c6fef..7378794 100644
              if( pid->es->p_data && pid->es->fmt.i_cat != VIDEO_ES )
              {
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index ae169a0..6cd01bf 100644
+index 8ce6d40..d121081 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -1131,6 +1131,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const

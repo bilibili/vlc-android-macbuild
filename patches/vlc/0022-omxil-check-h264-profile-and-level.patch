@@ -1,7 +1,7 @@
-From b727096c40cd4c3768403d9ab5103d3411dab9a1 Mon Sep 17 00:00:00 2001
+From a14b9b78d89025169789ca34d74c3ab857e9dc76 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 5 Jul 2012 23:35:37 +0800
-Subject: [PATCH 22/37] omxil: check h264 profile and level
+Subject: [PATCH] omxil: check h264 profile and level
 
 Only load omxil codec which support video profile and level.
 Tested on devices and OMX decoder below:
@@ -40,12 +40,12 @@ index c3b096c..73f2634 100644
          return 0;
      }
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 3e4c104..ff46df4 100644
+index e3e34c4..de03a67 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -142,6 +142,115 @@ static OMX_ERRORTYPE ImplementationSpecificWorkarounds(decoder_t *p_dec,
-         break;
-     }
+@@ -115,6 +115,115 @@ static OMX_ERRORTYPE ImplementationSpecificWorkarounds(decoder_t *p_dec,
+        p_fmt->i_codec == VLC_CODEC_H264)
+ 	h264_get_profile_level(&p_dec->fmt_in, &i_profile, &i_level, &p_sys->i_nal_size_length);
  
 +    /* Check H264 profile and level */
 +    if(p_fmt->i_cat == VIDEO_ES &&
@@ -159,7 +159,7 @@ index 3e4c104..ff46df4 100644
      if(!strcmp(p_sys->psz_component, "OMX.TI.Video.Decoder"))
      {
          if(p_fmt->i_cat == VIDEO_ES && def->eDir == OMX_DirInput &&
-@@ -893,7 +1002,10 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
+@@ -867,7 +976,10 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
      p_sys->p_ports = &p_sys->in;
      p_sys->b_use_pts = 1;
  
@@ -172,13 +172,13 @@ index 3e4c104..ff46df4 100644
  
      /* Enumerate components and build a list of the one we want to try */
 diff --git a/modules/codec/omxil/omxil_utils.h b/modules/codec/omxil/omxil_utils.h
-index 6aa9e12..597c09a 100644
+index 0a5dc17..baa08c4 100644
 --- a/modules/codec/omxil/omxil_utils.h
 +++ b/modules/codec/omxil/omxil_utils.h
-@@ -256,3 +256,26 @@ unsigned int GetAudioParamSize(OMX_INDEXTYPE index);
- #define QOMX_COLOR_FormatYUV420PackedSemiPlanar64x32Tile2m8ka 0x7FA30C03
- #define OMX_QCOM_COLOR_FormatYUV420PackedSemiPlanar32m 0x7FA30C04
- #define OMX_IndexVendorSetYUV420pMode 0x7f000003
+@@ -265,3 +265,26 @@ bool h264_get_profile_level(const es_format_t *p_fmt, size_t *p_profile, size_t
+ size_t convert_omx_to_profile_idc(OMX_VIDEO_AVCPROFILETYPE profile_type);
+ 
+ size_t convert_omx_to_level_idc(OMX_VIDEO_AVCLEVELTYPE level_type);
 +
 +/*****************************************************************************
 + * H264 profile level numbers
@@ -203,12 +203,12 @@ index 6aa9e12..597c09a 100644
 +/* Return OMX_VIDEO_AVCLevelMax for unknown level */
 +OMX_VIDEO_AVCLEVELTYPE H264LevelToOmxType(int level);
 diff --git a/modules/codec/omxil/utils.c b/modules/codec/omxil/utils.c
-index 56563da..a6a1cf9 100644
+index af050c3..ae7fa6a 100644
 --- a/modules/codec/omxil/utils.c
 +++ b/modules/codec/omxil/utils.c
-@@ -1043,3 +1043,93 @@ void PrintOmx(decoder_t *p_dec, OMX_HANDLETYPE omx_handle, OMX_U32 i_port)
-         }
+@@ -1132,3 +1132,93 @@ size_t convert_omx_to_level_idc(OMX_VIDEO_AVCLEVELTYPE level_type)
      }
+     return 0;
  }
 +
 +const char *H264ProfileToString(int profile_id)
