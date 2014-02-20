@@ -1,17 +1,17 @@
-From e5d24eb13ba7cffdf214ac256594cef8056f7f9c Mon Sep 17 00:00:00 2001
+From 0f09e0bb50a22b59b8b3ea0c52d7a23cf2f59e29 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Thu, 13 Feb 2014 12:05:49 +0800
-Subject: [PATCH 37/37] MediaCodec: only enable direct render in white list
+Subject: [PATCH] MediaCodec: only enable direct render in white list
 
 ---
- modules/codec/omxil/android_mediacodec.c | 52 ++++++++++++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
+ modules/codec/omxil/android_mediacodec.c | 90 ++++++++++++++++++++++++++++++++
+ 1 file changed, 90 insertions(+)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index fe48bc3..6155191 100644
+index 6850077..da3d53b 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -84,6 +84,7 @@ struct decoder_sys_t
+@@ -88,6 +88,7 @@ struct decoder_sys_t
      ArchitectureSpecificCopyData architecture_specific_data;
  
      /* Direct rendering members. */
@@ -19,7 +19,7 @@ index fe48bc3..6155191 100644
      bool direct_rendering;
      int i_output_buffers; /**< number of MediaCodec output buffers */
      picture_t** inflight_picture; /**< stores the inflight picture for each output buffer or NULL */
-@@ -178,6 +179,10 @@ static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
+@@ -187,6 +188,10 @@ static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
  #define DIRECTRENDERING_LONGTEXT N_(\
          "Enable Android direct rendering using opaque buffers.")
  
@@ -30,7 +30,7 @@ index fe48bc3..6155191 100644
  #define CFG_PREFIX "mediacodec-"
  
  vlc_module_begin ()
-@@ -186,11 +191,36 @@ vlc_module_begin ()
+@@ -195,11 +200,69 @@ vlc_module_begin ()
      set_subcategory( SUBCAT_INPUT_VCODEC )
      set_section( N_("Decoding") , NULL )
      set_capability( "decoder", 0 ) /* Only enabled via commandline arguments */
@@ -41,33 +41,78 @@ index fe48bc3..6155191 100644
      set_callbacks( OpenDecoder, CloseDecoder )
  vlc_module_end ()
  
-+static const char *support_direct_render(const char *name)
++typedef enum media_codec_ability_t {
++    MCODEC_PREFER       = 10,
++    MCODEC_SUPPORT      = 5,
++    MCODEC_UNKNOWN      = 0,
++    MCODEC_SLOW         = -5,
++    MCODEC_UNSUPPORT    = -10,
++} media_codec_ability_t;
++
++typedef struct codec_quirk_t {
++    const char             *p_name_prefix;
++    media_codec_ability_t   i_ability_mediacodec;
++    media_codec_ability_t   i_ability_direct_render;
++} codec_quirk_t;
++
++static const codec_quirk_t s_codec_quirk_list[] = {
++    // name,                    mediacodec,         direct_render
++
++    {"OMX.Nvidia.",             MCODEC_PREFER,      MCODEC_PREFER},
++    {"OMX.rk.",                 MCODEC_PREFER,      MCODEC_PREFER},
++    {"OMX.qcom.",               MCODEC_PREFER,      MCODEC_PREFER},
++    {"OMX.Exynos.",             MCODEC_PREFER,      MCODEC_PREFER},
++
++    {"OMX.SEC.AVC.Decoder.",    MCODEC_PREFER,      MCODEC_SLOW},
++
++    {"OMX.ittiam.",             MCODEC_UNSUPPORT,   MCODEC_UNSUPPORT},
++
++    {NULL,                      MCODEC_UNKNOWN,     MCODEC_UNKNOWN},
++};
++
++static const codec_quirk_t s_default_quirk =
++    {"OMX.default.",            MCODEC_UNKNOWN,     MCODEC_UNKNOWN};
++
++static const codec_quirk_t *find_codec_quirk(const char *name)
 +{
-+    // All devices 'should' be capiable of surface rendering
-+    // but that seems to be hit or miss as most odd name devices
-+    // cannot surface render.
-+    static const char *s_decoders[] = {
-+        "OMX.Nvidia.",
-+        "OMX.rk.",
-+        "OMX.qcom.",
-+
-+        "OMX.Exynos.",
-+
-+        // "OMX.SEC.AVC.Decoder", // too slow on Nexus S
-+    };
-+    for (int i = 0; i < sizeof(s_decoders) / sizeof(s_decoders[0]); ++i)
++    for (const codec_quirk_t *p_codec = s_codec_quirk_list;
++         p_codec->p_name_prefix != NULL; ++p_codec)
 +    {
-+        const char *decoder = s_decoders[i];
-+        if (!strncmp(decoder, name, strlen(decoder)))
-+            return decoder;
++        const char *p_name_prefix = p_codec->p_name_prefix;
++        if (!strncmp(p_name_prefix, name, strlen(p_name_prefix)))
++            return p_codec;
 +    }
-+    return NULL;
++    return &s_default_quirk;
++}
++
++static bool is_codec_at_least(const char *name, bool use_direct_render, media_codec_ability_t ability )
++{
++    const codec_quirk_t *p_codec = find_codec_quirk(name);
++    if (p_codec->i_ability_mediacodec < ability)
++        return false;
++
++    if (use_direct_render && p_codec->i_ability_direct_render < ability)
++        return false;
++
++    return true;
 +}
 +
  static int jstrcmp(JNIEnv* env, jobject str, const char* str2)
  {
      jsize len = (*env)->GetStringUTFLength(env, str);
-@@ -412,7 +442,29 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -400,6 +463,11 @@ static int OpenDecoder(vlc_object_t *p_this)
+                 msg_Dbg(p_dec, "disable %.*s", name_len, name_ptr);
+                 (*env)->ReleaseStringUTFChars(env, name, name_ptr);
+                 (*env)->DeleteLocalRef(env, name);
++            } else if (!is_codec_at_least(name_ptr, false, MCODEC_UNKNOWN)) {
++                // slow or unsupport
++                msg_Dbg(p_dec, "disable %.*s due to slow or unsupport ", name_len, name_ptr);
++                (*env)->ReleaseStringUTFChars(env, name, name_ptr);
++                (*env)->DeleteLocalRef(env, name);
+             } else {
+                 msg_Dbg(p_dec, "using %.*s", name_len, name_ptr);
+                 p_sys->name = malloc(name_len + 1);
+@@ -451,7 +519,29 @@ static int OpenDecoder(vlc_object_t *p_this)
          (*env)->DeleteLocalRef(env, bytebuf);
      }
  
@@ -81,7 +126,7 @@ index fe48bc3..6155191 100644
 +    }
 +
 +    if (p_sys->direct_rendering) {
-+        const char *matched = support_direct_render(p_sys->name);
++        bool matched = is_codec_at_least(p_sys->name, true, MCODEC_UNKNOWN);
 +        if (matched) {
 +            msg_Info(p_dec, "hw-rendering %s (in white-list %s)", p_sys->name, matched);
 +        } else if (p_sys->force_direct_rendering) {
