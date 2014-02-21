@@ -1,14 +1,14 @@
-From 0f09e0bb50a22b59b8b3ea0c52d7a23cf2f59e29 Mon Sep 17 00:00:00 2001
+From 9a9947881dad23aa69a0c1fce754dd79e8f25b9a Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Thu, 13 Feb 2014 12:05:49 +0800
-Subject: [PATCH] MediaCodec: only enable direct render in white list
+Subject: [PATCH 37/39] MediaCodec: only enable direct render in white list
 
 ---
- modules/codec/omxil/android_mediacodec.c | 90 ++++++++++++++++++++++++++++++++
- 1 file changed, 90 insertions(+)
+ modules/codec/omxil/android_mediacodec.c | 94 ++++++++++++++++++++++++++++++++
+ 1 file changed, 94 insertions(+)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 6850077..da3d53b 100644
+index 6850077..35d84ed 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
 @@ -88,6 +88,7 @@ struct decoder_sys_t
@@ -63,7 +63,7 @@ index 6850077..da3d53b 100644
 +    {"OMX.qcom.",               MCODEC_PREFER,      MCODEC_PREFER},
 +    {"OMX.Exynos.",             MCODEC_PREFER,      MCODEC_PREFER},
 +
-+    {"OMX.SEC.AVC.Decoder.",    MCODEC_PREFER,      MCODEC_SLOW},
++    {"OMX.SEC.AVC.Decoder",     MCODEC_PREFER,      MCODEC_SLOW},
 +
 +    {"OMX.ittiam.",             MCODEC_UNSUPPORT,   MCODEC_UNSUPPORT},
 +
@@ -73,21 +73,21 @@ index 6850077..da3d53b 100644
 +static const codec_quirk_t s_default_quirk =
 +    {"OMX.default.",            MCODEC_UNKNOWN,     MCODEC_UNKNOWN};
 +
-+static const codec_quirk_t *find_codec_quirk(const char *name)
++static const codec_quirk_t *find_codec_quirk(const char *name, const codec_quirk_t *p_default_quirk)
 +{
-+    for (const codec_quirk_t *p_codec = s_codec_quirk_list;
-+         p_codec->p_name_prefix != NULL; ++p_codec)
++    for (const codec_quirk_t *p_quirk = s_codec_quirk_list;
++         p_quirk->p_name_prefix != NULL; ++p_quirk)
 +    {
-+        const char *p_name_prefix = p_codec->p_name_prefix;
++        const char *p_name_prefix = p_quirk->p_name_prefix;
 +        if (!strncmp(p_name_prefix, name, strlen(p_name_prefix)))
-+            return p_codec;
++            return p_quirk;
 +    }
-+    return &s_default_quirk;
++    return p_default_quirk;
 +}
 +
 +static bool is_codec_at_least(const char *name, bool use_direct_render, media_codec_ability_t ability )
 +{
-+    const codec_quirk_t *p_codec = find_codec_quirk(name);
++    const codec_quirk_t *p_codec = find_codec_quirk(name, &s_default_quirk);
 +    if (p_codec->i_ability_mediacodec < ability)
 +        return false;
 +
@@ -112,7 +112,7 @@ index 6850077..da3d53b 100644
              } else {
                  msg_Dbg(p_dec, "using %.*s", name_len, name_ptr);
                  p_sys->name = malloc(name_len + 1);
-@@ -451,7 +519,29 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -451,7 +519,33 @@ static int OpenDecoder(vlc_object_t *p_this)
          (*env)->DeleteLocalRef(env, bytebuf);
      }
  
@@ -126,14 +126,18 @@ index 6850077..da3d53b 100644
 +    }
 +
 +    if (p_sys->direct_rendering) {
-+        bool matched = is_codec_at_least(p_sys->name, true, MCODEC_UNKNOWN);
-+        if (matched) {
-+            msg_Info(p_dec, "hw-rendering %s (in white-list %s)", p_sys->name, matched);
-+        } else if (p_sys->force_direct_rendering) {
-+            msg_Info(p_dec, "hw-rendering %s (force, not in white-list)", p_sys->name);
-+        } else {
-+            msg_Info(p_dec, "sw-rendering %s (not in white-list)", p_sys->name);
++        const codec_quirk_t *p_quirk = find_codec_quirk(p_sys->name, &s_default_quirk);
++        msg_Info(p_dec, "MediaCodec %s, %d, %d", p_quirk->p_name_prefix, p_quirk->i_ability_mediacodec, p_quirk->i_ability_direct_render);
++        if (p_quirk->i_ability_direct_render >= MCODEC_UNKNOWN) {
++            msg_Info(p_dec, "enable direct-rendering %s >= UNKNOWN", p_sys->name);
++        } else if (p_quirk->i_ability_direct_render < MCODEC_SLOW) {
 +            p_sys->direct_rendering = false;
++            msg_Info(p_dec, "disable direct-rendering %s < slow", p_sys->name);
++        } else if (p_sys->force_direct_rendering) {
++            msg_Info(p_dec, "force direct-rendering %s == slow", p_sys->name);
++        } else {
++            p_sys->direct_rendering = false;
++            msg_Info(p_dec, "disable direct-rendering %s == slow", p_sys->name);
 +        }
 +    } else {
 +        msg_Info(p_dec, "sw-rendering %s (by config)", p_sys->name);
