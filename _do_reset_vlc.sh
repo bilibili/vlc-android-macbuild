@@ -52,6 +52,8 @@ sleep 3
 git am ../../patches/vlc/002*.patch
 sleep 3
 git am ../../patches/vlc/003*.patch
+sleep 3
+git am ../../patches/vlc/004*.patch
 
 echo "======================================="
 
