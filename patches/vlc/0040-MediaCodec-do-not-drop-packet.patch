@@ -1,0 +1,32 @@
+From b434710ae2dc4ac0583180e5d2ab119cc96be250 Mon Sep 17 00:00:00 2001
+From: Zhang Rui <bbcallen@gmail.com>
+Date: Tue, 25 Feb 2014 11:48:25 +0800
+Subject: [PATCH] MediaCodec: do not drop packet
+
+---
+ modules/codec/omxil/android_mediacodec.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
+index b51218a..ae96521 100644
+--- a/modules/codec/omxil/android_mediacodec.c
++++ b/modules/codec/omxil/android_mediacodec.c
+@@ -897,6 +897,7 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
+ 
+     vlcjni_setup_thread_env(&env);
+ 
++#if 0
+     if (p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED)) {
+         block_Release(p_block);
+         if (p_sys->decoded) {
+@@ -916,6 +917,7 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
+         p_sys->decoded = false;
+         return NULL;
+     }
++#endif
+ 
+     /* Use the aspect ratio provided by the input (ie read from packetizer).
+      * Don't check the current value of the aspect ratio in fmt_out, since we
+-- 
+1.8.3.4
+
