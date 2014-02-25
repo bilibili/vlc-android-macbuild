@@ -1,7 +1,7 @@
-From cb30e21c544dddba02ab8890b2a915e06f5da1bf Mon Sep 17 00:00:00 2001
+From 66661a7d37638da8b3c7dfb7fe3a1609405b7adc Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Mon, 10 Feb 2014 18:00:59 +0800
-Subject: [PATCH] MediaCodec: simplify jni thread attach/detach
+Subject: [PATCH 35/40] MediaCodec: simplify jni thread attach/detach
 
 Avoid repeatly AttachCurrentThread()/DetachCurrentThread()
 ---
@@ -9,7 +9,7 @@ Avoid repeatly AttachCurrentThread()/DetachCurrentThread()
  1 file changed, 45 insertions(+), 12 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index c286404..f4e4abb 100644
+index c286404..851e3b3 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
 @@ -211,6 +211,47 @@ static int jstrcmp(JNIEnv* env, jobject str, const char* str2)
@@ -18,7 +18,6 @@ index c286404..f4e4abb 100644
  
 +static pthread_key_t g_thread_key;
 +static pthread_once_t g_key_once = PTHREAD_ONCE_INIT;
-+static JavaVMAttachArgs g_vlc_thr_args = {JNI_VERSION_1_2, "MediaCodec", NULL};
 +
 +static void vlcjni_thread_destroy(void* value)
 +{
@@ -48,7 +47,8 @@ index c286404..f4e4abb 100644
 +        return 0;
 +    }
 +
-+    if ((*jvm)->AttachCurrentThread(jvm, &env, &g_vlc_thr_args) == JNI_OK) {
++    static JavaVMAttachArgs vlc_thr_args = {JNI_VERSION_1_2, "MediaCodec", NULL};
++    if ((*jvm)->AttachCurrentThread(jvm, &env, &vlc_thr_args) == JNI_OK) {
 +        pthread_setspecific(g_thread_key, env);
 +        *p_env = env;
 +        return 0;
