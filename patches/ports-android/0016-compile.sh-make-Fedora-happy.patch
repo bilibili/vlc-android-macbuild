@@ -1,0 +1,25 @@
+From aae97ed3ad39fa17f53a3070c7861099da3753e7 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Wed, 26 Feb 2014 14:51:33 +0800
+Subject: [PATCH 16/16] compile.sh: make Fedora happy.
+
+---
+ compile.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/compile.sh b/compile.sh
+index a66bb9d..98d1244 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -1,7 +1,7 @@
+ #! /bin/sh
+ 
+ # target-abi env
+-source target-abi.sh
++source ./target-abi.sh
+ 
+ # Read the Android Wiki http://wiki.videolan.org/AndroidCompile
+ # Setup all that stuff correctly.
+-- 
+1.8.3.1
+
