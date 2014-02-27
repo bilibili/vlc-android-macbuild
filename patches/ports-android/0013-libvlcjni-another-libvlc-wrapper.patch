@@ -1,4 +1,4 @@
-From 3dfe18710441940ace6a09181ae43b73447d7fdb Mon Sep 17 00:00:00 2001
+From 9e7b7a230e5b6130c4d462c3a8f1b3469405a7ba Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
 Subject: [PATCH] libvlcjni: another libvlc wrapper
@@ -14,13 +14,13 @@ Subject: [PATCH] libvlcjni: another libvlc wrapper
  vlc-android/jni/jni_vsl.c                          | 300 +++++++++++
  vlc-android/jni/jni_vsl.h                          |  37 ++
  vlc-android/jni/libvlcjni-util.c                   |  17 +-
- vlc-android/jni/libvlcjni_danmaku.c                | 567 +++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c                | 582 +++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |  65 +++
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |  61 +++
  vlc-android/jni/libvlcjni_fflog.inc.c              |  71 +++
  vlc-android/jni/utils.h                            |   2 +
  vlc-android/jni/vout.c                             |   9 +
- 16 files changed, 1586 insertions(+), 5 deletions(-)
+ 16 files changed, 1601 insertions(+), 5 deletions(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.c
@@ -966,10 +966,10 @@ index 37f4d2d..0c4da3c 100644
  static void debug_buffer_log(void *data, int level, const char *fmt, va_list ap)
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..ae3cca0
+index 0000000..41145f5
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,567 @@
+@@ -0,0 +1,582 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -1277,6 +1277,10 @@ index 0000000..ae3cca0
 +    libvlc_release(instance);
 +
 +    setLong(env, thiz, "mLibVlcInstance", 0);
++	jobject ref = (jobject) getInt(env, thiz, "mLibVlcVsl");
++	if (ref)
++		(*env)->DeleteGlobalRef(env, ref);
++	setInt(env, thiz, "mLibVlcVsl", 0);
 +}
 +
 +void Java_org_videolan_libvlc_LibVLC_detachEventHandler(JNIEnv *env, jobject thiz)
@@ -1295,6 +1299,17 @@ index 0000000..ae3cca0
 +    }
 +
 +    eventHandlerInstance = getEventHandlerReference(env, thiz, eventHandler);
++}
++
++void Java_org_videolan_libvlc_LibVLC_setVslHandler(JNIEnv *env, jobject thiz, jobject handler)
++{
++	jobject ref;
++
++	ref = (jobject) getInt(env, thiz, "mLibVlcVsl");
++	if (ref)
++		(*env)->DeleteGlobalRef(env, ref);
++	ref = (*env)->NewGlobalRef(env, handler);
++	setInt(env, thiz, "mLibVlcVsl", (int) ref);
 +}
 +
 +void Java_org_videolan_libvlc_LibVLC_playMRL(JNIEnv *env, jobject thiz, jlong instance,
@@ -1377,8 +1392,8 @@ index 0000000..ae3cca0
 +
 +    (*env)->ReleaseStringUTFChars(env, mrl, p_mrl);
 +
-+    // FIXME: do not use get_vout_android_gui() for java_mp
-+    libvlc_media_player_set_vsl_callback(mp, get_vout_android_gui(), //
++    libvlc_media_player_set_vsl_callback(mp,
++                                         getInt(env, thiz, "mLibVlcVsl"), //
 +                                         jvsl_load, //
 +                                         jvsl_load_segment, //
 +                                         jvsl_get_count, //
@@ -1800,5 +1815,5 @@ index eea4d9e..3514374 100644
  }
  
 -- 
-1.8.3.4
+1.8.3.1
 
