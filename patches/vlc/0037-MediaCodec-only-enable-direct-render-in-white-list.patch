@@ -1,14 +1,14 @@
-From 9a9947881dad23aa69a0c1fce754dd79e8f25b9a Mon Sep 17 00:00:00 2001
+From 8c32e085acd8e2c3f2e7d79102d39458194a1d99 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Thu, 13 Feb 2014 12:05:49 +0800
-Subject: [PATCH 37/39] MediaCodec: only enable direct render in white list
+Subject: [PATCH] MediaCodec: only enable direct render in white list
 
 ---
  modules/codec/omxil/android_mediacodec.c | 94 ++++++++++++++++++++++++++++++++
  1 file changed, 94 insertions(+)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 6850077..35d84ed 100644
+index 49c8dca..4743137 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
 @@ -88,6 +88,7 @@ struct decoder_sys_t
@@ -128,8 +128,8 @@ index 6850077..35d84ed 100644
 +    if (p_sys->direct_rendering) {
 +        const codec_quirk_t *p_quirk = find_codec_quirk(p_sys->name, &s_default_quirk);
 +        msg_Info(p_dec, "MediaCodec %s, %d, %d", p_quirk->p_name_prefix, p_quirk->i_ability_mediacodec, p_quirk->i_ability_direct_render);
-+        if (p_quirk->i_ability_direct_render >= MCODEC_UNKNOWN) {
-+            msg_Info(p_dec, "enable direct-rendering %s >= UNKNOWN", p_sys->name);
++        if (p_quirk->i_ability_direct_render > MCODEC_UNKNOWN) {
++            msg_Info(p_dec, "enable direct-rendering %s > UNKNOWN", p_sys->name);
 +        } else if (p_quirk->i_ability_direct_render < MCODEC_SLOW) {
 +            p_sys->direct_rendering = false;
 +            msg_Info(p_dec, "disable direct-rendering %s < slow", p_sys->name);
