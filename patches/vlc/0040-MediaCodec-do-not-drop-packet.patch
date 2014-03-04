@@ -16,8 +16,8 @@ index 7c69643..7262ca4 100644
      vlcjni_setup_thread_env(&env);
  
 -    if (p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED)) {
-+    /* XXX: this is really a flush block from DecoderBlockFlushNew() */
-+    msg_Err( p_dec, "%x %x %x %x", p_block->i_flags, p_block->i_buffer, p_block->i_dts, p_block->i_pts);
++    /* XXX: this is really a flush block from
++       DecoderBlockFlushNew() */
 +    if ((p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED)) &&
 +        (p_block->i_buffer == 128) &&
 +        (p_block->i_dts == VLC_TS_INVALID) &&
