@@ -1,0 +1,32 @@
+From c8be0abe0f5638510e5e666b5f001b1cbcc4c134 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Mon, 3 Mar 2014 11:55:40 +0800
+Subject: [PATCH 42/42] ringbuf: avoid possible leak
+
+---
+ modules/stream_filter/ringbuf.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/modules/stream_filter/ringbuf.c b/modules/stream_filter/ringbuf.c
+index 950f156..7c5e26c 100644
+--- a/modules/stream_filter/ringbuf.c
++++ b/modules/stream_filter/ringbuf.c
+@@ -240,6 +240,8 @@ static stream_sys_t *sys_Alloc( void )
+         p_sys->p_buffer[i] = (uint8_t *) malloc( RING_BLOCK_SIZE );
+         if( p_sys->p_buffer[i] == NULL )
+         {
++            for (int n = 0; n < i; n++)
++                free( p_sys->p_buffer[n] );
+             sys_Free( &p_sys );
+             return NULL;
+         }
+@@ -843,4 +845,4 @@ static int Control( stream_t *p_stream, int i_query, va_list args )
+         }
+     }
+     return VLC_SUCCESS;
+-}
+\ No newline at end of file
++}
+-- 
+1.8.5.3
+

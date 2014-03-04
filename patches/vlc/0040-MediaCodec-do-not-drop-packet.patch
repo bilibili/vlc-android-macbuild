@@ -1,32 +1,30 @@
-From b434710ae2dc4ac0583180e5d2ab119cc96be250 Mon Sep 17 00:00:00 2001
+From e53571e0ada680949cc45df75ac176098a2a3f2b Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Tue, 25 Feb 2014 11:48:25 +0800
-Subject: [PATCH] MediaCodec: do not drop packet
+Subject: [PATCH 40/42] MediaCodec: do not drop packet
 
 ---
- modules/codec/omxil/android_mediacodec.c | 2 ++
- 1 file changed, 2 insertions(+)
+ modules/codec/omxil/android_mediacodec.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index b51218a..ae96521 100644
+index 7c69643..7262ca4 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -897,6 +897,7 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
+@@ -902,7 +902,12 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
  
      vlcjni_setup_thread_env(&env);
  
-+#if 0
-     if (p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED)) {
+-    if (p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED)) {
++    /* XXX: this is really a flush block from DecoderBlockFlushNew() */
++    msg_Err( p_dec, "%x %x %x %x", p_block->i_flags, p_block->i_buffer, p_block->i_dts, p_block->i_pts);
++    if ((p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED)) &&
++        (p_block->i_buffer == 128) &&
++        (p_block->i_dts == VLC_TS_INVALID) &&
++        (p_block->i_pts == VLC_TS_INVALID)) {
          block_Release(p_block);
          if (p_sys->decoded) {
-@@ -916,6 +917,7 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
-         p_sys->decoded = false;
-         return NULL;
-     }
-+#endif
- 
-     /* Use the aspect ratio provided by the input (ie read from packetizer).
-      * Don't check the current value of the aspect ratio in fmt_out, since we
+             /* Invalidate all pictures that are currently in flight
 -- 
-1.8.3.4
+1.8.5.3
 
