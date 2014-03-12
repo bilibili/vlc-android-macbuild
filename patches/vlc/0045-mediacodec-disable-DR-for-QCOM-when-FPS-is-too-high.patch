@@ -1,0 +1,75 @@
+From 483a614a3652e8b0ebfa485f207031f0c8416633 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Wed, 12 Mar 2014 13:42:20 +0800
+Subject: [PATCH] mediacodec: disable DR for QCOM when FPS is too high
+
+---
+ include/vlc_es.h                         |  4 ++++
+ modules/codec/omxil/android_mediacodec.c | 20 +++++++++++++++++++-
+ modules/demux/avformat/demux.c           |  4 ++++
+ 3 files changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/include/vlc_es.h b/include/vlc_es.h
+index 38d63da..4992c98 100644
+--- a/include/vlc_es.h
++++ b/include/vlc_es.h
+@@ -195,6 +195,10 @@ struct video_format_t
+ 
+     unsigned int i_frame_rate;                     /**< frame rate numerator */
+     unsigned int i_frame_rate_base;              /**< frame rate denominator */
++    unsigned int i_avg_frame_rate;
++    unsigned int i_avg_frame_rate_base;
++    unsigned int i_r_frame_rate;
++    unsigned int i_r_frame_rate_base;
+ 
+     uint32_t i_rmask, i_gmask, i_bmask;          /**< color masks for RGB chroma */
+     int i_rrshift, i_lrshift;
+diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
+index 91e5c07..c6e62c4 100644
+--- a/modules/codec/omxil/android_mediacodec.c
++++ b/modules/codec/omxil/android_mediacodec.c
+@@ -540,7 +540,25 @@ static int OpenDecoder(vlc_object_t *p_this)
+         const codec_quirk_t *p_quirk = find_codec_quirk(p_sys->name, &s_default_quirk);
+         msg_Info(p_dec, "MediaCodec %s, %d, %d", p_quirk->p_name_prefix, p_quirk->i_ability_mediacodec, p_quirk->i_ability_direct_render);
+         if (p_quirk->i_ability_direct_render > MCODEC_UNKNOWN) {
+-            msg_Info(p_dec, "enable direct-rendering %s > UNKNOWN", p_sys->name);
++            /* QCOM DR is known to be slow when FPS is too high */
++            float fps = 0.0f;
++            if (!strncmp("OMX.qcom.", p_sys->name, 9)) {
++                video_format_t *vfmt = &p_dec->fmt_in.video;
++                float avg_fps = 0.0f, r_fps = 0.0f;
++                if (vfmt->i_avg_frame_rate && vfmt->i_avg_frame_rate_base)
++                    avg_fps = vfmt->i_avg_frame_rate_base / (float) vfmt->i_avg_frame_rate;
++                if (vfmt->i_r_frame_rate && vfmt->i_r_frame_rate_base)
++                    r_fps = vfmt->i_r_frame_rate_base / (float) vfmt->i_r_frame_rate;
++                msg_Info(p_dec, "avg_fps = %.2f, r_fps = %.2f", avg_fps, r_fps);
++                fps = __MAX(avg_fps, r_fps);
++                if (fps >= 30.0f)
++                    p_sys->direct_rendering = false;
++            }
++            if (p_sys->direct_rendering) {
++                msg_Info(p_dec, "enable direct-rendering %s > UNKNOWN", p_sys->name);
++            } else {
++                msg_Info(p_dec, "disable direct-rendering %s, fps@%.2f", p_sys->name, fps);
++            }
+         } else if (p_quirk->i_ability_direct_render < MCODEC_SLOW) {
+             p_sys->direct_rendering = false;
+             msg_Info(p_dec, "disable direct-rendering %s < slow", p_sys->name);
+diff --git a/modules/demux/avformat/demux.c b/modules/demux/avformat/demux.c
+index 92fcbc0..522e0ed 100644
+--- a/modules/demux/avformat/demux.c
++++ b/modules/demux/avformat/demux.c
+@@ -369,6 +369,10 @@ int OpenDemux( vlc_object_t *p_this )
+             psz_type = "video";
+             fmt.video.i_frame_rate = cc->time_base.den;
+             fmt.video.i_frame_rate_base = cc->time_base.num * __MAX( cc->ticks_per_frame, 1 );
++            fmt.video.i_avg_frame_rate = s->avg_frame_rate.den;
++            fmt.video.i_avg_frame_rate_base = s->avg_frame_rate.num;
++            fmt.video.i_r_frame_rate = s->r_frame_rate.den;
++            fmt.video.i_r_frame_rate_base = s->r_frame_rate.num;
+             fmt.video.i_sar_num = s->sample_aspect_ratio.num;
+             if (s->sample_aspect_ratio.num > 0)
+                 fmt.video.i_sar_den = s->sample_aspect_ratio.den;
+-- 
+1.8.5.3
+
