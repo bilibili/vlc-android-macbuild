@@ -1,18 +1,18 @@
-From b3df121b51d5b3ada1a664d1e49942a5f4eb222d Mon Sep 17 00:00:00 2001
+From b03ab186d38e512eac6cc6aba69d888bbff8edb2 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Wed, 12 Mar 2014 15:05:41 +0800
 Subject: [PATCH] MediaCodec: check type before profile level to avoid hang on
  some MSM8960 device
 
 ---
- modules/codec/omxil/android_mediacodec.c | 105 ++++++++++++++++++++-----------
- 1 file changed, 70 insertions(+), 35 deletions(-)
+ modules/codec/omxil/android_mediacodec.c | 106 ++++++++++++++++++++-----------
+ 1 file changed, 69 insertions(+), 37 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 91e5c07..5e308d1 100644
+index b07b360..21bfa72 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -411,6 +411,7 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -412,6 +412,7 @@ static int OpenDecoder(vlc_object_t *p_this)
      int num_codecs = (*env)->CallStaticIntMethod(env, p_sys->media_codec_list_class,
                                                   p_sys->get_codec_count);
      jobject codec_name = NULL;
@@ -20,7 +20,7 @@ index 91e5c07..5e308d1 100644
  
      for (int i = 0; i < num_codecs; i++) {
          jobject info = (*env)->CallStaticObjectMethod(env, p_sys->media_codec_list_class,
-@@ -420,19 +421,44 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -421,22 +422,44 @@ static int OpenDecoder(vlc_object_t *p_this)
              continue;
          }
  
@@ -49,14 +49,14 @@ index 91e5c07..5e308d1 100644
 +            msg_Dbg(p_dec, "ignore unordinary codec named %.*s", name_len, name_ptr);
 +            (*env)->ReleaseStringUTFChars(env, name, name_ptr);
 +            (*env)->DeleteLocalRef(env, name);
-             (*env)->DeleteLocalRef(env, info);
-             continue;
++            (*env)->DeleteLocalRef(env, info);
++            continue;
 +        } else if (0 == strncmp(name_ptr, "OMX.MTK.VIDEO.DECODER.AVC", name_len)) {
 +            msg_Dbg(p_dec, "disable %.*s", name_len, name_ptr);
 +            (*env)->ReleaseStringUTFChars(env, name, name_ptr);
 +            (*env)->DeleteLocalRef(env, name);
-+            (*env)->DeleteLocalRef(env, info);
-+            continue;
+             (*env)->DeleteLocalRef(env, info);
+             continue;
 +        } else if (!is_codec_at_least(name_ptr, false, MCODEC_UNKNOWN)) {
 +            // slow or unsupport
 +            msg_Dbg(p_dec, "disable %.*s due to slow or unsupport ", name_len, name_ptr);
@@ -67,15 +67,17 @@ index 91e5c07..5e308d1 100644
 +        } else {
 +            msg_Dbg(p_dec, "using %.*s", name_len, name_ptr);
          }
+ 
+-        int profile_levels_len = 0;
 -        jobject profile_levels = (*env)->GetObjectField(env, codec_capabilities, p_sys->profile_levels_field);
--        int profile_levels_len = profile_levels ? (*env)->GetArrayLength(env, profile_levels) : 0;
+-        if (profile_levels)
+-            profile_levels_len = (*env)->GetArrayLength(env, profile_levels);
 -        msg_Dbg(p_dec, "Number of profile levels: %d", profile_levels_len);
-+
 +        msg_Dbg(p_dec, "continue check codec named %.*s for %s", name_len, name_ptr, mime);
  
          jobject types = (*env)->CallObjectMethod(env, info, p_sys->get_supported_types);
          int num_types = (*env)->GetArrayLength(env, types);
-@@ -440,6 +466,19 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -444,6 +467,19 @@ static int OpenDecoder(vlc_object_t *p_this)
          for (int j = 0; j < num_types && !found; j++) {
              jobject type = (*env)->GetObjectArrayElement(env, types, j);
              if (!jstrcmp(env, type, mime)) {
@@ -95,7 +97,7 @@ index 91e5c07..5e308d1 100644
                  /* The mime type is matching for this component. We
                     now check if the capabilities of the codec is
                     matching the video format. */
-@@ -449,49 +488,45 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -453,49 +489,45 @@ static int OpenDecoder(vlc_object_t *p_this)
  
                          int omx_profile = (*env)->GetLongField(env, profile_level, p_sys->profile_field);
                          size_t codec_profile = convert_omx_to_profile_idc(omx_profile);

@@ -1,4 +1,4 @@
-From 807ea6a3e8717c209eb9a67ba39ea860c5be2fc9 Mon Sep 17 00:00:00 2001
+From f876f8dfa34bd18996bb93ae77e11ff77e2f1ff5 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 14:04:20 +0800
 Subject: [PATCH] modules: remove unused modules
@@ -13,7 +13,7 @@ Subject: [PATCH] modules: remove unused modules
  6 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/configure.ac b/configure.ac
-index 872abce..b8442fc 100644
+index 0914bde..c93995b 100644
 --- a/configure.ac
 +++ b/configure.ac
 @@ -321,6 +321,7 @@ AS_IF([test "$SYS" = linux],[
@@ -37,7 +37,7 @@ index dc0fb39..14a8748 100644
  include audio_mixer/Makefile.am
  include audio_output/Makefile.am
 diff --git a/modules/access/Makefile.am b/modules/access/Makefile.am
-index 4d461d3..75e0cce 100644
+index 5842cff..3c2ccb6 100644
 --- a/modules/access/Makefile.am
 +++ b/modules/access/Makefile.am
 @@ -150,6 +150,7 @@ if HAVE_QTKIT
@@ -48,7 +48,7 @@ index 4d461d3..75e0cce 100644
  libv4l2_plugin_la_SOURCES = \
  	access/v4l2/linux/videodev2.h \
  	access/v4l2/linux/v4l2-common.h \
-@@ -277,6 +278,7 @@ EXTRA_LTLIBRARIES += liblibbluray_plugin.la
+@@ -284,6 +285,7 @@ EXTRA_LTLIBRARIES += liblibbluray_plugin.la
  
  libaccess_bd_plugin_la_SOURCES = access/bd/bd.c access/bd/mpls.c access/bd/mpls.h access/bd/clpi.c access/bd/clpi.h
  access_LTLIBRARIES += libaccess_bd_plugin.la
@@ -57,7 +57,7 @@ index 4d461d3..75e0cce 100644
  
  ### Digital TV ###
 diff --git a/modules/codec/Makefile.am b/modules/codec/Makefile.am
-index 8535bac..da296d3 100644
+index e013263..8a3cd7d 100644
 --- a/modules/codec/Makefile.am
 +++ b/modules/codec/Makefile.am
 @@ -147,9 +147,11 @@ codec_LTLIBRARIES += libdvbsub_plugin.la
@@ -73,7 +73,7 @@ index 8535bac..da296d3 100644
  libstl_plugin_la_SOURCES = codec/stl.c
  codec_LTLIBRARIES += libstl_plugin.la
 diff --git a/modules/demux/Makefile.am b/modules/demux/Makefile.am
-index 0cab9eb..00ffdcc 100644
+index 0719686..0269b22 100644
 --- a/modules/demux/Makefile.am
 +++ b/modules/demux/Makefile.am
 @@ -120,11 +120,13 @@ libdemux_stl_plugin_la_SOURCES = demux/stl.c
@@ -90,15 +90,15 @@ index 0cab9eb..00ffdcc 100644
  
  libcaf_plugin_la_SOURCES = demux/caf.c
  libcaf_plugin_la_LIBADD = $(LIBM)
-@@ -162,6 +164,7 @@ demux_LTLIBRARIES += libes_plugin.la
+@@ -161,6 +163,7 @@ demux_LTLIBRARIES += libes_plugin.la
  libh264_plugin_la_SOURCES = demux/mpeg/h264.c
  demux_LTLIBRARIES += libh264_plugin.la
  
 +if !MODULE_LITE
- libhevc_plugin_la_SOURCES = demux/mpeg/hevc.c
+ libhevc_plugin_la_SOURCES = demux/mpeg/hevc.c demux/mpeg/mpeg_parser_helpers.h
  demux_LTLIBRARIES += libhevc_plugin.la
  
-@@ -218,6 +221,7 @@ libplaylist_plugin_la_SOURCES = \
+@@ -217,6 +220,7 @@ libplaylist_plugin_la_SOURCES = \
  	demux/playlist/zpl.c \
  	demux/playlist/playlist.c demux/playlist/playlist.h
  demux_LTLIBRARIES += libplaylist_plugin.la

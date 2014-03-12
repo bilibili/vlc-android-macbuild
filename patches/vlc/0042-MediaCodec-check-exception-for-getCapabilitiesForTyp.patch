@@ -1,20 +1,26 @@
-From 59985ba657ca24e321c669bdb3a3fe35535f7fc9 Mon Sep 17 00:00:00 2001
+From cd774a292015efffd8da33050df89972203c5305 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Fri, 28 Feb 2014 17:46:03 +0800
 Subject: [PATCH] MediaCodec: check exception for getCapabilitiesForType
 
 ---
- modules/codec/omxil/android_mediacodec.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ modules/codec/omxil/android_mediacodec.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 6125c27..34c4198 100644
+index 789e570..2079e2f 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -422,6 +422,14 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -423,13 +423,19 @@ static int OpenDecoder(vlc_object_t *p_this)
  
          jobject codec_capabilities = (*env)->CallObjectMethod(env, info, p_sys->get_capabilities_for_type,
                                                                (*env)->NewStringUTF(env, mime));
+-        jobject profile_levels = NULL;
+-        int profile_levels_len = 0;
+-        if (codec_capabilities) {
+-            profile_levels = (*env)->GetObjectField(env, codec_capabilities, p_sys->profile_levels_field);
+-            if (profile_levels)
+-                profile_levels_len = (*env)->GetArrayLength(env, profile_levels);
 +        if (codec_capabilities == NULL) {
 +            if ((*env)->ExceptionOccurred(env)) {
 +                msg_Warn(p_dec, "Exception occurred in MediaCodec.get_capabilities_for_type.");
@@ -22,10 +28,15 @@ index 6125c27..34c4198 100644
 +            }
 +            (*env)->DeleteLocalRef(env, info);
 +            continue;
-+        }
-         jobject profile_levels = (*env)->GetObjectField(env, codec_capabilities, p_sys->profile_levels_field);
-         int profile_levels_len = profile_levels ? (*env)->GetArrayLength(env, profile_levels) : 0;
+         }
++
++        int profile_levels_len = 0;
++        jobject profile_levels = (*env)->GetObjectField(env, codec_capabilities, p_sys->profile_levels_field);
++        if (profile_levels)
++            profile_levels_len = (*env)->GetArrayLength(env, profile_levels);
          msg_Dbg(p_dec, "Number of profile levels: %d", profile_levels_len);
+ 
+         jobject types = (*env)->CallObjectMethod(env, info, p_sys->get_supported_types);
 -- 
 1.8.3.4
 

@@ -1,17 +1,17 @@
-From 8c32e085acd8e2c3f2e7d79102d39458194a1d99 Mon Sep 17 00:00:00 2001
+From c3bff9abf43eb718a961a4a91dc8703192f852b3 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Thu, 13 Feb 2014 12:05:49 +0800
 Subject: [PATCH] MediaCodec: only enable direct render in white list
 
 ---
- modules/codec/omxil/android_mediacodec.c | 94 ++++++++++++++++++++++++++++++++
- 1 file changed, 94 insertions(+)
+ modules/codec/omxil/android_mediacodec.c | 99 ++++++++++++++++++++++++++++++--
+ 1 file changed, 95 insertions(+), 4 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 49c8dca..4743137 100644
+index 833117a..081595b 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -88,6 +88,7 @@ struct decoder_sys_t
+@@ -89,6 +89,7 @@ struct decoder_sys_t
      ArchitectureSpecificCopyData architecture_specific_data;
  
      /* Direct rendering members. */
@@ -19,7 +19,7 @@ index 49c8dca..4743137 100644
      bool direct_rendering;
      int i_output_buffers; /**< number of MediaCodec output buffers */
      picture_t** inflight_picture; /**< stores the inflight picture for each output buffer or NULL */
-@@ -187,6 +188,10 @@ static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
+@@ -188,6 +189,10 @@ static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
  #define DIRECTRENDERING_LONGTEXT N_(\
          "Enable Android direct rendering using opaque buffers.")
  
@@ -30,7 +30,7 @@ index 49c8dca..4743137 100644
  #define CFG_PREFIX "mediacodec-"
  
  vlc_module_begin ()
-@@ -195,11 +200,69 @@ vlc_module_begin ()
+@@ -196,11 +201,69 @@ vlc_module_begin ()
      set_subcategory( SUBCAT_INPUT_VCODEC )
      set_section( N_("Decoding") , NULL )
      set_capability( "decoder", 0 ) /* Only enabled via commandline arguments */
@@ -100,7 +100,7 @@ index 49c8dca..4743137 100644
  static int jstrcmp(JNIEnv* env, jobject str, const char* str2)
  {
      jsize len = (*env)->GetStringUTFLength(env, str);
-@@ -400,6 +463,11 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -406,6 +469,11 @@ static int OpenDecoder(vlc_object_t *p_this)
                  msg_Dbg(p_dec, "disable %.*s", name_len, name_ptr);
                  (*env)->ReleaseStringUTFChars(env, name, name_ptr);
                  (*env)->DeleteLocalRef(env, name);
@@ -112,12 +112,16 @@ index 49c8dca..4743137 100644
              } else {
                  msg_Dbg(p_dec, "using %.*s", name_len, name_ptr);
                  p_sys->name = malloc(name_len + 1);
-@@ -451,7 +519,33 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -457,10 +525,33 @@ static int OpenDecoder(vlc_object_t *p_this)
          (*env)->DeleteLocalRef(env, bytebuf);
      }
  
+-    /* If the VideoPlayerActivity is not started, MediaCodec opaque
+-       direct rendering should be disabled since no surface will be
+-       attached to the JNI. */
+-    p_sys->direct_rendering = jni_IsVideoPlayerActivityCreated() && var_InheritBool(p_dec, CFG_PREFIX "dr");
 +    p_sys->force_direct_rendering = var_InheritBool(p_dec, CFG_PREFIX "force-dr");
-     p_sys->direct_rendering = var_InheritBool(p_dec, CFG_PREFIX "dr");
++    p_sys->direct_rendering = var_InheritBool(p_dec, CFG_PREFIX "dr");
 +    msg_Info(p_dec, "%s=%s %s=%s",
 +             CFG_PREFIX "force-dr", p_sys->force_direct_rendering ? "true" : "false",
 +             CFG_PREFIX "dr", p_sys->direct_rendering ? "true" : "false");

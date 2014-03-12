@@ -1,20 +1,20 @@
-From 11f32ac72b457db6001027381eb2d73da922819d Mon Sep 17 00:00:00 2001
+From cc1a718be10511f9aab687583d22f71d8a66ba6d Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH 3/3] lite-mode: configure.sh: disable modules
+Subject: [PATCH] lite-mode: configure.sh: disable modules
 
 ---
  configure.sh | 24 +++++++++++++++---------
  1 file changed, 15 insertions(+), 9 deletions(-)
 
 diff --git a/configure.sh b/configure.sh
-index 50ecbb3..0a12294 100755
+index 8dae0aa..e534c2f 100755
 --- a/configure.sh
 +++ b/configure.sh
-@@ -47,18 +47,21 @@ NM="${CROSS_COMPILE}nm" \
- STRIP="${CROSS_COMPILE}strip" \
+@@ -48,18 +48,21 @@ STRIP="${CROSS_COMPILE}strip" \
  RANLIB="${CROSS_COMPILE}ranlib" \
  AR="${CROSS_COMPILE}ar" \
+ PKG_CONFIG_LIBDIR=$VLC_SOURCEDIR/contrib/$TARGET_TUPLE/lib/pkgconfig \
 -sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $EXTRA_PARAMS \
 +MODULE_LITE=1 \
 +sh $VLC_SOURCEDIR/configure --host=${TARGET_TUPLE} --build=x86_64-unknown-linux $EXTRA_PARAMS \
@@ -38,7 +38,7 @@ index 50ecbb3..0a12294 100755
                  --disable-vlc --disable-shared \
                  --disable-update-check \
                  --disable-vlm \
-@@ -94,10 +97,10 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+@@ -95,10 +98,10 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
                  --disable-skins2 \
                  --disable-mtp \
                  --disable-notify \
@@ -51,7 +51,7 @@ index 50ecbb3..0a12294 100755
                  --disable-caca \
                  --disable-glx \
                  --enable-egl \
-@@ -105,8 +108,11 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+@@ -106,8 +109,11 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
                  --disable-goom \
                  --disable-projectm \
                  --disable-sout \

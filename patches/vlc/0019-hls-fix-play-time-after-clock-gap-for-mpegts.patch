@@ -1,7 +1,7 @@
-From dc091f8519ad8ea1bb916e0650a691109ddfc177 Mon Sep 17 00:00:00 2001
+From e894da5c150803b87a50c977e5890a8f9b73caec Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:27 +0800
-Subject: [PATCH 19/37] hls: fix play time after clock gap for mpegts
+Subject: [PATCH] hls: fix play time after clock gap for mpegts
 
 ---
  modules/demux/ts.c               | 28 ++++++++++++++++++++--
@@ -9,10 +9,10 @@ Subject: [PATCH 19/37] hls: fix play time after clock gap for mpegts
  2 files changed, 66 insertions(+), 13 deletions(-)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index 7378794..e4867aa 100644
+index 1a6b6a3..1a5fcbd 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
-@@ -2225,6 +2225,8 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2190,6 +2190,8 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
      if( i_pcr < 0 )
          return;
  
@@ -21,7 +21,7 @@ index 7378794..e4867aa 100644
      /* handle first PCR if not obtain in Open() */
      if( p_sys->i_pid_ref_pcr == -1 )
      {
-@@ -2235,11 +2237,33 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2200,11 +2202,33 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
  
      if( p_sys->i_pid_ref_pcr == pid->i_pid )
      {
@@ -58,7 +58,7 @@ index 7378794..e4867aa 100644
          }
  
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 6cd01bf..41fd84b 100644
+index c260cac..03c230e 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
 @@ -64,6 +64,7 @@ vlc_module_end()
@@ -205,7 +205,7 @@ index 6cd01bf..41fd84b 100644
  {
      stream_sys_t *p_sys = s->p_sys;
 @@ -2747,6 +2765,17 @@ static int Control(stream_t *s, int i_query, va_list args)
-             *va_arg (args, int64_t *) =
+             *va_arg (args, int64_t *) = INT64_C(1000) *
                  var_InheritInteger(s, "network-caching");
               break;
 +        case STREAM_HTTPLIVE_GET_SEGMENT_START:
