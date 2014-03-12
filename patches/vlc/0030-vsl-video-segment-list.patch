@@ -1181,7 +1181,7 @@ index 0000000..098590c
 +
 +    if( p_sys->i_duration_milli > 0 )
 +    {
-+        p_sys->i_bytes_per_second = p_sys->i_size / ( p_sys->i_duration_milli / 1000 );
++        p_sys->i_bytes_per_second = p_sys->i_size * 1000 / p_sys->i_duration_milli;
 +    }
 +
 +    /* at least 25KBps ~= 200kbps */
