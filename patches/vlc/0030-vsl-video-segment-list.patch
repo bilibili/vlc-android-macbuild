@@ -1697,7 +1697,7 @@ index 0000000..098590c
 +    if( i_pos > p_access->info.i_pos &&
 +        i_pos < p_access->info.i_pos + 128 * 1024 )
 +    {
-+        int i_seek_forward = p_access->info.i_pos - i_pos;
++        uint64_t i_seek_forward = i_pos - p_access->info.i_pos;
 +        int i_seek_ret = stream_ReadSeek( p_sys->p_stream, i_seek_forward );
 +        if( i_seek_ret <= 0 )
 +            goto EXIT_FAIL;
