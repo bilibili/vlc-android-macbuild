@@ -1,0 +1,28 @@
+From 355e28cbc235ad4f944f978c38d4d8dfa46a9ac2 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Mon, 24 Mar 2014 17:04:15 +0800
+Subject: [PATCH] contrib: enable minium remuxing through ffmpeg
+
+---
+ contrib/src/ffmpeg/rules.mak | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
+index 59c296f..e8eb975 100644
+--- a/contrib/src/ffmpeg/rules.mak
++++ b/contrib/src/ffmpeg/rules.mak
+@@ -85,6 +85,11 @@ else
+ FFMPEGCONF += --disable-encoders --disable-muxers
+ endif
+ 
++# Support remuxing to certain formats
++FFMPEGCONF += --enable-protocol=file
++FFMPEGCONF += --enable-muxer=mp4
++FFMPEGCONF += --enable-bsf=aac_adtstoasc
++
+ # Small size
+ ifdef ENABLE_SMALL
+ FFMPEGCONF += --enable-small
+-- 
+1.8.5.3
+
