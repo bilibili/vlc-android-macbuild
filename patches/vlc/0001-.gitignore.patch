@@ -1,17 +1,17 @@
-From 7cb73c38797cd620f2fd70705c774eb3516ccdf2 Mon Sep 17 00:00:00 2001
+From d6f17086d74d2eb8b347d1e4cf01300363ee712b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 15:55:01 +0800
-Subject: [PATCH 01/37] .gitignore
+Subject: [PATCH] .gitignore
 
 ---
- .gitignore | 5 +++++
- 1 file changed, 5 insertions(+)
+ .gitignore | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/.gitignore b/.gitignore
-index a9d0c62..2ca29c4 100644
+index a9d0c62..dd154ee 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -52,3 +52,8 @@ build-*
+@@ -52,3 +52,9 @@ build-*
  contrib-*
  install-*
  
@@ -20,6 +20,7 @@ index a9d0c62..2ca29c4 100644
 +pt
 +intl
 +android
++m4/
 -- 
 1.8.3.4
 
