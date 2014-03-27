@@ -1,15 +1,15 @@
-From b03ab186d38e512eac6cc6aba69d888bbff8edb2 Mon Sep 17 00:00:00 2001
+From fe82495829e7b1fd6ef6859776757e7935da07b0 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Wed, 12 Mar 2014 15:05:41 +0800
 Subject: [PATCH] MediaCodec: check type before profile level to avoid hang on
  some MSM8960 device
 
 ---
- modules/codec/omxil/android_mediacodec.c | 106 ++++++++++++++++++++-----------
- 1 file changed, 69 insertions(+), 37 deletions(-)
+ modules/codec/omxil/android_mediacodec.c | 76 ++++++++++++++++++++++++++------
+ 1 file changed, 62 insertions(+), 14 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index b07b360..21bfa72 100644
+index 65ac4e6..6815f61 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
 @@ -412,6 +412,7 @@ static int OpenDecoder(vlc_object_t *p_this)
@@ -49,14 +49,14 @@ index b07b360..21bfa72 100644
 +            msg_Dbg(p_dec, "ignore unordinary codec named %.*s", name_len, name_ptr);
 +            (*env)->ReleaseStringUTFChars(env, name, name_ptr);
 +            (*env)->DeleteLocalRef(env, name);
-+            (*env)->DeleteLocalRef(env, info);
-+            continue;
+             (*env)->DeleteLocalRef(env, info);
+             continue;
 +        } else if (0 == strncmp(name_ptr, "OMX.MTK.VIDEO.DECODER.AVC", name_len)) {
 +            msg_Dbg(p_dec, "disable %.*s", name_len, name_ptr);
 +            (*env)->ReleaseStringUTFChars(env, name, name_ptr);
 +            (*env)->DeleteLocalRef(env, name);
-             (*env)->DeleteLocalRef(env, info);
-             continue;
++            (*env)->DeleteLocalRef(env, info);
++            continue;
 +        } else if (!is_codec_at_least(name_ptr, false, MCODEC_UNKNOWN)) {
 +            // slow or unsupport
 +            msg_Dbg(p_dec, "disable %.*s due to slow or unsupport ", name_len, name_ptr);
@@ -97,7 +97,7 @@ index b07b360..21bfa72 100644
                  /* The mime type is matching for this component. We
                     now check if the capabilities of the codec is
                     matching the video format. */
-@@ -453,49 +489,45 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -453,18 +489,25 @@ static int OpenDecoder(vlc_object_t *p_this)
  
                          int omx_profile = (*env)->GetLongField(env, profile_level, p_sys->profile_field);
                          size_t codec_profile = convert_omx_to_profile_idc(omx_profile);
@@ -122,36 +122,12 @@ index b07b360..21bfa72 100644
          }
 +        (*env)->DeleteLocalRef(env, info);
          if (found) {
--            jobject name = (*env)->CallObjectMethod(env, info, p_sys->get_name);
--            jsize name_len = (*env)->GetStringUTFLength(env, name);
--            const char *name_ptr = (*env)->GetStringUTFChars(env, name, NULL);
--            if (name_len == 0 || name_ptr == NULL) {
--                msg_Dbg(p_dec, "invalid codec name %.*s", name_len, name_ptr);
--            } else if (0 == strncmp(name_ptr, "OMX.MTK.VIDEO.DECODER.AVC", name_len)) {
--                msg_Dbg(p_dec, "disable %.*s", name_len, name_ptr);
--                (*env)->ReleaseStringUTFChars(env, name, name_ptr);
--                (*env)->DeleteLocalRef(env, name);
--            } else if (!is_codec_at_least(name_ptr, false, MCODEC_UNKNOWN)) {
--                // slow or unsupport
--                msg_Dbg(p_dec, "disable %.*s due to slow or unsupport ", name_len, name_ptr);
--                (*env)->ReleaseStringUTFChars(env, name, name_ptr);
--                (*env)->DeleteLocalRef(env, name);
--            } else {
--                msg_Dbg(p_dec, "using %.*s", name_len, name_ptr);
--                p_sys->name = malloc(name_len + 1);
--                memcpy(p_sys->name, name_ptr, name_len);
--                p_sys->name[name_len] = '\0';
--                (*env)->ReleaseStringUTFChars(env, name, name_ptr);
--                codec_name = name;
--                break;
--            }
-+            msg_Dbg(p_dec, "using %.*s", name_len, name_ptr);
-+            p_sys->name = malloc(name_len + 1);
-+            memcpy(p_sys->name, name_ptr, name_len);
-+            p_sys->name[name_len] = '\0';
-+            (*env)->ReleaseStringUTFChars(env, name, name_ptr);
-+            codec_name = name;
-+            break;
+             jobject name = (*env)->CallObjectMethod(env, info, p_sys->get_name);
+             jsize name_len = (*env)->GetStringUTFLength(env, name);
+@@ -485,13 +528,18 @@ static int OpenDecoder(vlc_object_t *p_this)
+             codec_name = name;
+             break;
+             }
 +        } else {
 +            (*env)->ReleaseStringUTFChars(env, name, name_ptr);
 +            (*env)->DeleteLocalRef(env, name);
