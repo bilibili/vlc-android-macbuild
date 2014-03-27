@@ -1,4 +1,4 @@
-From c3bff9abf43eb718a961a4a91dc8703192f852b3 Mon Sep 17 00:00:00 2001
+From 89b0a34352b08a47ad89b654fde98caef307cd3b Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Thu, 13 Feb 2014 12:05:49 +0800
 Subject: [PATCH] MediaCodec: only enable direct render in white list
@@ -8,7 +8,7 @@ Subject: [PATCH] MediaCodec: only enable direct render in white list
  1 file changed, 95 insertions(+), 4 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 833117a..081595b 100644
+index 833117a..fbbb5aa 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
 @@ -89,6 +89,7 @@ struct decoder_sys_t
@@ -63,7 +63,7 @@ index 833117a..081595b 100644
 +    {"OMX.qcom.",               MCODEC_PREFER,      MCODEC_PREFER},
 +    {"OMX.Exynos.",             MCODEC_PREFER,      MCODEC_PREFER},
 +
-+    {"OMX.SEC.AVC.Decoder",     MCODEC_PREFER,      MCODEC_SLOW},
++    {"OMX.SEC.AVC.Decoder",     MCODEC_PREFER,      MCODEC_PREFER},
 +
 +    {"OMX.ittiam.",             MCODEC_UNSUPPORT,   MCODEC_UNSUPPORT},
 +
