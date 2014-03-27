@@ -1,14 +1,14 @@
-From 89b0a34352b08a47ad89b654fde98caef307cd3b Mon Sep 17 00:00:00 2001
+From dbf076d0d445f0f0fd9cff34c584351386acb052 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Thu, 13 Feb 2014 12:05:49 +0800
 Subject: [PATCH] MediaCodec: only enable direct render in white list
 
 ---
- modules/codec/omxil/android_mediacodec.c | 99 ++++++++++++++++++++++++++++++--
- 1 file changed, 95 insertions(+), 4 deletions(-)
+ modules/codec/omxil/android_mediacodec.c | 103 +++++++++++++++++++++++++++++--
+ 1 file changed, 99 insertions(+), 4 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 833117a..fbbb5aa 100644
+index fc124e3..1903cc9 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
 @@ -89,6 +89,7 @@ struct decoder_sys_t
@@ -100,19 +100,30 @@ index 833117a..fbbb5aa 100644
  static int jstrcmp(JNIEnv* env, jobject str, const char* str2)
  {
      jsize len = (*env)->GetStringUTFLength(env, str);
-@@ -406,6 +469,11 @@ static int OpenDecoder(vlc_object_t *p_this)
-                 msg_Dbg(p_dec, "disable %.*s", name_len, name_ptr);
-                 (*env)->ReleaseStringUTFChars(env, name, name_ptr);
-                 (*env)->DeleteLocalRef(env, name);
+@@ -400,6 +463,14 @@ static int OpenDecoder(vlc_object_t *p_this)
+             jobject name = (*env)->CallObjectMethod(env, info, p_sys->get_name);
+             jsize name_len = (*env)->GetStringUTFLength(env, name);
+             const char *name_ptr = (*env)->GetStringUTFChars(env, name, NULL);
++            if (name_len == 0 || name_ptr == NULL) {
++                msg_Dbg(p_dec, "invalid codec name %.*s", name_len, name_ptr);
 +            } else if (!is_codec_at_least(name_ptr, false, MCODEC_UNKNOWN)) {
 +                // slow or unsupport
 +                msg_Dbg(p_dec, "disable %.*s due to slow or unsupport ", name_len, name_ptr);
 +                (*env)->ReleaseStringUTFChars(env, name, name_ptr);
 +                (*env)->DeleteLocalRef(env, name);
-             } else {
-                 msg_Dbg(p_dec, "using %.*s", name_len, name_ptr);
-                 p_sys->name = malloc(name_len + 1);
-@@ -457,10 +525,33 @@ static int OpenDecoder(vlc_object_t *p_this)
++            } else {
+             msg_Dbg(p_dec, "using %.*s", name_len, name_ptr);
+             p_sys->name = malloc(name_len + 1);
+             memcpy(p_sys->name, name_ptr, name_len);
+@@ -407,6 +478,7 @@ static int OpenDecoder(vlc_object_t *p_this)
+             (*env)->ReleaseStringUTFChars(env, name, name_ptr);
+             codec_name = name;
+             break;
++            }
+         }
+         (*env)->DeleteLocalRef(env, info);
+     }
+@@ -449,10 +521,33 @@ static int OpenDecoder(vlc_object_t *p_this)
          (*env)->DeleteLocalRef(env, bytebuf);
      }
  
