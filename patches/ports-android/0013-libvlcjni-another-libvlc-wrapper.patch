@@ -1,4 +1,4 @@
-From 569c8eabd1730bbb8597feeb0615e889e9b5ee3e Mon Sep 17 00:00:00 2001
+From fbc0ea0c3d3210fc9c600ab64eecb0c72cb0b4aa Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
 Subject: [PATCH] libvlcjni: another libvlc wrapper
@@ -966,7 +966,7 @@ index 37f4d2d..0c4da3c 100644
  static void debug_buffer_log(void *data, int level, const char *fmt, va_list ap)
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..41145f5
+index 0000000..de3a556
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
 @@ -0,0 +1,582 @@
@@ -1375,7 +1375,7 @@ index 0000000..41145f5
 +                const char* aout_name = p_st + 6;
 +                if (!strncmp(aout_name, "audiotrack_java", 15)) {
 +                    LOGD("    set libvlc_audio_output_set:%s", aout_name);
-+                    libvlc_audio_set_callbacks(mp, aout_play, NULL, NULL,
++                    libvlc_audio_set_callbacks(mp, aout_play, aout_pause, NULL,
 +                                               NULL, NULL, (void*) myJavaLibVLC);
 +                    libvlc_audio_set_format_callbacks(mp, aout_open,
 +                                                      aout_close);
