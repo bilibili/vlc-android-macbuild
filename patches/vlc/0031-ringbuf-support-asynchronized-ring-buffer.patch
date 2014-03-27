@@ -314,7 +314,7 @@ index 0000000..950f156
 +            break;
 +        }
 +
-+        if( p_sys->b_buffered_eos )
++        if( p_sys->b_buffered_eos && !p_sys->b_seek_request )
 +        {
 +            msg_RBuf( p_stream, "ringbuf: WaitBufferForRead_l(%d) eos: %"PRId64", %"PRId64,
 +                      i_read, p_sys->i_stream_offset,
