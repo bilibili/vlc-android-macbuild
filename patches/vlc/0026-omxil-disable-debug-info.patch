@@ -1,14 +1,14 @@
-From ab557a58da5bac69b80022d80d6bc208397a9a96 Mon Sep 17 00:00:00 2001
+From f1cf4254f62095cc0e0b0a7fcca87d4232f30678 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 18:43:17 +0800
-Subject: [PATCH 26/37] omxil: disable debug info
+Subject: [PATCH 26/42] omxil: disable debug info
 
 ---
  modules/codec/omxil/omxil.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index 411dfd4..b012b24 100644
+index 5a28fbd..d636d46 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -42,7 +42,7 @@
@@ -21,5 +21,5 @@ index 411dfd4..b012b24 100644
  
  #define SENTINEL_FLAG 0x10000
 -- 
-1.8.3.4
+1.9.0
 

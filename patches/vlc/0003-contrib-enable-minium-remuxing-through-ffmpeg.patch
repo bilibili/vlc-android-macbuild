@@ -1,7 +1,7 @@
 From 1f3d828cd74ff6a558869eef7c91be6422dcebb3 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Mon, 24 Mar 2014 17:04:15 +0800
-Subject: [PATCH 1003/1003] contrib: enable minium remuxing through ffmpeg
+Subject: [PATCH 3/3] contrib: enable minium remuxing through ffmpeg
 
 ---
  contrib/src/ffmpeg/rules.mak | 5 +++++

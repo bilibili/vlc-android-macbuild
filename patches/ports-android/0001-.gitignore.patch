@@ -1,7 +1,7 @@
-From f920c56b2908aea7f295f145e6a7804f0248a517 Mon Sep 17 00:00:00 2001
+From a1c66fb7003f790893ce6f190d6c8b94d50584ea Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 14 Jul 2012 15:15:42 +0800
-Subject: [PATCH 01/15] .gitignore
+Subject: [PATCH 01/16] .gitignore
 
 ---
  .gitignore | 2 ++
@@ -20,5 +20,5 @@ index 32a12cc..6566438 100644
  .DS_Store
  *.keystore
 -- 
-1.8.3.4
+1.9.0
 

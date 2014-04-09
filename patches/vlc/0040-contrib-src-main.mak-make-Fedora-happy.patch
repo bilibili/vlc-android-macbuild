@@ -1,17 +1,17 @@
-From 0c9c3323ee7d06093f09e9e464fc1e78a885708b Mon Sep 17 00:00:00 2001
+From f454bb320e6c5f50383793c69544108ff0e8d2b9 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Wed, 26 Feb 2014 15:18:15 +0800
-Subject: [PATCH 41/41] contrib/src/main.mak: make Fedora happy
+Subject: [PATCH 40/42] contrib/src/main.mak: make Fedora happy
 
 ---
  contrib/src/main.mak | 5 +++++
  1 file changed, 5 insertions(+)
 
 diff --git a/contrib/src/main.mak b/contrib/src/main.mak
-index 4f78597..6c379f4 100644
+index 5cd8e03..6bf4ec9 100644
 --- a/contrib/src/main.mak
 +++ b/contrib/src/main.mak
-@@ -297,7 +297,12 @@ APPLY = (cd $(UNPACK_DIR) && patch -fp1) <
+@@ -307,7 +307,12 @@ APPLY = (cd $(UNPACK_DIR) && patch -fp1) <
  pkg_static = (cd $(UNPACK_DIR) && ../../../contrib/src/pkg-static.sh $(1))
  MOVE = mv $(UNPACK_DIR) $@ && touch $@
  
@@ -25,5 +25,5 @@ index 4f78597..6c379f4 100644
  		if test -f "$${dir}/config.sub" -a -f "$${dir}/config.guess"; then \
  			cp "$${dir}/config.sub" "$${dir}/config.guess" $(UNPACK_DIR); \
 -- 
-1.8.3.1
+1.9.0
 

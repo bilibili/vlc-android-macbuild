@@ -1,7 +1,7 @@
-From be2c681b3d89c05cd43919d23551dbfeccf0f881 Mon Sep 17 00:00:00 2001
+From 033958239703a97eb9bc0f37907827b24f944a8c Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:52:55 +0800
-Subject: [PATCH 30/37] vsl: video segment list
+Subject: [PATCH 30/42] vsl: video segment list
 
 ---
  modules/access/vsl/index.c     | 878 ++++++++++++++++++++++++++++++++++++++++
@@ -900,7 +900,7 @@ index 0000000..025aa71
 \ No newline at end of file
 diff --git a/modules/access/vsl/segment.c b/modules/access/vsl/segment.c
 new file mode 100644
-index 0000000..098590c
+index 0000000..631ba54
 --- /dev/null
 +++ b/modules/access/vsl/segment.c
 @@ -0,0 +1,897 @@
@@ -2505,5 +2505,5 @@ index 99fc2cf..a23637b 100644
              /* wakeup prebuffer thread */
              vlc_mutex_lock( &p_sys->wait_rewind_lock );
 -- 
-1.8.3.4
+1.9.0
 

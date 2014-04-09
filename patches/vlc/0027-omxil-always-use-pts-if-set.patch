@@ -1,7 +1,7 @@
-From 493d003b921f20b7cd6cfce629e8c70262ef3bf1 Mon Sep 17 00:00:00 2001
+From bcce56ea1432dcb5cb349a2de099512d6e297204 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 30 Oct 2012 20:58:35 +0800
-Subject: [PATCH 27/37] omxil: always use pts if set
+Subject: [PATCH 27/42] omxil: always use pts if set
 
 revert commit 1f18696f679fe520b64d60cb933fe50d3dfc3215
 ---
@@ -9,10 +9,10 @@ revert commit 1f18696f679fe520b64d60cb933fe50d3dfc3215
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index b012b24..5b51005 100644
+index d636d46..e15eb42 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
-@@ -1534,7 +1534,7 @@ more_input:
+@@ -1526,7 +1526,7 @@ more_input:
          p_header->nFilledLen = p_block->i_buffer - i_input_used;
          p_header->nOffset = 0;
          p_header->nFlags = OMX_BUFFERFLAG_ENDOFFRAME;
@@ -22,5 +22,5 @@ index b012b24..5b51005 100644
          else
              p_header->nTimeStamp = ToOmxTicks(p_block->i_dts);
 -- 
-1.8.3.4
+1.9.0
 

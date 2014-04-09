@@ -1,14 +1,14 @@
-From 45fde7ed7749a55f876bf9e704bff0478a4aedec Mon Sep 17 00:00:00 2001
+From 1a8a915132d11170bf2165f3387eec1daa1170c4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 20:13:48 +0800
-Subject: [PATCH 24/37] omxil: sort hw codec
+Subject: [PATCH 24/42] omxil: sort hw codec
 
 ---
  modules/codec/omxil/omxil.c | 97 +++++++++++++++++++++++++++++++++++++++++++++
  1 file changed, 97 insertions(+)
 
 diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
-index cd4ad9f..fbadd95 100644
+index 67d6d6a..3943ac0 100644
 --- a/modules/codec/omxil/omxil.c
 +++ b/modules/codec/omxil/omxil.c
 @@ -100,6 +100,98 @@ vlc_module_begin ()
@@ -110,7 +110,7 @@ index cd4ad9f..fbadd95 100644
   * ImplementationSpecificWorkarounds: place-holder for implementation
   * specific workarounds
   *****************************************************************************/
-@@ -1022,6 +1114,8 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
+@@ -1001,6 +1093,8 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
          return VLC_EGENERIC;
      }
  
@@ -119,7 +119,7 @@ index cd4ad9f..fbadd95 100644
      /* Try to load and initialise a component */
      omx_error = OMX_ErrorUndefined;
      for(i = 0; i < p_sys->components; i++)
-@@ -1059,6 +1153,9 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
+@@ -1038,6 +1132,9 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
           * it until we can make it work properly. */
          if (!strcmp(p_sys->ppsz_components[i], "OMX.Nvidia.vc1.decode"))
              continue;
@@ -130,5 +130,5 @@ index cd4ad9f..fbadd95 100644
          omx_error = InitialiseComponent(p_dec, p_sys->ppsz_components[i],
                                          &p_sys->omx_handle);
 -- 
-1.8.3.4
+1.9.0
 

@@ -1,17 +1,17 @@
-From 3da92ef85db04ee96ba7573a75770e9821e94a9c Mon Sep 17 00:00:00 2001
+From 3bc21a87a0ce56b277c90bbc44214540d4998e15 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 16 Jun 2012 15:02:07 +0800
-Subject: [PATCH] avcodec: fix broken picture
+Subject: [PATCH 21/42] avcodec: fix broken picture
 
 ---
  modules/codec/avcodec/video.c | 7 ++++++-
  1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/modules/codec/avcodec/video.c b/modules/codec/avcodec/video.c
-index b62ea93..d5fbe23 100644
+index 022dee1..0084dfc 100644
 --- a/modules/codec/avcodec/video.c
 +++ b/modules/codec/avcodec/video.c
-@@ -469,10 +469,12 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+@@ -468,10 +468,12 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
  
              p_sys->i_late_frames = 0;
  
@@ -24,7 +24,7 @@ index b62ea93..d5fbe23 100644
  
              block_Release( p_block );
              return NULL;
-@@ -488,10 +490,12 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+@@ -487,10 +489,12 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
      }
  
      if( !p_dec->b_pace_control && (p_sys->i_late_frames > 0) &&
@@ -38,7 +38,7 @@ index b62ea93..d5fbe23 100644
              p_sys->i_pts = VLC_TS_INVALID; /* To make sure we recover properly */
          }
          if( p_block )
-@@ -545,6 +549,7 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
+@@ -543,6 +547,7 @@ picture_t *DecodeVideo( decoder_t *p_dec, block_t **pp_block )
      {
          /* It creates broken picture
           * FIXME either our parser or ffmpeg is broken */
@@ -47,5 +47,5 @@ index b62ea93..d5fbe23 100644
          if( p_sys->b_hurry_up )
              p_context->skip_frame = __MAX( p_context->skip_frame,
 -- 
-1.8.3.4
+1.9.0
 

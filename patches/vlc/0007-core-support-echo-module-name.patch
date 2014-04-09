@@ -1,7 +1,7 @@
-From ea7d04347c1bade241979ced9bec5ec7106f4712 Mon Sep 17 00:00:00 2001
+From e0e32b7a199c7f8c1bd2f6cf70a43cb62beac4b4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 15:42:47 +0800
-Subject: [PATCH 07/37] core: support echo module name
+Subject: [PATCH 07/42] core: support echo module name
 
 ---
  include/vlc/libvlc_events.h |  8 ++++++++
@@ -14,10 +14,10 @@ Subject: [PATCH 07/37] core: support echo module name
  7 files changed, 79 insertions(+)
 
 diff --git a/include/vlc/libvlc_events.h b/include/vlc/libvlc_events.h
-index 411f8a7..f5583ae 100644
+index 8a26e4e..95cf85f 100644
 --- a/include/vlc/libvlc_events.h
 +++ b/include/vlc/libvlc_events.h
-@@ -104,6 +104,7 @@ enum libvlc_event_e {
+@@ -105,6 +105,7 @@ enum libvlc_event_e {
      libvlc_VlmMediaInstanceStatusError,
  
      libvlc_MediaPlayerBufferingTotal=0x700,
@@ -25,7 +25,7 @@ index 411f8a7..f5583ae 100644
  };
  
  /**
-@@ -178,6 +179,13 @@ typedef struct libvlc_event_t
+@@ -183,6 +184,13 @@ typedef struct libvlc_event_t
          {
              float new_cache_total;
          } media_player_buffering_total;
@@ -40,10 +40,10 @@ index 411f8a7..f5583ae 100644
          /* media list */
          struct
 diff --git a/include/vlc_input.h b/include/vlc_input.h
-index 4cf17f8..e541e68 100644
+index d098415..11a2e3d 100644
 --- a/include/vlc_input.h
 +++ b/include/vlc_input.h
-@@ -396,6 +396,9 @@ typedef enum input_event_type_e
+@@ -397,6 +397,9 @@ typedef enum input_event_type_e
      /* "cache-total" has changed */
      INPUT_EVENT_CACHE_TOTAL,
  
@@ -54,10 +54,10 @@ index 4cf17f8..e541e68 100644
  
  /**
 diff --git a/lib/media_player.c b/lib/media_player.c
-index c8e55ff..624ac3b 100644
+index 534283d..b7ee68f 100644
 --- a/lib/media_player.c
 +++ b/lib/media_player.c
-@@ -307,6 +307,15 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
+@@ -331,6 +331,15 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
                                                           var_GetFloat( p_input, "cache-total" ));
          libvlc_event_send( p_mi->p_event_manager, &event );
      }
@@ -73,7 +73,7 @@ index c8e55ff..624ac3b 100644
      else if( newval.i_int == INPUT_EVENT_VOUT )
      {
          vout_thread_t **pp_vout;
-@@ -521,6 +530,7 @@ libvlc_media_player_new( libvlc_instance_t *instance )
+@@ -551,6 +560,7 @@ libvlc_media_player_new( libvlc_instance_t *instance )
      register_event(mp, MediaChanged);
  
      register_event(mp, BufferingTotal);
@@ -82,7 +82,7 @@ index c8e55ff..624ac3b 100644
      /* Attach a var callback to the global object to provide the glue between
       * vout_thread that generates the event and media_player that re-emits it
 diff --git a/src/input/decoder.c b/src/input/decoder.c
-index d7caf2d..5fa1d4c 100644
+index 1232a76..1339dde 100644
 --- a/src/input/decoder.c
 +++ b/src/input/decoder.c
 @@ -272,6 +272,25 @@ static decoder_t *decoder_New( vlc_object_t *p_parent, input_thread_t *p_input,
@@ -111,7 +111,7 @@ index d7caf2d..5fa1d4c 100644
      p_dec->p_owner->p_clock = p_clock;
      assert( p_dec->fmt_out.i_cat != UNKNOWN_ES );
  
-@@ -721,6 +740,9 @@ static decoder_t * CreateDecoder( vlc_object_t *p_parent,
+@@ -723,6 +742,9 @@ static decoder_t * CreateDecoder( vlc_object_t *p_parent,
      if( p_dec == NULL )
          return NULL;
  
@@ -191,5 +191,5 @@ index 01ee59e..52edf14 100644
      var_Create( p_input, "input-record-native", VLC_VAR_BOOL | VLC_VAR_DOINHERIT );
  
 -- 
-1.8.3.4
+1.9.0
 

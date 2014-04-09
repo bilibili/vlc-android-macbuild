@@ -1,7 +1,7 @@
-From fbc0ea0c3d3210fc9c600ab64eecb0c72cb0b4aa Mon Sep 17 00:00:00 2001
+From 3e9bfa3ca16b214dd914bbd9d3773bb0f623b2af Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
-Subject: [PATCH] libvlcjni: another libvlc wrapper
+Subject: [PATCH 13/16] libvlcjni: another libvlc wrapper
 
 ---
  vlc-android/jni/Android.mk                         |   6 +-
@@ -14,13 +14,13 @@ Subject: [PATCH] libvlcjni: another libvlc wrapper
  vlc-android/jni/jni_vsl.c                          | 300 +++++++++++
  vlc-android/jni/jni_vsl.h                          |  37 ++
  vlc-android/jni/libvlcjni-util.c                   |  17 +-
- vlc-android/jni/libvlcjni_danmaku.c                | 582 +++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c                | 600 +++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c     |  65 +++
  .../jni/libvlcjni_danmaku_nativeInitEx.inc.c       |  61 +++
  vlc-android/jni/libvlcjni_fflog.inc.c              |  71 +++
  vlc-android/jni/utils.h                            |   2 +
  vlc-android/jni/vout.c                             |   9 +
- 16 files changed, 1601 insertions(+), 5 deletions(-)
+ 16 files changed, 1619 insertions(+), 5 deletions(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.c
@@ -966,10 +966,10 @@ index 37f4d2d..0c4da3c 100644
  static void debug_buffer_log(void *data, int level, const char *fmt, va_list ap)
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..de3a556
+index 0000000..59a5441
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,582 @@
+@@ -0,0 +1,600 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -1190,15 +1190,15 @@ index 0000000..de3a556
 +
 +    methodId = (*env)->GetMethodID(env, cls, "getDeblocking", "()I");
 +    int deblocking = (*env)->CallIntMethod(env, thiz, methodId);
-+    char deblockstr[2] = "3";
-+    snprintf(deblockstr, 2, "%d", deblocking);
++    char deblockstr[2];
++    snprintf(deblockstr, sizeof(deblockstr), "%d", deblocking);
 +    LOGD("Using deblocking level %d", deblocking);
 +
 +    methodId = (*env)->GetMethodID(env, cls, "getNetworkCaching", "()I");
 +    int networkCaching = (*env)->CallIntMethod(env, thiz, methodId);
-+    char networkCachingstr[25] = "0";
++    char networkCachingstr[25];
 +    if(networkCaching > 0) {
-+        snprintf(networkCachingstr, 25, "--network-caching=%d", networkCaching);
++        snprintf(networkCachingstr, sizeof(networkCachingstr), "--network-caching=%d", networkCaching);
 +        LOGD("Using network caching of %d ms", networkCaching);
 +    }
 +
@@ -1223,6 +1223,7 @@ index 0000000..de3a556
 +
 +    /* Don't add any invalid options, otherwise it causes LibVLC to crash */
 +    const char *argv[] = {
++        /* CPU intensive plugin, setting for slow devices */
 +        "-I", "dummy",
 +        "--no-osd",
 +        "--no-video-title-show",
@@ -1233,17 +1234,31 @@ index 0000000..de3a556
 +         * (i.e. 1080p). For mobile, pick a more sane default for slow
 +         * mobile data networks and slower hardware. */
 +        "--preferred-resolution", "360",
-+        "--avcodec-fast",
 +        "--avcodec-threads=0",
 +        "--subsdec-encoding", subsencodingstr,
 +        enable_time_stretch ? "--audio-time-stretch" : "--no-audio-time-stretch",
++
++        /* avcodec speed settings for slow devices */
++        "--avcodec-fast", // non-spec-compliant speedup tricks
 +        "--avcodec-skiploopfilter", deblockstr,
 +        "--avcodec-skip-frame", enable_frame_skip ? "2" : "0",
 +        "--avcodec-skip-idct", enable_frame_skip ? "2" : "0",
++
++#if 0
++        /* Remove me when UTF-8 is enforced by law */
++        "--subsdec-encoding", subsencodingstr,
++#endif
++
++        /* XXX: why can't the default be fine ? #7792 */
 +        (networkCaching > 0) ? networkCachingstr : "",
++
++        /* Android audio API is a mess */
 +        use_opensles ? "--aout=opensles" : "--aout=android_audiotrack",
++
++        /* Android video API is a mess */
 +        use_opengles2 ? "--vout=gles2" : "--vout=androidsurface",
 +        "--androidsurface-chroma", chromastr != NULL && chromastr[0] != 0 ? chromastr : "RV32",
++        /* XXX: we can't recover from direct rendering failure */
 +        (hardwareAcceleration == HW_ACCELERATION_FULL) ? "" : "--no-mediacodec-dr",
 +    };
 +    libvlc_instance_t *instance = libvlc_new(sizeof(argv) / sizeof(*argv), argv);
@@ -1320,6 +1335,9 @@ index 0000000..de3a556
 +
 +    /* Create a media player playing environment */
 +    libvlc_media_player_t *mp = libvlc_media_player_new((libvlc_instance_t*)(intptr_t)instance);
++#if 0
++    libvlc_media_player_set_video_title_display(mp, libvlc_position_disable, 0);
++#endif
 +    jobject myJavaLibVLC = (*env)->NewGlobalRef(env, thiz);
 +
 +#if 0
@@ -1815,5 +1833,5 @@ index 3fed2b9..6038718 100644
  }
  
 -- 
-1.8.3.4
+1.9.0
 

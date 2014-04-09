@@ -1,7 +1,7 @@
-From 8c80773557e05288b78dd510bc5f15a8eeeaf15a Mon Sep 17 00:00:00 2001
+From b70ec565effaa95144d84fa37341a712a8ad534a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 27 Jul 2013 21:15:27 +0800
-Subject: [PATCH] Android.mk: link libandroid
+Subject: [PATCH 10/16] Android.mk: link libandroid
 
 ---
  vlc-android/jni/Android.mk | 1 +
@@ -20,5 +20,5 @@ index 39003ff..7e1225b 100644
  	-logg -lFLAC -ltheora -lvorbis \
  	-lmpeg2 -la52 \
 -- 
-1.8.3.4
+1.9.0
 

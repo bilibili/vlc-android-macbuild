@@ -1,4 +1,4 @@
-From aae97ed3ad39fa17f53a3070c7861099da3753e7 Mon Sep 17 00:00:00 2001
+From 3a89d7a8bef140f7afea0ba70b1e46c84f650288 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Wed, 26 Feb 2014 14:51:33 +0800
 Subject: [PATCH 16/16] compile.sh: make Fedora happy.
@@ -8,7 +8,7 @@ Subject: [PATCH 16/16] compile.sh: make Fedora happy.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/compile.sh b/compile.sh
-index a66bb9d..98d1244 100755
+index edd234a..73c1f24 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -1,7 +1,7 @@
@@ -21,5 +21,5 @@ index a66bb9d..98d1244 100755
  # Read the Android Wiki http://wiki.videolan.org/AndroidCompile
  # Setup all that stuff correctly.
 -- 
-1.8.3.1
+1.9.0
 

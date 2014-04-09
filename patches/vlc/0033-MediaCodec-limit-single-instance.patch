@@ -1,17 +1,17 @@
-From e78d95477b5f0bda2c9cbad9cb21e7ee610227b9 Mon Sep 17 00:00:00 2001
+From 84b7a324641faff3f0c7b2329c49aa3896845f97 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 19 Dec 2013 11:20:15 +0800
-Subject: [PATCH 33/37] MediaCodec: limit single instance
+Subject: [PATCH 33/42] MediaCodec: limit single instance
 
 ---
- modules/codec/omxil/android_mediacodec.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ modules/codec/omxil/android_mediacodec.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index fe0832f..9de9fad 100644
+index a6a7a74..00f85ef 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -169,6 +169,7 @@ static void CloseDecoder(vlc_object_t *);
+@@ -255,6 +255,7 @@ static void CloseDecoder(vlc_object_t *);
  static picture_t *DecodeVideo(decoder_t *, block_t **);
  
  static void InvalidateAllPictures(decoder_t *);
@@ -19,7 +19,7 @@ index fe0832f..9de9fad 100644
  
  /*****************************************************************************
   * Module descriptor
-@@ -227,6 +228,13 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -318,6 +319,13 @@ static int OpenDecoder(vlc_object_t *p_this)
      if ((p_dec->p_sys = p_sys = calloc(1, sizeof(*p_sys))) == NULL)
          return VLC_ENOMEM;
  
@@ -32,16 +32,15 @@ index fe0832f..9de9fad 100644
 +
      p_dec->pf_decode_video = DecodeVideo;
  
- 
-@@ -451,6 +459,8 @@ static void CloseDecoder(vlc_object_t *p_this)
-     ArchitectureSpecificCopyHooksDestroy(p_sys->pixel_format, &p_sys->architecture_specific_data);
-     free(p_sys->inflight_picture);
+     p_dec->fmt_out.i_cat = p_dec->fmt_in.i_cat;
+@@ -587,6 +595,7 @@ static void CloseDecoder(vlc_object_t *p_this)
+     if (p_sys->timestamp_fifo)
+         timestamp_FifoRelease(p_sys->timestamp_fifo);
      free(p_sys);
-+
 +    vlc_mutex_unlock(&single_instance);
  }
  
  /*****************************************************************************
 -- 
-1.8.3.4
+1.9.0
 

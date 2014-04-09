@@ -1,18 +1,18 @@
-From b03ab186d38e512eac6cc6aba69d888bbff8edb2 Mon Sep 17 00:00:00 2001
+From c86b8ea002537149ad93f47c5e113e2c9e4fca79 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Wed, 12 Mar 2014 15:05:41 +0800
-Subject: [PATCH] MediaCodec: check type before profile level to avoid hang on
- some MSM8960 device
+Subject: [PATCH 41/42] MediaCodec: check type before profile level to avoid
+ hang on some MSM8960 device
 
 ---
- modules/codec/omxil/android_mediacodec.c | 106 ++++++++++++++++++++-----------
- 1 file changed, 69 insertions(+), 37 deletions(-)
+ modules/codec/omxil/android_mediacodec.c | 110 ++++++++++++++++++++-----------
+ 1 file changed, 72 insertions(+), 38 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index b07b360..21bfa72 100644
+index ca380f7..ccb6886 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -412,6 +412,7 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -487,6 +487,7 @@ static int OpenDecoder(vlc_object_t *p_this)
      int num_codecs = (*env)->CallStaticIntMethod(env, p_sys->media_codec_list_class,
                                                   p_sys->get_codec_count);
      jobject codec_name = NULL;
@@ -20,17 +20,22 @@ index b07b360..21bfa72 100644
  
      for (int i = 0; i < num_codecs; i++) {
          jobject info = (*env)->CallStaticObjectMethod(env, p_sys->media_codec_list_class,
-@@ -421,22 +422,44 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -496,20 +497,44 @@ static int OpenDecoder(vlc_object_t *p_this)
              continue;
          }
  
 -        jobject codec_capabilities = (*env)->CallObjectMethod(env, info, p_sys->get_capabilities_for_type,
 -                                                              (*env)->NewStringUTF(env, mime));
--        if (codec_capabilities == NULL) {
--            if ((*env)->ExceptionOccurred(env)) {
--                msg_Warn(p_dec, "Exception occurred in MediaCodec.get_capabilities_for_type.");
--                (*env)->ExceptionClear(env);
--            }
+-        jobject profile_levels = NULL;
+-        int profile_levels_len = 0;
+-        if ((*env)->ExceptionOccurred(env)) {
+-            msg_Warn(p_dec, "Exception occurred in MediaCodecInfo.getCapabilitiesForType");
+-            (*env)->ExceptionClear(env);
+-            break;
+-        } else if (codec_capabilities) {
+-            profile_levels = (*env)->GetObjectField(env, codec_capabilities, p_sys->profile_levels_field);
+-            if (profile_levels)
+-                profile_levels_len = (*env)->GetArrayLength(env, profile_levels);
 +        jobject name = (*env)->CallObjectMethod(env, info, p_sys->get_name);
 +        jsize name_len = (*env)->GetStringUTFLength(env, name);
 +        const char *name_ptr = (*env)->GetStringUTFChars(env, name, NULL);
@@ -55,8 +60,8 @@ index b07b360..21bfa72 100644
 +            msg_Dbg(p_dec, "disable %.*s", name_len, name_ptr);
 +            (*env)->ReleaseStringUTFChars(env, name, name_ptr);
 +            (*env)->DeleteLocalRef(env, name);
-             (*env)->DeleteLocalRef(env, info);
-             continue;
++            (*env)->DeleteLocalRef(env, info);
++            continue;
 +        } else if (!is_codec_at_least(name_ptr, false, MCODEC_UNKNOWN)) {
 +            // slow or unsupport
 +            msg_Dbg(p_dec, "disable %.*s due to slow or unsupport ", name_len, name_ptr);
@@ -67,17 +72,13 @@ index b07b360..21bfa72 100644
 +        } else {
 +            msg_Dbg(p_dec, "using %.*s", name_len, name_ptr);
          }
- 
--        int profile_levels_len = 0;
--        jobject profile_levels = (*env)->GetObjectField(env, codec_capabilities, p_sys->profile_levels_field);
--        if (profile_levels)
--            profile_levels_len = (*env)->GetArrayLength(env, profile_levels);
 -        msg_Dbg(p_dec, "Number of profile levels: %d", profile_levels_len);
++
 +        msg_Dbg(p_dec, "continue check codec named %.*s for %s", name_len, name_ptr, mime);
  
          jobject types = (*env)->CallObjectMethod(env, info, p_sys->get_supported_types);
          int num_types = (*env)->GetArrayLength(env, types);
-@@ -444,6 +467,19 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -517,6 +542,19 @@ static int OpenDecoder(vlc_object_t *p_this)
          for (int j = 0; j < num_types && !found; j++) {
              jobject type = (*env)->GetObjectArrayElement(env, types, j);
              if (!jstrcmp(env, type, mime)) {
@@ -97,7 +98,7 @@ index b07b360..21bfa72 100644
                  /* The mime type is matching for this component. We
                     now check if the capabilities of the codec is
                     matching the video format. */
-@@ -453,49 +489,45 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -526,49 +564,45 @@ static int OpenDecoder(vlc_object_t *p_this)
  
                          int omx_profile = (*env)->GetLongField(env, profile_level, p_sys->profile_field);
                          size_t codec_profile = convert_omx_to_profile_idc(omx_profile);
@@ -169,5 +170,5 @@ index b07b360..21bfa72 100644
  
      // This method doesn't handle errors nicely, it crashes if the codec isn't found.
 -- 
-1.8.3.4
+1.9.0
 

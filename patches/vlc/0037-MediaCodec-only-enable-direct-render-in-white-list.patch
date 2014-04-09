@@ -1,17 +1,17 @@
-From 89b0a34352b08a47ad89b654fde98caef307cd3b Mon Sep 17 00:00:00 2001
+From 4795007f7fad6661da0ae14f433c97fdb1f7f2ff Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Thu, 13 Feb 2014 12:05:49 +0800
-Subject: [PATCH] MediaCodec: only enable direct render in white list
+Subject: [PATCH 37/42] MediaCodec: only enable direct render in white list
 
 ---
  modules/codec/omxil/android_mediacodec.c | 99 ++++++++++++++++++++++++++++++--
  1 file changed, 95 insertions(+), 4 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 833117a..fbbb5aa 100644
+index 9cf9e32..564d473 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -89,6 +89,7 @@ struct decoder_sys_t
+@@ -163,6 +163,7 @@ struct decoder_sys_t
      ArchitectureSpecificCopyData architecture_specific_data;
  
      /* Direct rendering members. */
@@ -19,7 +19,7 @@ index 833117a..fbbb5aa 100644
      bool direct_rendering;
      int i_output_buffers; /**< number of MediaCodec output buffers */
      picture_t** inflight_picture; /**< stores the inflight picture for each output buffer or NULL */
-@@ -188,6 +189,10 @@ static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
+@@ -264,6 +265,10 @@ static vlc_mutex_t single_instance = VLC_STATIC_MUTEX;
  #define DIRECTRENDERING_LONGTEXT N_(\
          "Enable Android direct rendering using opaque buffers.")
  
@@ -30,7 +30,7 @@ index 833117a..fbbb5aa 100644
  #define CFG_PREFIX "mediacodec-"
  
  vlc_module_begin ()
-@@ -196,11 +201,69 @@ vlc_module_begin ()
+@@ -272,11 +277,69 @@ vlc_module_begin ()
      set_subcategory( SUBCAT_INPUT_VCODEC )
      set_section( N_("Decoding") , NULL )
      set_capability( "decoder", 0 ) /* Only enabled via commandline arguments */
@@ -100,7 +100,7 @@ index 833117a..fbbb5aa 100644
  static int jstrcmp(JNIEnv* env, jobject str, const char* str2)
  {
      jsize len = (*env)->GetStringUTFLength(env, str);
-@@ -406,6 +469,11 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -485,6 +548,11 @@ static int OpenDecoder(vlc_object_t *p_this)
                  msg_Dbg(p_dec, "disable %.*s", name_len, name_ptr);
                  (*env)->ReleaseStringUTFChars(env, name, name_ptr);
                  (*env)->DeleteLocalRef(env, name);
@@ -112,7 +112,7 @@ index 833117a..fbbb5aa 100644
              } else {
                  msg_Dbg(p_dec, "using %.*s", name_len, name_ptr);
                  p_sys->name = malloc(name_len + 1);
-@@ -457,10 +525,33 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -536,10 +604,33 @@ static int OpenDecoder(vlc_object_t *p_this)
          (*env)->DeleteLocalRef(env, bytebuf);
      }
  
@@ -151,5 +151,5 @@ index 833117a..fbbb5aa 100644
          jobject surf = jni_LockAndGetAndroidJavaSurface();
          if (surf) {
 -- 
-1.8.3.4
+1.9.0
 

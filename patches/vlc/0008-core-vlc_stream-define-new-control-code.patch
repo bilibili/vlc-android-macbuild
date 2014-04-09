@@ -1,7 +1,7 @@
-From 5c6c75ecc695b9cafcb7632f872acbf59325b185 Mon Sep 17 00:00:00 2001
+From 79c3d39b828e3400af90f9416abce826822fb6bf Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:35:02 +0800
-Subject: [PATCH 08/37] core: vlc_stream: define new control code
+Subject: [PATCH 08/42] core: vlc_stream: define new control code
 
 ---
  include/vlc_stream.h | 6 ++++++
@@ -25,5 +25,5 @@ index 10a98ef..bd9d0fe 100644
  
  VLC_API int stream_Read( stream_t *s, void *p_read, int i_read );
 -- 
-1.8.3.4
+1.9.0
 

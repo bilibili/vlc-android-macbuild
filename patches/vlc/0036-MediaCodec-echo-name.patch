@@ -1,19 +1,19 @@
-From bfbb31b1808b9a75dfadbd3d8e829238c9da9660 Mon Sep 17 00:00:00 2001
+From 6cea6f59cc037775d729ec20fcde794389fe3e76 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Thu, 13 Feb 2014 12:41:38 +0800
-Subject: [PATCH 36/37] MediaCodec: echo name
+Subject: [PATCH 36/42] MediaCodec: echo name
 
 ---
  modules/codec/omxil/android_mediacodec.c | 9 +++++++++
  1 file changed, 9 insertions(+)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index cbca603..fe48bc3 100644
+index c246725..9cf9e32 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -459,6 +459,15 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -592,6 +592,15 @@ static int OpenDecoder(vlc_object_t *p_this)
+     if (!p_sys->timestamp_fifo)
          goto error;
-     (*env)->DeleteLocalRef(env, format);
  
 +    if (p_sys->direct_rendering) {
 +        char *psz_tmp = NULL;
@@ -28,5 +28,5 @@ index cbca603..fe48bc3 100644
  
   error:
 -- 
-1.8.3.4
+1.9.0
 

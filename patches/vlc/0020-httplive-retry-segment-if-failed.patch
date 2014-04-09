@@ -1,17 +1,17 @@
-From 70394c136d9385a684178ca0d8b64678b61ee48e Mon Sep 17 00:00:00 2001
+From 750ef17ec612ebd322b4bfab61deeb5d91ccbf8a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 29 Jul 2012 16:44:03 +0800
-Subject: [PATCH 20/37] httplive: retry segment if failed
+Subject: [PATCH 20/42] httplive: retry segment if failed
 
 ---
  modules/stream_filter/httplive.c | 9 ++++++++-
  1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 41fd84b..fdac815 100644
+index 8fad2f3..2709484 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
-@@ -1845,7 +1845,14 @@ static int hls_Download(stream_t *s, segment_t *segment)
+@@ -1852,7 +1852,14 @@ static int hls_Download(stream_t *s, segment_t *segment)
          vlc_cond_wait(&p_sys->wait, &p_sys->lock);
      vlc_mutex_unlock(&p_sys->lock);
  
@@ -28,5 +28,5 @@ index 41fd84b..fdac815 100644
          return VLC_EGENERIC;
  
 -- 
-1.8.3.4
+1.9.0
 

@@ -1,17 +1,17 @@
-From e53571e0ada680949cc45df75ac176098a2a3f2b Mon Sep 17 00:00:00 2001
+From 45e9224332c3231cdc7f558dcba88a2b14aa6843 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Tue, 25 Feb 2014 11:48:25 +0800
-Subject: [PATCH 40/42] MediaCodec: do not drop packet
+Subject: [PATCH 39/42] MediaCodec: do not drop packet
 
 ---
  modules/codec/omxil/android_mediacodec.c | 7 ++++++-
  1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 7c69643..7262ca4 100644
+index 6cbfcf9..ca380f7 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -902,7 +902,12 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
+@@ -994,7 +994,12 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
  
      vlcjni_setup_thread_env(&env);
  
@@ -23,8 +23,8 @@ index 7c69643..7262ca4 100644
 +        (p_block->i_dts == VLC_TS_INVALID) &&
 +        (p_block->i_pts == VLC_TS_INVALID)) {
          block_Release(p_block);
+         timestamp_FifoEmpty(p_sys->timestamp_fifo);
          if (p_sys->decoded) {
-             /* Invalidate all pictures that are currently in flight
 -- 
-1.8.5.3
+1.9.0
 

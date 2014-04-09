@@ -1,19 +1,19 @@
-From 8b0bd8fcdb3a5adf52323665676abfbd6fec94c4 Mon Sep 17 00:00:00 2001
+From ec6d700b09ebadaa5e5240dd3a810501cb5c3da2 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 31 May 2013 18:19:47 +0800
-Subject: [PATCH 31/37] ringbuf: support asynchronized ring buffer
+Subject: [PATCH 31/42] ringbuf: support asynchronized ring buffer
 
 ---
- modules/stream_filter/ringbuf.c | 846 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 846 insertions(+)
+ modules/stream_filter/ringbuf.c | 850 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 850 insertions(+)
  create mode 100644 modules/stream_filter/ringbuf.c
 
 diff --git a/modules/stream_filter/ringbuf.c b/modules/stream_filter/ringbuf.c
 new file mode 100644
-index 0000000..950f156
+index 0000000..4b040ae
 --- /dev/null
 +++ b/modules/stream_filter/ringbuf.c
-@@ -0,0 +1,846 @@
+@@ -0,0 +1,850 @@
 +/*****************************************************************************
 + * ringbuf.c: Stream ring buffer in memory
 + *****************************************************************************
@@ -256,6 +256,8 @@ index 0000000..950f156
 +        p_sys->p_buffer[i] = (uint8_t *) malloc( RING_BLOCK_SIZE );
 +        if( p_sys->p_buffer[i] == NULL )
 +        {
++            for (int n = 0; n < i; n++)
++                free( p_sys->p_buffer[n] );
 +            sys_Free( &p_sys );
 +            return NULL;
 +        }
@@ -380,6 +382,8 @@ index 0000000..950f156
 +    int i_to_read = i_data_ready;
 +    if( i_to_read > p_sys->i_buffer_size )
 +        i_to_read = p_sys->i_buffer_size;
++    if (i_to_read > i_read)
++        i_to_read = i_read;
 +
 +    /* beyond last byte */
 +    int i_read_index  = p_sys->i_read_index;
@@ -860,7 +864,6 @@ index 0000000..950f156
 +    }
 +    return VLC_SUCCESS;
 +}
-\ No newline at end of file
 -- 
-1.8.3.4
+1.9.0
 

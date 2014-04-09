@@ -1,14 +1,14 @@
-From 9aac3495d9f9b4affee04676014d810438bf9af0 Mon Sep 17 00:00:00 2001
+From 5d2f58bd1384f1ee13f042e1a7017554418299ab Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 28 Jan 2014 13:52:42 +0800
-Subject: [PATCH 09/15] Android.mk: include contrib
+Subject: [PATCH 09/16] Android.mk: include contrib
 
 ---
  vlc-android/jni/Android.mk | 6 ++++++
  1 file changed, 6 insertions(+)
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 87dea03..4bde57f 100644
+index 2fc58b6..39003ff 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -40,6 +40,12 @@ LOCAL_SRC_FILES += wchar/wmemset.c
@@ -25,5 +25,5 @@ index 87dea03..4bde57f 100644
  
  CPP_STATIC=$(ANDROID_NDK)/sources/cxx-stl/gnu-libstdc++$(CXXSTL)/libs/$(ARCH)/libgnustl_static.a
 -- 
-1.8.3.4
+1.9.0
 

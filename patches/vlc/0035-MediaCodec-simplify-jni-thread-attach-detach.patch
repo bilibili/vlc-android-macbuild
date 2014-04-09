@@ -1,18 +1,18 @@
-From 66661a7d37638da8b3c7dfb7fe3a1609405b7adc Mon Sep 17 00:00:00 2001
+From 15fd11707c65956e77fb9030cc8eb81f476f5a60 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Mon, 10 Feb 2014 18:00:59 +0800
-Subject: [PATCH 35/40] MediaCodec: simplify jni thread attach/detach
+Subject: [PATCH 35/42] MediaCodec: simplify jni thread attach/detach
 
 Avoid repeatly AttachCurrentThread()/DetachCurrentThread()
 ---
- modules/codec/omxil/android_mediacodec.c | 57 +++++++++++++++++++++++++-------
- 1 file changed, 45 insertions(+), 12 deletions(-)
+ modules/codec/omxil/android_mediacodec.c | 58 +++++++++++++++++++++++++-------
+ 1 file changed, 45 insertions(+), 13 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index c286404..851e3b3 100644
+index 00f85ef..c246725 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -211,6 +211,47 @@ static int jstrcmp(JNIEnv* env, jobject str, const char* str2)
+@@ -288,6 +288,47 @@ static int jstrcmp(JNIEnv* env, jobject str, const char* str2)
      return ret;
  }
  
@@ -60,7 +60,7 @@ index c286404..851e3b3 100644
  /*****************************************************************************
   * OpenDecoder: Create the decoder instance
   *****************************************************************************/
-@@ -258,7 +299,7 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -334,7 +375,7 @@ static int OpenDecoder(vlc_object_t *p_this)
      p_dec->b_need_packetized = true;
  
      JNIEnv* env = NULL;
@@ -69,11 +69,16 @@ index c286404..851e3b3 100644
  
      for (int i = 0; classes[i].name; i++) {
          *(jclass*)((uint8_t*)p_sys + classes[i].offset) =
-@@ -458,11 +499,9 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -546,8 +587,6 @@ static int OpenDecoder(vlc_object_t *p_this)
          goto error;
      (*env)->DeleteLocalRef(env, format);
  
 -    (*myVm)->DetachCurrentThread(myVm);
+-
+     const int timestamp_fifo_size = 32;
+     p_sys->timestamp_fifo = timestamp_FifoNew(timestamp_fifo_size);
+     if (!p_sys->timestamp_fifo)
+@@ -556,7 +595,6 @@ static int OpenDecoder(vlc_object_t *p_this)
      return VLC_SUCCESS;
  
   error:
@@ -81,7 +86,7 @@ index c286404..851e3b3 100644
      CloseDecoder(p_this);
      return VLC_EGENERIC;
  }
-@@ -480,7 +519,7 @@ static void CloseDecoder(vlc_object_t *p_this)
+@@ -574,7 +612,7 @@ static void CloseDecoder(vlc_object_t *p_this)
       * to prevent the vout from using destroyed output buffers. */
      if (p_sys->direct_rendering)
          InvalidateAllPictures(p_dec);
@@ -90,7 +95,7 @@ index c286404..851e3b3 100644
      if (p_sys->input_buffers)
          (*env)->DeleteGlobalRef(env, p_sys->input_buffers);
      if (p_sys->output_buffers)
-@@ -493,7 +532,6 @@ static void CloseDecoder(vlc_object_t *p_this)
+@@ -587,7 +625,6 @@ static void CloseDecoder(vlc_object_t *p_this)
      }
      if (p_sys->buffer_info)
          (*env)->DeleteGlobalRef(env, p_sys->buffer_info);
@@ -98,7 +103,7 @@ index c286404..851e3b3 100644
  
      free(p_sys->name);
      ArchitectureSpecificCopyHooksDestroy(p_sys->pixel_format, &p_sys->architecture_specific_data);
-@@ -528,14 +566,13 @@ static void DisplayBuffer(picture_sys_t* p_picsys, bool b_render)
+@@ -622,14 +659,13 @@ static void DisplayBuffer(picture_sys_t* p_picsys, bool b_render)
  
      /* Release the MediaCodec buffer. */
      JNIEnv *env = NULL;
@@ -114,7 +119,7 @@ index c286404..851e3b3 100644
      p_picsys->b_valid = false;
  
      vlc_mutex_unlock(get_android_opaque_mutex());
-@@ -750,7 +787,7 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
+@@ -851,7 +887,7 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
          return NULL;
      }
  
@@ -123,7 +128,7 @@ index c286404..851e3b3 100644
  
      if (p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED)) {
          block_Release(p_block);
-@@ -769,7 +806,6 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
+@@ -871,7 +907,6 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
              }
          }
          p_sys->decoded = false;
@@ -131,15 +136,15 @@ index c286404..851e3b3 100644
          return NULL;
      }
  
-@@ -800,7 +836,6 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
+@@ -902,7 +937,6 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
                   * without assigning NULL to *pp_block. The next call
                   * to DecodeVideo will try to send the input packet again.
                   */
 -                (*myVm)->DetachCurrentThread(myVm);
                  return p_pic;
              }
-             timeout = 30*1000;
-@@ -826,7 +861,6 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
+             timeout = 30 * 1000;
+@@ -928,7 +962,6 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
                      block_Release(p_block);
                      *pp_block = NULL;
                  }
@@ -147,14 +152,14 @@ index c286404..851e3b3 100644
                  return invalid_picture;
              }
              continue;
-@@ -850,7 +884,6 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
+@@ -954,7 +987,6 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
      }
      if (!p_pic)
-         GetOutput(p_dec, env, &p_pic);
+         GetOutput(p_dec, env, &p_pic, 0);
 -    (*myVm)->DetachCurrentThread(myVm);
  
      block_Release(p_block);
      *pp_block = NULL;
 -- 
-1.8.3.4
+1.9.0
 

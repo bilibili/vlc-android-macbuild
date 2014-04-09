@@ -1,17 +1,17 @@
-From 7ca5cc22ea9c611089aa3d788e72d1d776fcaf83 Mon Sep 17 00:00:00 2001
+From 1ab72527c896403a2d84f7823e5d3776367bc759 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Wed, 19 Feb 2014 16:34:32 +0800
-Subject: [PATCH 39/39] MediaCodec: check exception before release buffer
+Subject: [PATCH 38/42] MediaCodec: check exception before release buffer
 
 ---
  modules/codec/omxil/android_mediacodec.c | 5 +++++
  1 file changed, 5 insertions(+)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 5b10b74..c3bad9e 100644
+index 564d473..6cbfcf9 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -628,6 +628,11 @@ static void DisplayBuffer(picture_sys_t* p_picsys, bool b_render)
+@@ -760,6 +760,11 @@ static void DisplayBuffer(picture_sys_t* p_picsys, bool b_render)
      /* Release the MediaCodec buffer. */
      JNIEnv *env = NULL;
      vlcjni_setup_thread_env(&env);
@@ -24,5 +24,5 @@ index 5b10b74..c3bad9e 100644
      if ((*env)->ExceptionOccurred(env)) {
          msg_Err(p_dec, "Exception in MediaCodec.releaseOutputBuffer (DisplayBuffer)");
 -- 
-1.8.3.4
+1.9.0
 

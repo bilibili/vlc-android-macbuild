@@ -1,7 +1,7 @@
-From 3b2f5ca85f91b2ffe32739a28a1d39501689fba9 Mon Sep 17 00:00:00 2001
+From 232e968f6542356194b36645234e86947f08cdc4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 10 Feb 2014 17:57:15 +0800
-Subject: [PATCH 14/15] jni/aout: simplify jni thread attach
+Subject: [PATCH 14/16] jni/aout: simplify jni thread attach
 
 ---
  vlc-android/jni/aout.c | 31 +++++++++++++------------------
@@ -128,5 +128,5 @@ index bc146b4..7b8d129 100644
      return sample_rate;
  }
 -- 
-1.8.3.4
+1.9.0
 

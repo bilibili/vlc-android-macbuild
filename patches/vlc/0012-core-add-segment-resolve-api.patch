@@ -1,24 +1,19 @@
-From 67ba9541a717c7f99356d63e92cd1142c020863c Mon Sep 17 00:00:00 2001
+From 751d12698add3b832f8ba3f33944bf297adf788a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 14:43:15 +0800
-Subject: [PATCH 12/37] core: add segment resolve api
+Subject: [PATCH 12/42] core: add segment resolve api
 
 ---
- include/vlc/libvlc_ls             |  0
  include/vlc/libvlc_media_player.h | 11 +++++++++++
  include/vlc/libvlc_structures.h   | 10 ++++++++++
  lib/media_player.c                | 31 +++++++++++++++++++++++++++++++
- 4 files changed, 52 insertions(+)
- create mode 100644 include/vlc/libvlc_ls
+ 3 files changed, 52 insertions(+)
 
-diff --git a/include/vlc/libvlc_ls b/include/vlc/libvlc_ls
-new file mode 100644
-index 0000000..e69de29
 diff --git a/include/vlc/libvlc_media_player.h b/include/vlc/libvlc_media_player.h
-index 27f7b97..3b0dd6a 100644
+index fb91f59..087221a 100644
 --- a/include/vlc/libvlc_media_player.h
 +++ b/include/vlc/libvlc_media_player.h
-@@ -1821,6 +1821,17 @@ LIBVLC_API int libvlc_media_player_set_equalizer( libvlc_media_player_t *p_mi, l
+@@ -1831,6 +1831,17 @@ LIBVLC_API int libvlc_media_player_set_equalizer( libvlc_media_player_t *p_mi, l
  
  /** @} audio */
  
@@ -65,11 +60,11 @@ index 54cd1fd..40a7b39 100644
  
  # ifdef __cplusplus
 diff --git a/lib/media_player.c b/lib/media_player.c
-index 624ac3b..75b9119 100644
+index b7ee68f..9a32bbe 100644
 --- a/lib/media_player.c
 +++ b/lib/media_player.c
-@@ -483,6 +483,16 @@ libvlc_media_player_new( libvlc_instance_t *instance )
-     var_Create (mp, "equalizer-preamp", VLC_VAR_FLOAT);
+@@ -508,6 +508,16 @@ libvlc_media_player_new( libvlc_instance_t *instance )
+     var_Create (mp, "equalizer-vlcfreqs", VLC_VAR_BOOL);
      var_Create (mp, "equalizer-bands", VLC_VAR_STRING);
  
 +    /* Video Segment List */
@@ -85,7 +80,7 @@ index 624ac3b..75b9119 100644
      mp->p_md = NULL;
      mp->state = libvlc_NothingSpecial;
      mp->p_libvlc_instance = instance;
-@@ -1482,3 +1492,24 @@ int libvlc_media_player_set_equalizer( libvlc_media_player_t *p_mi, libvlc_equal
+@@ -1536,3 +1546,24 @@ int libvlc_media_player_set_equalizer( libvlc_media_player_t *p_mi, libvlc_equal
      free( psz_bands );
      return 0;
  }
@@ -111,5 +106,5 @@ index 624ac3b..75b9119 100644
 +    var_SetAddress( p_mi, "vsl-get-bytes", p_get_bytes_cb );
 +}
 -- 
-1.8.3.4
+1.9.0
 

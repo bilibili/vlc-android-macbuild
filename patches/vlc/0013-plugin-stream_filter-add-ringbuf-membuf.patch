@@ -1,7 +1,7 @@
-From 146089542de50ee26e1f395cad3ec0889e9cb59d Mon Sep 17 00:00:00 2001
+From 6cf08a253710eae0d3697d6e435b37f3c441ff4f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 14:36:09 +0800
-Subject: [PATCH 13/37] plugin: stream_filter: add ringbuf, membuf
+Subject: [PATCH 13/42] plugin: stream_filter: add ringbuf, membuf
 
 ---
  modules/stream_filter/Makefile.am | 12 ++++++++++++
@@ -30,5 +30,5 @@ index fc712b5..ef27fce 100644
  librecord_plugin_la_SOURCES = stream_filter/record.c
  stream_filter_LTLIBRARIES += librecord_plugin.la
 -- 
-1.8.3.4
+1.9.0
 

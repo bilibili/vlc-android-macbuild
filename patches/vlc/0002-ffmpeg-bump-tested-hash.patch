@@ -1,7 +1,7 @@
 From 17fb3044a7896ea528e46b49fa200f08122cfe5a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 26 Feb 2013 19:01:29 +0800
-Subject: [PATCH 1002/1003] ffmpeg: bump tested hash
+Subject: [PATCH 2/3] ffmpeg: bump tested hash
 
 ---
  contrib/src/ffmpeg/rules.mak | 6 +++---

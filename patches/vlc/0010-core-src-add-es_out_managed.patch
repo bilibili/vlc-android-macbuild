@@ -1,17 +1,17 @@
-From c6a82323bd88f70dfa79c3427d5c1c07c40ce186 Mon Sep 17 00:00:00 2001
+From 697405e37ce12906c6ad0b013366a7cccc9bc487 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:44:39 +0800
-Subject: [PATCH 10/37] core: src: add es_out_managed
+Subject: [PATCH 10/42] core: src: add es_out_managed
 
 ---
  src/Makefile.am | 2 ++
  1 file changed, 2 insertions(+)
 
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 474da25..ac4479c 100644
+index 842fc73..14567d5 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -44,6 +44,7 @@ pluginsinclude_HEADERS = \
+@@ -45,6 +45,7 @@ pluginsinclude_HEADERS = \
  	../include/vlc_epg.h \
  	../include/vlc_es.h \
  	../include/vlc_es_out.h \
@@ -19,7 +19,7 @@ index 474da25..ac4479c 100644
  	../include/vlc_events.h \
  	../include/vlc_filter.h \
  	../include/vlc_fourcc.h \
-@@ -362,6 +363,7 @@ SOURCES_libvlc_common = \
+@@ -363,6 +364,7 @@ SOURCES_libvlc_common = \
  	input/demux.c \
  	input/es_out.c \
  	input/es_out_timeshift.c \
@@ -28,5 +28,5 @@ index 474da25..ac4479c 100644
  	input/input.c \
  	input/info.h \
 -- 
-1.8.3.4
+1.9.0
 

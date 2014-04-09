@@ -1,8 +1,8 @@
-From 116e4e1b387cbf1e96611902d8986bfdc1b3871d Mon Sep 17 00:00:00 2001
+From 6f8beeeb27f783cf99c350939992c67476d6722b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH] hls: fix position and length for streaming mpegts segments
- hls
+Subject: [PATCH 18/42] hls: fix position and length for streaming mpegts
+ segments hls
 
 ---
  modules/demux/ts.c               | 55 ++++++++++++++++++++++++++++++++++++++++
@@ -10,7 +10,7 @@ Subject: [PATCH] hls: fix position and length for streaming mpegts segments
  2 files changed, 74 insertions(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index 093618e..1a6b6a3 100644
+index dbceffa..b9eaa93 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
 @@ -330,6 +330,14 @@ struct demux_sys_t
@@ -43,7 +43,7 @@ index 093618e..1a6b6a3 100644
      return VLC_SUCCESS;
  }
  
-@@ -1058,6 +1074,20 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+@@ -1062,6 +1078,20 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
              {
                  *pi64 = 0;
              }
@@ -64,7 +64,7 @@ index 093618e..1a6b6a3 100644
          }
          else
          {
-@@ -1075,6 +1105,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+@@ -1079,6 +1109,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
              {
                  *pi64 = 0;
              }
@@ -76,7 +76,7 @@ index 093618e..1a6b6a3 100644
          }
          else
          {
-@@ -2155,8 +2190,26 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2159,8 +2194,26 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
      if( i_pcr < 0 )
          return;
  
@@ -103,7 +103,7 @@ index 093618e..1a6b6a3 100644
  
      /* Search program and set the PCR */
      for( int i = 0; i < p_sys->i_pmt; i++ )
-@@ -2262,6 +2315,8 @@ static bool GatherData( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2266,6 +2319,8 @@ static bool GatherData( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
              msg_Warn( p_demux, "discontinuity received 0x%x instead of 0x%x (pid=%d)",
                        i_cc, ( pid->i_cc + 1 )&0x0f, pid->i_pid );
  
@@ -113,10 +113,10 @@ index 093618e..1a6b6a3 100644
              if( pid->es->p_data && pid->es->fmt.i_cat != VIDEO_ES )
              {
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index 8ce6d40..d121081 100644
+index ad17a80..59459ab 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
-@@ -1131,6 +1131,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1134,6 +1134,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
          /* */
          bool media_sequence_loaded = false;
          int segment_duration = -1;
@@ -124,7 +124,7 @@ index 8ce6d40..d121081 100644
          do
          {
              /* Next line */
-@@ -1140,7 +1141,14 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1143,7 +1144,14 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
              p_begin = p_read;
  
              if (strncmp(line, "#EXTINF", 7) == 0)
@@ -139,7 +139,7 @@ index 8ce6d40..d121081 100644
              else if (strncmp(line, "#EXT-X-TARGETDURATION", 21) == 0)
                  err = parse_TargetDuration(s, hls, line);
              else if (strncmp(line, "#EXT-X-MEDIA-SEQUENCE", 21) == 0)
-@@ -1179,6 +1187,12 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
+@@ -1182,6 +1190,12 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
  
          } while (err == VLC_SUCCESS);
  
@@ -152,7 +152,7 @@ index 8ce6d40..d121081 100644
          free(line);
      }
  
-@@ -2590,6 +2604,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2597,6 +2611,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
  
      bool b_found = false;
      uint64_t length = 0;
@@ -160,7 +160,7 @@ index 8ce6d40..d121081 100644
      uint64_t size = hls->size;
      int count = vlc_array_count(hls->segments);
  
-@@ -2625,6 +2640,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2632,6 +2647,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
              vlc_mutex_unlock(&hls->lock);
              return VLC_EGENERIC;
          }
@@ -169,7 +169,7 @@ index 8ce6d40..d121081 100644
      }
  
      /* */
-@@ -2637,6 +2654,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
+@@ -2644,6 +2661,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
      /* */
      if (b_found)
      {
@@ -179,5 +179,5 @@ index 8ce6d40..d121081 100644
          /* restore current segment to start position */
          vlc_mutex_lock(&currentSegment->lock);
 -- 
-1.8.3.4
+1.9.0
 

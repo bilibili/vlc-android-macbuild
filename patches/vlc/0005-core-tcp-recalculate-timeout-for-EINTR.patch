@@ -1,7 +1,7 @@
-From 558022303f3e209cf7a215497ac055a6fe284452 Mon Sep 17 00:00:00 2001
+From f64b0f1ea61eefc5b8d17adf4038e19c43d789d3 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 11:20:15 +0800
-Subject: [PATCH 05/37] core: tcp: recalculate timeout for EINTR
+Subject: [PATCH 05/42] core: tcp: recalculate timeout for EINTR
 
 ---
  src/network/tcp.c | 52 ++++++++++++++++++++++++++++++++++++++++++++++++----
@@ -78,5 +78,5 @@ index 083861d..95ae279 100644
              switch (val)
              {
 -- 
-1.8.3.4
+1.9.0
 

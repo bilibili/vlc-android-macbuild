@@ -1,4 +1,4 @@
-From a43a7d11bc8945726e6d94ebcb899bb88bd314df Mon Sep 17 00:00:00 2001
+From 8b0a436ccc334a09633ee35ced6b16f86133d8fc Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
 Subject: [PATCH 2/4] lite-mode: compile.sh: disable contrib
@@ -8,7 +8,7 @@ Subject: [PATCH 2/4] lite-mode: compile.sh: disable contrib
  1 file changed, 32 insertions(+), 3 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index a29cd55..e614b4a 100755
+index 73c1f24..8d42dcb 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -231,12 +231,41 @@ cd contrib/android
@@ -57,5 +57,5 @@ index a29cd55..e614b4a 100755
  # TODO: mpeg2, theora
  
 -- 
-1.8.3.4
+1.9.0
 

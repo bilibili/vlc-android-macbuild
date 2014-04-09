@@ -1,14 +1,14 @@
-From 754b2fed973d739bddc0f49892f1f78acd2abab1 Mon Sep 17 00:00:00 2001
+From cb399bb846b6736789f2bcfa701d273a32f0413a Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 10 Feb 2014 14:55:42 +0800
-Subject: [PATCH 06/15] compile.sh: config target abi env
+Subject: [PATCH 06/16] compile.sh: config target abi env
 
 ---
  compile.sh | 3 +++
  1 file changed, 3 insertions(+)
 
 diff --git a/compile.sh b/compile.sh
-index ae0808a..440758e 100755
+index 4310c9d..6370de2 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -1,5 +1,8 @@
@@ -21,5 +21,5 @@ index ae0808a..440758e 100755
  # Setup all that stuff correctly.
  # Get the latest Android SDK Platform or modify numbers in configure.sh and vlc-android/default.properties.
 -- 
-1.8.3.4
+1.9.0
 

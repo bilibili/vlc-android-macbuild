@@ -1,7 +1,7 @@
-From 100acea879d0f73aa6a77a111faa25057efd4af5 Mon Sep 17 00:00:00 2001
+From fa0d4666a76fa24d6fe17d3310d270faaa0ee45b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 1 Jul 2012 18:44:58 +0800
-Subject: [PATCH 06/37] core: support total buffering progress
+Subject: [PATCH 06/42] core: support total buffering progress
 
 ---
  include/vlc/libvlc_events.h |  8 +++++++-
@@ -14,10 +14,10 @@ Subject: [PATCH 06/37] core: support total buffering progress
  7 files changed, 35 insertions(+), 2 deletions(-)
 
 diff --git a/include/vlc/libvlc_events.h b/include/vlc/libvlc_events.h
-index ae1a94b..411f8a7 100644
+index f268fb5..8a26e4e 100644
 --- a/include/vlc/libvlc_events.h
 +++ b/include/vlc/libvlc_events.h
-@@ -101,7 +101,9 @@ enum libvlc_event_e {
+@@ -102,7 +102,9 @@ enum libvlc_event_e {
      libvlc_VlmMediaInstanceStatusPlaying,
      libvlc_VlmMediaInstanceStatusPause,
      libvlc_VlmMediaInstanceStatusEnd,
@@ -28,7 +28,7 @@ index ae1a94b..411f8a7 100644
  };
  
  /**
-@@ -172,6 +174,10 @@ typedef struct libvlc_event_t
+@@ -177,6 +179,10 @@ typedef struct libvlc_event_t
          {
              int new_count;
          } media_player_vout;
@@ -40,10 +40,10 @@ index ae1a94b..411f8a7 100644
          /* media list */
          struct
 diff --git a/include/vlc_input.h b/include/vlc_input.h
-index 53e22b6..4cf17f8 100644
+index c1cb17d..d098415 100644
 --- a/include/vlc_input.h
 +++ b/include/vlc_input.h
-@@ -393,6 +393,9 @@ typedef enum input_event_type_e
+@@ -394,6 +394,9 @@ typedef enum input_event_type_e
      /* A vout_thread_t object has been created/deleted by *the input* */
      INPUT_EVENT_VOUT,
  
@@ -54,10 +54,10 @@ index 53e22b6..4cf17f8 100644
  
  /**
 diff --git a/lib/media_player.c b/lib/media_player.c
-index c23dd42..c8e55ff 100644
+index 8eee79c..534283d 100644
 --- a/lib/media_player.c
 +++ b/lib/media_player.c
-@@ -300,6 +300,13 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
+@@ -324,6 +324,13 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
              var_GetFloat( p_input, "cache" ));
          libvlc_event_send( p_mi->p_event_manager, &event );
      }
@@ -71,7 +71,7 @@ index c23dd42..c8e55ff 100644
      else if( newval.i_int == INPUT_EVENT_VOUT )
      {
          vout_thread_t **pp_vout;
-@@ -513,6 +520,8 @@ libvlc_media_player_new( libvlc_instance_t *instance )
+@@ -543,6 +550,8 @@ libvlc_media_player_new( libvlc_instance_t *instance )
  
      register_event(mp, MediaChanged);
  
@@ -142,5 +142,5 @@ index 3e722f4..01ee59e 100644
      var_Create( p_input, "input-record-native", VLC_VAR_BOOL | VLC_VAR_DOINHERIT );
  
 -- 
-1.8.3.4
+1.9.0
 

@@ -1,7 +1,7 @@
-From abaf03ec424a2baca6c6b2c70eda840f39520095 Mon Sep 17 00:00:00 2001
+From e4e612a56bf96ef2105facbacf018feca250d963 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 28 Jul 2012 17:21:40 +0800
-Subject: [PATCH 04/15] compile.sh: support fastcompile.sh
+Subject: [PATCH 04/16] compile.sh: support fastcompile.sh
 
 ---
  fastcompile.sh | 4 ++++
@@ -19,5 +19,5 @@ index 0000000..14c672b
 +export VLC_FAST_COMPILE=1
 +sh compile.sh jni
 -- 
-1.8.3.4
+1.9.0
 

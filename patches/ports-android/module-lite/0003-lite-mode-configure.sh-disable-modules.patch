@@ -1,7 +1,7 @@
-From cc1a718be10511f9aab687583d22f71d8a66ba6d Mon Sep 17 00:00:00 2001
+From c7951d93030f2240a981ecc357f4cc9bd4f6409e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 16 Apr 2012 23:20:57 +0800
-Subject: [PATCH] lite-mode: configure.sh: disable modules
+Subject: [PATCH 3/4] lite-mode: configure.sh: disable modules
 
 ---
  configure.sh | 24 +++++++++++++++---------
@@ -66,5 +66,5 @@ index 8dae0aa..e534c2f 100755
                  --disable-schroedinger --disable-dirac \
                  $*
 -- 
-1.8.3.4
+1.9.0
 

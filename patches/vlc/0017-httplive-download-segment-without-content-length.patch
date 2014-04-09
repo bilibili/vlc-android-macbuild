@@ -1,17 +1,17 @@
-From 1fdfa111f8e52b24b2d43eec32b24865a07febb3 Mon Sep 17 00:00:00 2001
+From fc48201515c2601bf1346422ff02b47319797fbb Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 29 May 2012 15:05:09 +0800
-Subject: [PATCH 17/37] httplive: download segment without content-length
+Subject: [PATCH 17/42] httplive: download segment without content-length
 
 ---
  modules/stream_filter/httplive.c | 55 ++++++++++++++++++++++++++++++++++------
  1 file changed, 47 insertions(+), 8 deletions(-)
 
 diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index a6e4d3e..ae169a0 100644
+index b2dc1e9..ad17a80 100644
 --- a/modules/stream_filter/httplive.c
 +++ b/modules/stream_filter/httplive.c
-@@ -1816,6 +1816,10 @@ static int Prefetch(stream_t *s, int *current)
+@@ -1823,6 +1823,10 @@ static int Prefetch(stream_t *s, int *current)
  /****************************************************************************
   *
   ****************************************************************************/
@@ -22,7 +22,7 @@ index a6e4d3e..ae169a0 100644
  static int hls_Download(stream_t *s, segment_t *segment)
  {
      stream_sys_t *p_sys = s->p_sys;
-@@ -1830,17 +1834,21 @@ static int hls_Download(stream_t *s, segment_t *segment)
+@@ -1837,17 +1841,21 @@ static int hls_Download(stream_t *s, segment_t *segment)
      if (p_ts == NULL)
          return VLC_EGENERIC;
  
@@ -48,7 +48,7 @@ index a6e4d3e..ae169a0 100644
  
      ssize_t length = 0, curlen = 0;
      uint64_t size;
-@@ -1851,9 +1859,9 @@ static int hls_Download(stream_t *s, segment_t *segment)
+@@ -1858,9 +1866,9 @@ static int hls_Download(stream_t *s, segment_t *segment)
           * and enlarge the segment data block if necessary.
           */
          size = stream_Size(p_ts);
@@ -60,7 +60,7 @@ index a6e4d3e..ae169a0 100644
              block_t *p_block = block_Realloc(segment->data, 0, size);
              if (p_block == NULL)
              {
-@@ -1864,15 +1872,46 @@ static int hls_Download(stream_t *s, segment_t *segment)
+@@ -1871,15 +1879,46 @@ static int hls_Download(stream_t *s, segment_t *segment)
              }
              segment->data = p_block;
              segment->size = size;
@@ -110,5 +110,5 @@ index a6e4d3e..ae169a0 100644
      return VLC_SUCCESS;
  }
 -- 
-1.8.3.4
+1.9.0
 

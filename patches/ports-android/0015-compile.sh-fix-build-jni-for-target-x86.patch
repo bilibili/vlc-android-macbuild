@@ -1,14 +1,14 @@
-From 018a590a336990e4be0ffad059afe576a9f92224 Mon Sep 17 00:00:00 2001
+From ae1d9b85c98558f2908d02ebd662e42df345955b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 14 Feb 2014 17:18:01 +0800
-Subject: [PATCH 15/15] compile.sh: fix build jni for target x86
+Subject: [PATCH 15/16] compile.sh: fix build jni for target x86
 
 ---
  compile.sh | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/compile.sh b/compile.sh
-index 440758e..9679cc2 100755
+index 6370de2..edd234a 100755
 --- a/compile.sh
 +++ b/compile.sh
 @@ -275,7 +275,7 @@ cd ../.. && mkdir -p android && cd android
@@ -21,5 +21,5 @@ index 440758e..9679cc2 100755
      CLEAN="distclean"
      echo "Bootstraping"
 -- 
-1.8.3.4
+1.9.0
 
