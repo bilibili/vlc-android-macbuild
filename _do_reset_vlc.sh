@@ -1,5 +1,16 @@
 #! /bin/sh
 
+do_apply_patches() {
+n=0
+for p in $1/*.patch; do
+    r=$((n-n/10*10))
+    n=$((n+1))
+    if [ $r -eq 0 ]; then sleep 3; fi
+    echo "VLC <= ${p}"
+    git am $p || break
+done
+}
+
 BUILD_PLATFORM='unknown'
 if [ "$(uname)" = 'Linux' ]; then
     BUILD_PLATFORM='linux'
@@ -33,8 +44,7 @@ git am --abort
 
 echo "======================================="
 echo "Applying the patches"
-sleep 3
-git am ../patches/*.patch
+do_apply_patches ../patches
 
 if [ ${BUILD_PLATFORM} = 'darwin' ]; then
     echo "======================================="
@@ -44,17 +54,7 @@ fi
 
 echo "======================================="
 echo "Applying the patches for libvlc_danmaku"
-sleep 3
-git am ../../patches/vlc/000*.patch
-sleep 3
-git am ../../patches/vlc/001*.patch
-sleep 3
-git am ../../patches/vlc/002*.patch
-sleep 3
-git am ../../patches/vlc/003*.patch
-sleep 3
-git am ../../patches/vlc/004*.patch
-
+do_apply_patches ../../patches/vlc
 echo "======================================="
 
 cd -
