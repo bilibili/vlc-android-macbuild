@@ -1,18 +1,18 @@
-From c86b8ea002537149ad93f47c5e113e2c9e4fca79 Mon Sep 17 00:00:00 2001
+From ee31096ad6b9dda7987fb13c767f473e2c93b070 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Wed, 12 Mar 2014 15:05:41 +0800
-Subject: [PATCH 41/42] MediaCodec: check type before profile level to avoid
- hang on some MSM8960 device
+Subject: [PATCH] MediaCodec: check type before profile level to avoid hang on
+ some MSM8960 device
 
 ---
- modules/codec/omxil/android_mediacodec.c | 110 ++++++++++++++++++++-----------
- 1 file changed, 72 insertions(+), 38 deletions(-)
+ modules/codec/omxil/android_mediacodec.c | 109 ++++++++++++++++++++-----------
+ 1 file changed, 71 insertions(+), 38 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index ca380f7..ccb6886 100644
+index 732a74a..041020f 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -487,6 +487,7 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -488,6 +488,7 @@ static int OpenDecoder(vlc_object_t *p_this)
      int num_codecs = (*env)->CallStaticIntMethod(env, p_sys->media_codec_list_class,
                                                   p_sys->get_codec_count);
      jobject codec_name = NULL;
@@ -20,7 +20,7 @@ index ca380f7..ccb6886 100644
  
      for (int i = 0; i < num_codecs; i++) {
          jobject info = (*env)->CallStaticObjectMethod(env, p_sys->media_codec_list_class,
-@@ -496,20 +497,44 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -497,20 +498,44 @@ static int OpenDecoder(vlc_object_t *p_this)
              continue;
          }
  
@@ -78,7 +78,7 @@ index ca380f7..ccb6886 100644
  
          jobject types = (*env)->CallObjectMethod(env, info, p_sys->get_supported_types);
          int num_types = (*env)->GetArrayLength(env, types);
-@@ -517,6 +542,19 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -518,6 +543,19 @@ static int OpenDecoder(vlc_object_t *p_this)
          for (int j = 0; j < num_types && !found; j++) {
              jobject type = (*env)->GetObjectArrayElement(env, types, j);
              if (!jstrcmp(env, type, mime)) {
@@ -98,9 +98,9 @@ index ca380f7..ccb6886 100644
                  /* The mime type is matching for this component. We
                     now check if the capabilities of the codec is
                     matching the video format. */
-@@ -526,49 +564,45 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -527,8 +565,10 @@ static int OpenDecoder(vlc_object_t *p_this)
  
-                         int omx_profile = (*env)->GetLongField(env, profile_level, p_sys->profile_field);
+                         int omx_profile = (*env)->GetIntField(env, profile_level, p_sys->profile_field);
                          size_t codec_profile = convert_omx_to_profile_idc(omx_profile);
 -                        if (codec_profile != fmt_profile)
 +                        if (codec_profile != fmt_profile) {
@@ -110,13 +110,12 @@ index ca380f7..ccb6886 100644
                          /* Some encoders set the level too high, thus we ignore it for the moment.
                             We could try to guess the actual profile based on the resolution. */
                          found = true;
-+                        (*env)->DeleteLocalRef(env, profile_level);
-                     }
+@@ -536,40 +576,33 @@ static int OpenDecoder(vlc_object_t *p_this)
                  }
                  else
                      found = true;
-+
-+                (*env)->DeleteLocalRef(env, profile_levels);
++                if (profile_levels)
++                    (*env)->DeleteLocalRef(env, profile_levels);
 +                (*env)->DeleteLocalRef(env, codec_capabilities);
              }
              (*env)->DeleteLocalRef(env, type);
@@ -170,5 +169,5 @@ index ca380f7..ccb6886 100644
  
      // This method doesn't handle errors nicely, it crashes if the codec isn't found.
 -- 
-1.9.0
+1.8.5.2 (Apple Git-48)
 

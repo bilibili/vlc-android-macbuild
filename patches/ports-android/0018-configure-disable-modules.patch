@@ -1,0 +1,27 @@
+From 388234693fc498044800b7811c5b25e73eb656db Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Tue, 10 Jun 2014 10:13:53 +0800
+Subject: [PATCH] configure: disable modules
+
+---
+ configure.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configure.sh b/configure.sh
+index 39aa2c2..e534c2f 100755
+--- a/configure.sh
++++ b/configure.sh
+@@ -71,8 +71,8 @@ sh $VLC_SOURCEDIR/configure --host=${TARGET_TUPLE} --build=x86_64-unknown-linux
+                 --disable-vcd \
+                 --disable-v4l2 \
+                 --disable-gnomevfs \
+-                --enable-dvdread \
+-                --enable-dvdnav \
++                --disable-dvdread \
++                --disable-dvdnav \
+                 --disable-bluray \
+                 --disable-linsys \
+                 --disable-decklink \
+-- 
+1.8.5.2 (Apple Git-48)
+

@@ -1,19 +1,19 @@
-From ec6d700b09ebadaa5e5240dd3a810501cb5c3da2 Mon Sep 17 00:00:00 2001
+From 8ccbcfc5f3474e266d4e793b3a8dac2f2a13b2c4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 31 May 2013 18:19:47 +0800
-Subject: [PATCH 31/42] ringbuf: support asynchronized ring buffer
+Subject: [PATCH] ringbuf: support asynchronized ring buffer
 
 ---
- modules/stream_filter/ringbuf.c | 850 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 850 insertions(+)
+ modules/stream_filter/ringbuf.c | 860 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 860 insertions(+)
  create mode 100644 modules/stream_filter/ringbuf.c
 
 diff --git a/modules/stream_filter/ringbuf.c b/modules/stream_filter/ringbuf.c
 new file mode 100644
-index 0000000..4b040ae
+index 0000000..357bb2a
 --- /dev/null
 +++ b/modules/stream_filter/ringbuf.c
-@@ -0,0 +1,850 @@
+@@ -0,0 +1,860 @@
 +/*****************************************************************************
 + * ringbuf.c: Stream ring buffer in memory
 + *****************************************************************************
@@ -809,6 +809,11 @@ index 0000000..4b040ae
 +    assert( p_stream->p_source );
 +    switch (i_query)
 +    {
++        case STREAM_CAN_PAUSE:
++        {
++            *(va_arg (args, bool *)) = true;
++            break;
++        }
 +        case STREAM_CAN_FASTSEEK:
 +        {
 +            *(va_arg (args, bool *)) = false;
@@ -817,6 +822,11 @@ index 0000000..4b040ae
 +        case STREAM_CAN_SEEK:
 +        {
 +            *(va_arg (args, bool *)) = p_sys->b_can_seek;
++            break;
++        }
++        case STREAM_SET_PAUSE_STATE:
++        {
++            // XXX: block BufferThread?
 +            break;
 +        }
 +        case STREAM_GET_POSITION:
@@ -865,5 +875,5 @@ index 0000000..4b040ae
 +    return VLC_SUCCESS;
 +}
 -- 
-1.9.0
+1.8.5.2 (Apple Git-48)
 

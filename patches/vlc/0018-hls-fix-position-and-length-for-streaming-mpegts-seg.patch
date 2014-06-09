@@ -1,19 +1,18 @@
-From 6f8beeeb27f783cf99c350939992c67476d6722b Mon Sep 17 00:00:00 2001
+From 7e3f9b8fe7794f7d7bd0bd3d6f1e172f5207edfb Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH 18/42] hls: fix position and length for streaming mpegts
- segments hls
+Subject: [PATCH] hls: fix position and length for streaming mpegts segments
+ hls
 
 ---
- modules/demux/ts.c               | 55 ++++++++++++++++++++++++++++++++++++++++
- modules/stream_filter/httplive.c | 19 ++++++++++++++
- 2 files changed, 74 insertions(+)
+ modules/demux/ts.c | 55 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index dbceffa..b9eaa93 100644
+index 7673e79..7d0708b 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
-@@ -330,6 +330,14 @@ struct demux_sys_t
+@@ -336,6 +336,14 @@ struct demux_sys_t
  
      /* */
      bool        b_start_record;
@@ -28,8 +27,8 @@ index dbceffa..b9eaa93 100644
  };
  
  static int Demux    ( demux_t *p_demux );
-@@ -787,6 +795,14 @@ static int Open( vlc_object_t *p_this )
-         if( p_demux->pf_demux( p_demux ) != 1 )
+@@ -791,6 +799,14 @@ static int Open( vlc_object_t *p_this )
+         if( Demux( p_demux ) != 1 )
              break;
      }
 +
@@ -43,7 +42,7 @@ index dbceffa..b9eaa93 100644
      return VLC_SUCCESS;
  }
  
-@@ -1062,6 +1078,20 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+@@ -1066,6 +1082,20 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
              {
                  *pi64 = 0;
              }
@@ -64,7 +63,7 @@ index dbceffa..b9eaa93 100644
          }
          else
          {
-@@ -1079,6 +1109,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+@@ -1083,6 +1113,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
              {
                  *pi64 = 0;
              }
@@ -76,7 +75,7 @@ index dbceffa..b9eaa93 100644
          }
          else
          {
-@@ -2159,8 +2194,26 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2163,8 +2198,26 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
      if( i_pcr < 0 )
          return;
  
@@ -103,7 +102,7 @@ index dbceffa..b9eaa93 100644
  
      /* Search program and set the PCR */
      for( int i = 0; i < p_sys->i_pmt; i++ )
-@@ -2266,6 +2319,8 @@ static bool GatherData( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2270,6 +2323,8 @@ static bool GatherData( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
              msg_Warn( p_demux, "discontinuity received 0x%x instead of 0x%x (pid=%d)",
                        i_cc, ( pid->i_cc + 1 )&0x0f, pid->i_pid );
  
@@ -112,72 +111,6 @@ index dbceffa..b9eaa93 100644
              pid->i_cc = i_cc;
              if( pid->es->p_data && pid->es->fmt.i_cat != VIDEO_ES )
              {
-diff --git a/modules/stream_filter/httplive.c b/modules/stream_filter/httplive.c
-index ad17a80..59459ab 100644
---- a/modules/stream_filter/httplive.c
-+++ b/modules/stream_filter/httplive.c
-@@ -1134,6 +1134,7 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
-         /* */
-         bool media_sequence_loaded = false;
-         int segment_duration = -1;
-+        int total_duration_secs = 0;
-         do
-         {
-             /* Next line */
-@@ -1143,7 +1144,14 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
-             p_begin = p_read;
- 
-             if (strncmp(line, "#EXTINF", 7) == 0)
-+            {
-+                segment_duration = 0;
-                 err = parse_SegmentInformation(hls, line, &segment_duration);
-+                if (err == VLC_SUCCESS && segment_duration > 0)
-+                {
-+                    total_duration_secs += segment_duration;
-+                }
-+            }
-             else if (strncmp(line, "#EXT-X-TARGETDURATION", 21) == 0)
-                 err = parse_TargetDuration(s, hls, line);
-             else if (strncmp(line, "#EXT-X-MEDIA-SEQUENCE", 21) == 0)
-@@ -1182,6 +1190,12 @@ static int parse_M3U8(stream_t *s, vlc_array_t *streams, uint8_t *buffer, const
- 
-         } while (err == VLC_SUCCESS);
- 
-+        if (err == VLC_SUCCESS && total_duration_secs > 0)
-+        {
-+            var_Create(s, "httplive-total-duration", VLC_VAR_INTEGER);
-+            var_SetInteger(s, "httplive-total-duration", ((int64_t)total_duration_secs) * 1000 * 1000);
-+        }
-+
-         free(line);
-     }
- 
-@@ -2597,6 +2611,7 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
- 
-     bool b_found = false;
-     uint64_t length = 0;
-+    uint64_t segment_start_secs = 0;
-     uint64_t size = hls->size;
-     int count = vlc_array_count(hls->segments);
- 
-@@ -2632,6 +2647,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
-             vlc_mutex_unlock(&hls->lock);
-             return VLC_EGENERIC;
-         }
-+
-+        segment_start_secs += segment->duration;
-     }
- 
-     /* */
-@@ -2644,6 +2661,8 @@ static int segment_Seek(stream_t *s, const uint64_t pos)
-     /* */
-     if (b_found)
-     {
-+        var_Create(s, "httplive-segment-start-time", VLC_VAR_INTEGER);
-+        var_SetInteger(s, "httplive-segment-start-time", segment_start_secs * 1000 * 1000);
- 
-         /* restore current segment to start position */
-         vlc_mutex_lock(&currentSegment->lock);
 -- 
-1.9.0
+1.8.5.2 (Apple Git-48)
 

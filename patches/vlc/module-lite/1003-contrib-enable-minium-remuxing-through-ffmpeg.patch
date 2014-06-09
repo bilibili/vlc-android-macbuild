@@ -1,6 +1,6 @@
-From 1f3d828cd74ff6a558869eef7c91be6422dcebb3 Mon Sep 17 00:00:00 2001
+From 4725b275af2eb0bb206e2589136fdbb96bac7e4c Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
-Date: Mon, 24 Mar 2014 17:04:15 +0800
+Date: Mon, 9 Jun 2014 10:47:27 +0800
 Subject: [PATCH 1003/1003] contrib: enable minium remuxing through ffmpeg
 
 ---
@@ -8,21 +8,21 @@ Subject: [PATCH 1003/1003] contrib: enable minium remuxing through ffmpeg
  1 file changed, 5 insertions(+)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 59c296f..e8eb975 100644
+index 321a491..931d07c 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -85,6 +85,11 @@ else
- FFMPEGCONF += --disable-encoders --disable-muxers
- endif
+@@ -102,6 +102,11 @@ FFMEPGCONF += \
+ 	--enable-decoder=vc1_vdpau \
+ 	--enable-decoder=vc1image
  
 +# Support remuxing to certain formats
 +FFMPEGCONF += --enable-protocol=file
 +FFMPEGCONF += --enable-muxer=mp4
 +FFMPEGCONF += --enable-bsf=aac_adtstoasc
 +
- # Small size
- ifdef ENABLE_SMALL
- FFMPEGCONF += --enable-small
+ ifdef HAVE_CROSS_COMPILE
+ FFMPEGCONF += --enable-cross-compile
+ ifndef HAVE_DARWIN_OS
 -- 
-1.9.0
+1.8.5.2 (Apple Git-48)
 
