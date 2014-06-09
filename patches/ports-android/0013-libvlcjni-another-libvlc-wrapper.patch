@@ -42,7 +42,7 @@ index 7e1225b..982f6e2 100644
  
  LOCAL_MODULE    := libvlcjni
  
--LOCAL_SRC_FILES := libvlcjni.c libvlcjni-util.c libvlcjni-track.c libvlcjni-medialist.c aout.c vout.c libvlcjni-equalizer.c
+-LOCAL_SRC_FILES := libvlcjni.c libvlcjni-util.c libvlcjni-track.c libvlcjni-medialist.c aout.c vout.c libvlcjni-equalizer.c native_crash_handler.c
 -LOCAL_SRC_FILES += thumbnailer.c pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c
 +LOCAL_SRC_FILES := libvlcjni-util.c aout.c
 +LOCAL_SRC_FILES += pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c vout.c

@@ -1,17 +1,17 @@
-From aa9cb2e3b376ea467965c6bfc7b2047717d6a178 Mon Sep 17 00:00:00 2001
+From dfd10b6faf599b48ae31a294ad1286bac5fd97dc Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 23 Mar 2012 17:59:42 +0800
-Subject: [PATCH 1/4] lite-mode: Android.mk: disable modules
+Subject: [PATCH] lite-mode: Android.mk: disable modules
 
 ---
- vlc-android/jni/Android.mk | 14 +++++---------
- 1 file changed, 5 insertions(+), 9 deletions(-)
+ vlc-android/jni/Android.mk | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 982f6e2..a9a12da 100644
+index 8373aa8..a9a12da 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
-@@ -69,16 +69,12 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+@@ -69,17 +69,12 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
  	$(VLC_BUILD_DIR)/compat/.libs/libcompat.a \
  	-ldl -lz -lm -llog \
  	-landroid \
@@ -28,11 +28,12 @@ index 982f6e2..a9a12da 100644
  	-lnettle -lhogweed -lgmp \
 -	-lfreetype -liconv -lass -lfribidi -lopus \
 -	-lEGL -lGLESv2 -ljpeg \
+-	-ldvdnav -ldvdread -ldvdcss \
 +	-lEGL -lGLESv2 \
 +	-lfaad \
  	$(CPP_STATIC)
  
  include $(BUILD_SHARED_LIBRARY)
 -- 
-1.9.0
+1.8.5.2 (Apple Git-48)
 

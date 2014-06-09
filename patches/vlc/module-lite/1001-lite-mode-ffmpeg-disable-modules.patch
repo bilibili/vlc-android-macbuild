@@ -1,23 +1,31 @@
-From 9be6ea3a2c43cbbc3adee785bef1291f8a071454 Mon Sep 17 00:00:00 2001
+From 11ce6783f6c651369e04014cbbc7a056edd0815e Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 22 Mar 2012 18:45:25 +0800
-Subject: [PATCH 1001/1003] lite-mode: ffmpeg: disable modules
+Subject: [PATCH] lite-mode: ffmpeg: disable modules
 
 ---
- contrib/src/ffmpeg/rules.mak | 46 ++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 42 insertions(+), 4 deletions(-)
+ contrib/src/ffmpeg/rules.mak | 46 +++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 45 insertions(+), 1 deletion(-)
 
 diff --git a/contrib/src/ffmpeg/rules.mak b/contrib/src/ffmpeg/rules.mak
-index 5f73239..385752d 100644
+index 4ce4682..285f94d 100644
 --- a/contrib/src/ffmpeg/rules.mak
 +++ b/contrib/src/ffmpeg/rules.mak
-@@ -15,9 +15,47 @@ endif
- FFMPEGCONF = \
- 	--cc="$(CC)" \
- 	--disable-doc \
--	--disable-encoder=vorbis \
--	--enable-libgsm \
--	--enable-libopenjpeg \
+@@ -35,7 +35,7 @@ FFMPEGCONF += \
+ 	--disable-iconv
+ endif
+ 
+-DEPS_ffmpeg = zlib gsm openjpeg
++DEPS_ffmpeg = zlib
+ 
+ # Optional dependencies
+ ifndef BUILD_NETWORK
+@@ -58,6 +58,50 @@ FFMPEGCONF += --enable-thumb
+ endif
+ endif
+ 
++# Disable mostly
++FFMEPGCONF += \
 +	--enable-runtime-cpudetect \
 +	--disable-network \
 +	--disable-protocols \
@@ -58,19 +66,11 @@ index 5f73239..385752d 100644
 +	--enable-decoder=vp8 \
 +	--enable-decoder=vc1 \
 +	--enable-decoder=vc1_vdpau \
-+	--enable-decoder=vc1image \
- 	--disable-debug \
- 	--disable-avdevice \
- 	--disable-devices \
-@@ -34,7 +72,7 @@ FFMPEGCONF += \
- 	--disable-iconv
- endif
- 
--DEPS_ffmpeg = zlib gsm openjpeg
-+DEPS_ffmpeg = zlib
- 
- # Optional dependencies
- ifndef BUILD_NETWORK
++	--enable-decoder=vc1image
++
+ ifdef HAVE_CROSS_COMPILE
+ FFMPEGCONF += --enable-cross-compile
+ ifndef HAVE_DARWIN_OS
 -- 
-1.9.0
+1.8.5.2 (Apple Git-48)
 

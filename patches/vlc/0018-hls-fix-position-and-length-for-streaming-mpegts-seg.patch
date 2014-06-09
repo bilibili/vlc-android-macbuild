@@ -1,8 +1,8 @@
-From 6f8beeeb27f783cf99c350939992c67476d6722b Mon Sep 17 00:00:00 2001
+From 2c8af6ebd8dd3edad258588239b19b4b51e1a638 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Wed, 28 Mar 2012 19:30:05 +0800
-Subject: [PATCH 18/42] hls: fix position and length for streaming mpegts
- segments hls
+Subject: [PATCH] hls: fix position and length for streaming mpegts segments
+ hls
 
 ---
  modules/demux/ts.c               | 55 ++++++++++++++++++++++++++++++++++++++++
@@ -10,10 +10,10 @@ Subject: [PATCH 18/42] hls: fix position and length for streaming mpegts
  2 files changed, 74 insertions(+)
 
 diff --git a/modules/demux/ts.c b/modules/demux/ts.c
-index dbceffa..b9eaa93 100644
+index 7673e79..7d0708b 100644
 --- a/modules/demux/ts.c
 +++ b/modules/demux/ts.c
-@@ -330,6 +330,14 @@ struct demux_sys_t
+@@ -336,6 +336,14 @@ struct demux_sys_t
  
      /* */
      bool        b_start_record;
@@ -28,8 +28,8 @@ index dbceffa..b9eaa93 100644
  };
  
  static int Demux    ( demux_t *p_demux );
-@@ -787,6 +795,14 @@ static int Open( vlc_object_t *p_this )
-         if( p_demux->pf_demux( p_demux ) != 1 )
+@@ -791,6 +799,14 @@ static int Open( vlc_object_t *p_this )
+         if( Demux( p_demux ) != 1 )
              break;
      }
 +
@@ -43,7 +43,7 @@ index dbceffa..b9eaa93 100644
      return VLC_SUCCESS;
  }
  
-@@ -1062,6 +1078,20 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+@@ -1066,6 +1082,20 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
              {
                  *pi64 = 0;
              }
@@ -64,7 +64,7 @@ index dbceffa..b9eaa93 100644
          }
          else
          {
-@@ -1079,6 +1109,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
+@@ -1083,6 +1113,11 @@ static int Control( demux_t *p_demux, int i_query, va_list args )
              {
                  *pi64 = 0;
              }
@@ -76,7 +76,7 @@ index dbceffa..b9eaa93 100644
          }
          else
          {
-@@ -2159,8 +2194,26 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2163,8 +2198,26 @@ static void PCRHandle( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
      if( i_pcr < 0 )
          return;
  
@@ -103,7 +103,7 @@ index dbceffa..b9eaa93 100644
  
      /* Search program and set the PCR */
      for( int i = 0; i < p_sys->i_pmt; i++ )
-@@ -2266,6 +2319,8 @@ static bool GatherData( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
+@@ -2270,6 +2323,8 @@ static bool GatherData( demux_t *p_demux, ts_pid_t *pid, block_t *p_bk )
              msg_Warn( p_demux, "discontinuity received 0x%x instead of 0x%x (pid=%d)",
                        i_cc, ( pid->i_cc + 1 )&0x0f, pid->i_pid );
  
@@ -179,5 +179,5 @@ index ad17a80..59459ab 100644
          /* restore current segment to start position */
          vlc_mutex_lock(&currentSegment->lock);
 -- 
-1.9.0
+1.8.5.2 (Apple Git-48)
 
