@@ -1,0 +1,35 @@
+From 275a5bcd685db1bb19a6e3528005e1a00a451c3a Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Mon, 23 Jun 2014 13:50:22 +0800
+Subject: [PATCH] analysis: collect codec info for further purpose
+
+---
+ modules/demux/avformat/demux.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/modules/demux/avformat/demux.c b/modules/demux/avformat/demux.c
+index bdd77fd..d3c36e9 100644
+--- a/modules/demux/avformat/demux.c
++++ b/modules/demux/avformat/demux.c
+@@ -59,6 +59,8 @@
+ 
+ # define HAVE_AVUTIL_CODEC_ATTACHMENT 1
+ 
++extern void jni_avformatSetCodecId(int, int);
++
+ /*****************************************************************************
+  * demux_sys_t: demux descriptor
+  *****************************************************************************/
+@@ -343,6 +345,9 @@ int OpenDemux( vlc_object_t *p_this )
+             continue;
+ #endif
+ 
++        /* */
++        jni_avformatSetCodecId(cc->codec_type, cc->codec_tag);
++
+         switch( cc->codec_type )
+         {
+         case AVMEDIA_TYPE_AUDIO:
+-- 
+1.8.5.2 (Apple Git-48)
+
