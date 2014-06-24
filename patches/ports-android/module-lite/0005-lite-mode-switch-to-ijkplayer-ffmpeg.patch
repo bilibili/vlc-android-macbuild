@@ -36,7 +36,7 @@ index 3626997..d332827 100755
 +    if [ $ANDROID_ABI = "armeabi-v7a" ]; then
 +        IJKPLAYER_ABI=armv7a
 +    elif [ $ANDROID_ABI = "armeabi" ]; then
-+        IJKPLAYER_ABI=arm
++        IJKPLAYER_ABI=armv5
 +    elif [ $ANDROID_ABI = "x86" ]; then
 +        IJKPLAYER_ABI=x86
 +    else
