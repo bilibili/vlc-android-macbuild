@@ -1,30 +1,27 @@
-From 3a91cf06d0bb08bc8e369ad9f027842d4d6b698a Mon Sep 17 00:00:00 2001
+From 68c79d94d6c4e5e7f5a4e4374ad861cab891c634 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Mon, 23 Jun 2014 15:00:24 +0800
 Subject: [PATCH] analysis: collect codec info for further purpose
 
 ---
- vlc-android/jni/vout.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ vlc-android/jni/vout.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
 diff --git a/vlc-android/jni/vout.c b/vlc-android/jni/vout.c
-index 319e98a..367785e 100644
+index 319e98a..d67e24f 100644
 --- a/vlc-android/jni/vout.c
 +++ b/vlc-android/jni/vout.c
-@@ -68,6 +68,18 @@ void jni_UnlockAndroidSurface() {
+@@ -68,6 +68,15 @@ void jni_UnlockAndroidSurface() {
      pthread_mutex_unlock(&vout_android_lock);
  }
  
-+void jni_avformatSetCodecId(int media_type, int fourcc) {
++void jni_avformatSetCodecId(JNIEnv *env, int media_type, int fourcc) {
 +    if (vout_android_gui == NULL)
 +        return;
-+    JNIEnv *env;
-+    (*myVm)->AttachCurrentThread(myVm, &env, NULL);
 +    jclass cls = (*env)->GetObjectClass(env, vout_android_gui);
 +    jmethodID methodId = (*env)->GetMethodID(env, cls, "avformatSetCodecId", "(II)V");
 +    (*env)->DeleteLocalRef(env, cls);
 +    (*env)->CallVoidMethod(env, vout_android_gui, methodId, media_type, fourcc);
-+    // (*myVm)->DetachCurrentThread(myVm);
 +}
 +
  void jni_EventHardwareAccelerationError()
