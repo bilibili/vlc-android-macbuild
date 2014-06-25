@@ -1,17 +1,28 @@
-From 8b0a436ccc334a09633ee35ced6b16f86133d8fc Mon Sep 17 00:00:00 2001
+From 073c01d9e125873f21deccbb2501b9cb6f60fb96 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Mon, 28 May 2012 11:45:12 +0800
-Subject: [PATCH 2/4] lite-mode: compile.sh: disable contrib
+Subject: [PATCH 2/6] lite-mode: compile.sh: disable contrib
 
 ---
- compile.sh | 35 ++++++++++++++++++++++++++++++++---
- 1 file changed, 32 insertions(+), 3 deletions(-)
+ compile.sh | 39 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 34 insertions(+), 5 deletions(-)
 
 diff --git a/compile.sh b/compile.sh
-index 73c1f24..8d42dcb 100755
+index aa3dbdf..b911306 100755
 --- a/compile.sh
 +++ b/compile.sh
-@@ -231,12 +231,41 @@ cd contrib/android
+@@ -215,8 +215,8 @@ gen_pc_file GLESv2 2
+ 
+ cd contrib/android
+ ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout \
+-    --enable-dvdread \
+-    --enable-dvdnav \
++    --disable-dvdread \
++    --disable-dvdnav \
+     --disable-dca \
+     --disable-goom \
+     --disable-chromaprint \
+@@ -233,12 +233,41 @@ cd contrib/android
      --disable-upnp \
      --disable-gme \
      --disable-tremor \
@@ -57,5 +68,5 @@ index 73c1f24..8d42dcb 100755
  # TODO: mpeg2, theora
  
 -- 
-1.9.0
+2.0.0
 
