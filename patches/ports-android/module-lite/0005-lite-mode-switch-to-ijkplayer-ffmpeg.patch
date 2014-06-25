@@ -49,7 +49,7 @@ index 3626997..d332827 100755
 +    # make NDK happy
 +    mkdir -p contrib/${TARGET_TUPLE}/include
 +    ln -sf $IJKFFMPEG/include/* contrib/$TARGET_TUPLE/include
-+    ln -sf $IJKFFMPEG/lib/libffmpeg.so contrib/$TARGET_TUPLE/lib/libffmpeg.so
++    ln -sf $IJKFFMPEG/lib/libijkffmpeg.so contrib/$TARGET_TUPLE/lib/libijkffmpeg.so
 +fi
  
  cd contrib/android
@@ -73,7 +73,7 @@ index a9a12da..81b44cb 100644
  	-landroid \
  	-ldvbpsi \
 -	-lavformat -lavcodec -lswscale -lavutil \
-+	-lffmpeg \
++	-lijkffmpeg \
  	-lgnutls -lgcrypt -lgpg-error \
  	-lnettle -lhogweed -lgmp \
  	-lEGL -lGLESv2 \
