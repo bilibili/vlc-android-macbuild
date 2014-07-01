@@ -25,6 +25,14 @@ fi
 
 echo "patch "${BILI_VLC_MODULE_MODE} ${BILI_VLC_TARGET_MODE}
 cd ${BILI_VLC_ROOT}
+
+if [ -f ../patches/ports-android/cherry-picks.list ]; then
+    commits=$(cat ../patches/ports-android/cherry-picks.list)
+    for c in $commits; do
+        git cherry-pick $c || exit 1
+    done
+fi
+
 git am --abort
 git am ../patches/ports-android/*.patch
 git am ../patches/ports-android/${BILI_VLC_MODULE_MODE}/*.patch
