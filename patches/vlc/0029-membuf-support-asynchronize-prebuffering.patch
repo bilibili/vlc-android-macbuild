@@ -1,19 +1,19 @@
-From 4de6d113ad2e4a11df74f33568f2fe1d23d673f6 Mon Sep 17 00:00:00 2001
+From 0ed50ef69cf345f9279fc5aa79e290696ca4edac Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 21 Jun 2012 15:49:45 +0800
-Subject: [PATCH 29/42] membuf: support asynchronize prebuffering
+Subject: [PATCH] membuf: support asynchronize prebuffering
 
 ---
- modules/stream_filter/membuf.c | 944 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 944 insertions(+)
+ modules/stream_filter/membuf.c | 960 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 960 insertions(+)
  create mode 100644 modules/stream_filter/membuf.c
 
 diff --git a/modules/stream_filter/membuf.c b/modules/stream_filter/membuf.c
 new file mode 100644
-index 0000000..99fc2cf
+index 0000000..683fd4b
 --- /dev/null
 +++ b/modules/stream_filter/membuf.c
-@@ -0,0 +1,944 @@
+@@ -0,0 +1,960 @@
 +/*****************************************************************************
 + * membuf.c: Stream buffer in memory
 + *****************************************************************************
@@ -858,6 +858,11 @@ index 0000000..99fc2cf
 +    assert( p_stream->p_source );
 +    switch (i_query)
 +    {
++        case STREAM_CAN_PAUSE:
++        {
++            *(va_arg (args, bool *)) = true;
++            return VLC_SUCCESS;
++        }
 +        case STREAM_CAN_FASTSEEK:
 +        {
 +            //return stream_vaControl( p_stream->p_source, i_query, args );
@@ -868,6 +873,11 @@ index 0000000..99fc2cf
 +        {
 +            //return stream_vaControl( p_stream->p_source, i_query, args );
 +            *(va_arg (args, bool *)) = p_sys->b_can_seek;
++            return VLC_SUCCESS;
++        }
++        case STREAM_SET_PAUSE_STATE:
++        {
++            // XXX: PrebufferThread
 +            return VLC_SUCCESS;
 +        }
 +        case STREAM_GET_POSITION:
@@ -951,6 +961,12 @@ index 0000000..99fc2cf
 +            *(va_arg (args, uint64_t *)) = p_sys->i_prebuffer_offset;
 +            return VLC_SUCCESS;
 +        }
++        case STREAM_GET_PTS_DELAY:
++        {
++            int64_t *p_pts_delay = va_arg( args, int64_t * );
++            *p_pts_delay = INT64_C(1000) * var_InheritInteger( p_stream, "network-caching" );
++            return VLC_SUCCESS;
++        }
 +        default:
 +        {
 +            //return stream_vaControl( p_stream->p_source, i_query, args );
@@ -958,7 +974,6 @@ index 0000000..99fc2cf
 +        }
 +    }
 +}
-\ No newline at end of file
 -- 
-1.9.0
+2.0.0
 
