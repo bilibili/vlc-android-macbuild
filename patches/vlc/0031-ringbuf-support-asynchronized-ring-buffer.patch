@@ -1,19 +1,19 @@
-From 8ccbcfc5f3474e266d4e793b3a8dac2f2a13b2c4 Mon Sep 17 00:00:00 2001
+From 1cc3dca4004a7a85fb5aae439c29db8a3a98e8b9 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 31 May 2013 18:19:47 +0800
 Subject: [PATCH] ringbuf: support asynchronized ring buffer
 
 ---
- modules/stream_filter/ringbuf.c | 860 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 860 insertions(+)
+ modules/stream_filter/ringbuf.c | 866 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 866 insertions(+)
  create mode 100644 modules/stream_filter/ringbuf.c
 
 diff --git a/modules/stream_filter/ringbuf.c b/modules/stream_filter/ringbuf.c
 new file mode 100644
-index 0000000..357bb2a
+index 0000000..b065127
 --- /dev/null
 +++ b/modules/stream_filter/ringbuf.c
-@@ -0,0 +1,860 @@
+@@ -0,0 +1,866 @@
 +/*****************************************************************************
 + * ringbuf.c: Stream ring buffer in memory
 + *****************************************************************************
@@ -867,6 +867,12 @@ index 0000000..357bb2a
 +            vlc_mutex_unlock( &p_sys->buffer_mutex );
 +            break;
 +        }
++        case STREAM_GET_PTS_DELAY:
++        {
++            int64_t *p_pts_delay = va_arg( args, int64_t * );
++            *p_pts_delay = INT64_C(1000) * var_InheritInteger( p_stream, "network-caching" );
++            break;
++        }
 +        default:
 +        {
 +            return VLC_EGENERIC;
@@ -875,5 +881,5 @@ index 0000000..357bb2a
 +    return VLC_SUCCESS;
 +}
 -- 
-1.8.5.2 (Apple Git-48)
+2.0.0
 
