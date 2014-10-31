@@ -1,0 +1,1789 @@
+From fa79e1754ab29962f69e6d20c854ed9dafc74eaf Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Thu, 23 Oct 2014 16:57:51 +0800
+Subject: [PATCH 06/11] libvlcjni_danmaku.c: another JNI wrapper
+
+---
+ vlc-android/jni/Android.mk                     |   3 +-
+ vlc-android/jni/jni_bundle.c                   | 162 ++++++
+ vlc-android/jni/jni_bundle.h                   |  60 ++
+ vlc-android/jni/jni_libvlc.c                   |  72 +++
+ vlc-android/jni/jni_libvlc.h                   |  38 ++
+ vlc-android/jni/jni_libvlcevent.c              |  92 +++
+ vlc-android/jni/jni_libvlcevent.h              |  32 +
+ vlc-android/jni/jni_vsl.c                      | 300 ++++++++++
+ vlc-android/jni/jni_vsl.h                      |  37 ++
+ vlc-android/jni/libvlcjni.c                    |   2 +-
+ vlc-android/jni/libvlcjni_danmaku.c            | 777 +++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku_events.inc.c |  65 +++
+ vlc-android/jni/utils.h                        |   2 +
+ vlc-android/jni/vout.c                         |   5 +
+ 14 files changed, 1645 insertions(+), 2 deletions(-)
+ create mode 100644 vlc-android/jni/jni_bundle.c
+ create mode 100644 vlc-android/jni/jni_bundle.h
+ create mode 100644 vlc-android/jni/jni_libvlc.c
+ create mode 100644 vlc-android/jni/jni_libvlc.h
+ create mode 100644 vlc-android/jni/jni_libvlcevent.c
+ create mode 100644 vlc-android/jni/jni_libvlcevent.h
+ create mode 100644 vlc-android/jni/jni_vsl.c
+ create mode 100644 vlc-android/jni/jni_vsl.h
+ create mode 100644 vlc-android/jni/libvlcjni_danmaku.c
+ create mode 100644 vlc-android/jni/libvlcjni_danmaku_events.inc.c
+
+diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
+index 0ce845e..15b3871 100644
+--- a/vlc-android/jni/Android.mk
++++ b/vlc-android/jni/Android.mk
+@@ -3,12 +3,13 @@ include $(CLEAR_VARS)
+ 
+ LOCAL_MODULE    := libvlcjni
+ 
+-LOCAL_SRC_FILES := libvlcjni.c libvlcjni-util.c libvlcjni-track.c libvlcjni-medialist.c aout.c vout.c libvlcjni-equalizer.c native_crash_handler.c
++LOCAL_SRC_FILES := libvlcjni_danmaku.c libvlcjni-util.c libvlcjni-track.c libvlcjni-medialist.c aout.c vout.c libvlcjni-equalizer.c native_crash_handler.c
+ LOCAL_SRC_FILES += thumbnailer.c
+ ifneq ($(ANDROID_API),android-21)
+ # compat functions not needed after android-21
+ LOCAL_SRC_FILES += pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c pipe2.c
+ endif
++LOCAL_SRC_FILES += jni_bundle.c jni_vsl.c jni_libvlc.c
+ LOCAL_SRC_FILES += wchar/wcpcpy.c
+ LOCAL_SRC_FILES += wchar/wcpncpy.c
+ LOCAL_SRC_FILES += wchar/wcscasecmp.c
+diff --git a/vlc-android/jni/jni_bundle.c b/vlc-android/jni/jni_bundle.c
+new file mode 100644
+index 0000000..3722cea
+--- /dev/null
++++ b/vlc-android/jni/jni_bundle.c
+@@ -0,0 +1,162 @@
++/*****************************************************************************
++ * jni_bundle.c
++ *****************************************************************************
++ * Copyright (C) 2012 Rui Zhang
++ *
++ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++#include <stdbool.h>
++
++#define LOG_TAG "VLC/JNI/jni_bundle"
++#include "log.h"
++
++#include "jni_bundle.h"
++
++static jclass g_cls_bundle;
++
++static jclass jbundle_get_class(JNIEnv *env)
++{
++    if (!g_cls_bundle) {
++        jclass cls_bundle = (*env)->FindClass(env, "android/os/Bundle");
++        g_cls_bundle = (*env)->NewGlobalRef(env, cls_bundle);
++        (*env)->DeleteLocalRef(env, cls_bundle);
++    }
++
++    return g_cls_bundle;
++}
++
++JavaBundle *jbundle_init(JNIEnv *env, JavaBundle *p_bundle) {
++    memset(p_bundle, 0, sizeof(JavaBundle));
++
++    jclass cls_bundle = jbundle_get_class(env);
++    jmethodID clsCtor = (*env)->GetMethodID(env, cls_bundle, "<init>",
++            "()V");
++
++    p_bundle->bundle = (*env)->NewObject(env, cls_bundle, clsCtor);
++    p_bundle->needReleaseBundle = true;
++    return p_bundle;
++}
++
++JavaBundle *jbundle_attach(JNIEnv *env, JavaBundle *p_bundle, jobject jbundle) {
++    memset(p_bundle, 0, sizeof(JavaBundle));
++
++    p_bundle->bundle = jbundle;
++    p_bundle->needReleaseBundle = false;
++    return p_bundle;
++}
++
++void jbundle_destroy(JNIEnv *env, JavaBundle *p_bundle) {
++    if (p_bundle->needReleaseBundle && p_bundle->bundle != NULL) {
++        (*env)->DeleteLocalRef(env, p_bundle->bundle);
++    }
++
++    memset(p_bundle, 0, sizeof(JavaBundle));
++}
++
++void jbundle_put_int(JNIEnv *env, JavaBundle *p_bundle, const char *key,
++        int value) {
++    if (p_bundle->putInt == NULL) {
++        p_bundle->putInt = (*env)->GetMethodID(env, jbundle_get_class(env),
++                "putInt", "(Ljava/lang/String;I)V");
++    }
++
++    jstring j_key = (*env)->NewStringUTF(env, key);
++    (*env)->CallVoidMethod(env, p_bundle->bundle, p_bundle->putInt, j_key,
++            value);
++    (*env)->DeleteLocalRef(env, j_key);
++}
++
++int jbundle_get_int(JNIEnv *env, JavaBundle *p_bundle, const char *key,
++        int default_value) {
++    if (p_bundle->getInt == NULL) {
++        p_bundle->getInt = (*env)->GetMethodID(env, jbundle_get_class(env),
++                "getInt", "(Ljava/lang/String;I)I");
++    }
++
++    jstring j_key = (*env)->NewStringUTF(env, key);
++    jint ret = (*env)->CallIntMethod(env, p_bundle->bundle, p_bundle->getInt,
++            j_key, default_value);
++    (*env)->DeleteLocalRef(env, j_key);
++    return ret;
++}
++
++int64_t jbundle_get_long(JNIEnv *env, JavaBundle *p_bundle, const char *key,
++        int64_t default_value) {
++    if (p_bundle->getLong == NULL) {
++        p_bundle->getLong = (*env)->GetMethodID(env, jbundle_get_class(env),
++                "getLong", "(Ljava/lang/String;J)J");
++    }
++
++    jstring j_key = (*env)->NewStringUTF(env, key);
++    jlong ret = (*env)->CallLongMethod(env, p_bundle->bundle, p_bundle->getLong,
++            j_key, (jlong) default_value);
++    (*env)->DeleteLocalRef(env, j_key);
++    return ret;
++}
++
++void jbundle_put_float(JNIEnv *env, JavaBundle *p_bundle, const char *key,
++        float value) {
++    if (p_bundle->putFloat == NULL) {
++        p_bundle->putFloat = (*env)->GetMethodID(env, jbundle_get_class(env),
++                "putFloat", "(Ljava/lang/String;F)V");
++    }
++
++    jstring j_key = (*env)->NewStringUTF(env, key);
++    (*env)->CallVoidMethod(env, p_bundle->bundle, p_bundle->putFloat, j_key,
++            value);
++    (*env)->DeleteLocalRef(env, j_key);
++}
++
++void jbundle_put_string(JNIEnv *env, JavaBundle *p_bundle, const char *key,
++        const char *value) {
++    if (p_bundle->putString == NULL) {
++        p_bundle->putString = (*env)->GetMethodID(env, jbundle_get_class(env),
++                "putString", "(Ljava/lang/String;Ljava/lang/String;)V");
++    }
++
++    jstring j_key = (*env)->NewStringUTF(env, key);
++    jstring j_value = (*env)->NewStringUTF(env, value ? value : "");
++    (*env)->CallVoidMethod(env, p_bundle->bundle, p_bundle->putString, j_key,
++            j_value);
++    (*env)->DeleteLocalRef(env, j_key);
++    (*env)->DeleteLocalRef(env, j_value);
++}
++
++char *jbundle_get_string(JNIEnv *env, JavaBundle *p_bundle, const char *key) {
++    if (p_bundle->getString == NULL) {
++        p_bundle->getString = (*env)->GetMethodID(env, jbundle_get_class(env),
++                "getString", "(Ljava/lang/String;)Ljava/lang/String;");
++    }
++
++    char *ret = NULL;
++    jstring j_key = (*env)->NewStringUTF(env, key);
++    jobject j_value = (*env)->CallObjectMethod(env, p_bundle->bundle,
++            p_bundle->getString, j_key);
++    (*env)->DeleteLocalRef(env, j_key);
++    if (j_value) {
++        char *utf_chars = (char *) (*env)->GetStringUTFChars(env, j_value,
++                NULL);
++        if (utf_chars) {
++            ret = strdup(utf_chars);
++            (*env)->ReleaseStringUTFChars(env, j_value, utf_chars);
++        }
++        (*env)->DeleteLocalRef(env, j_value);
++    }
++
++    return ret;
++}
+diff --git a/vlc-android/jni/jni_bundle.h b/vlc-android/jni/jni_bundle.h
+new file mode 100644
+index 0000000..f32054c
+--- /dev/null
++++ b/vlc-android/jni/jni_bundle.h
+@@ -0,0 +1,60 @@
++/*****************************************************************************
++ * jni_bundle.h
++ *****************************************************************************
++ * Copyright (C) 2012 Rui Zhang
++ *
++ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++#ifndef JNI_BUNDLE_H
++#define JNI_BUNDLE_H
++
++#include "jni_libvlc.h"
++
++typedef struct {
++    jobject bundle;
++    bool needReleaseBundle;
++
++    jmethodID putInt;
++    jmethodID getInt;
++    jmethodID getLong;
++    jmethodID putFloat;
++    jmethodID putString;
++    jmethodID getString;
++} JavaBundle;
++
++JavaBundle *jbundle_init(JNIEnv *env, JavaBundle *p_bundle);
++JavaBundle *jbundle_attach(JNIEnv *env, JavaBundle *p_bundle, jobject jbundle);
++
++void jbundle_destroy(JNIEnv *env, JavaBundle *p_bundle);
++
++void jbundle_put_int(JNIEnv *env, JavaBundle *p_bundle, const char *key,
++        int value);
++int jbundle_get_int(JNIEnv *env, JavaBundle *p_bundle, const char *key,
++        int default_value);
++
++int64_t jbundle_get_long(JNIEnv *env, JavaBundle *p_bundle, const char *key,
++        int64_t default_value);
++
++void jbundle_put_float(JNIEnv *env, JavaBundle *p_bundle, const char *key,
++        float value);
++
++void jbundle_put_string(JNIEnv *env, JavaBundle *p_bundle, const char *key,
++        const char *value);
++char *jbundle_get_string(JNIEnv *env, JavaBundle *p_bundle, const char *key);
++
++#endif//JNI_BUNDLE_H
+diff --git a/vlc-android/jni/jni_libvlc.c b/vlc-android/jni/jni_libvlc.c
+new file mode 100644
+index 0000000..a5cf11c
+--- /dev/null
++++ b/vlc-android/jni/jni_libvlc.c
+@@ -0,0 +1,72 @@
++/*****************************************************************************
++ * jni_libvlc.c
++ *****************************************************************************
++ * Copyright (C) 2012~2014 Zhang Rui
++ *
++ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++#include "jni_libvlc.h"
++
++#define LOG_TAG "VLC/JNI/jni"
++#include "log.h"
++
++#include <pthread.h>
++
++extern JavaVM *myVm;
++
++static pthread_key_t g_thread_key;
++static pthread_once_t g_key_once = PTHREAD_ONCE_INIT;
++
++static void SDL_AndroidJni_ThreadDestroyed(void* value)
++{
++    JNIEnv *env = (JNIEnv*) value;
++    if (env != NULL) {
++        (*myVm)->DetachCurrentThread(myVm);
++        pthread_setspecific(g_thread_key, NULL);
++    }
++}
++
++static void make_thread_key()
++{
++    pthread_key_create(&g_thread_key, SDL_AndroidJni_ThreadDestroyed);
++}
++
++jint SDL_AndroidJni_SetupThreadEnv(JNIEnv **p_env, void *thr_args)
++{
++    JavaVM *jvm = myVm;
++    if (!jvm) {
++        LOGE("SDL_AndroidJni_GetJvm: AttachCurrentThread: NULL jvm");
++        return -1;
++    }
++
++    pthread_once(&g_key_once, make_thread_key);
++
++    JNIEnv *env = (JNIEnv*) pthread_getspecific(g_thread_key);
++    if (env) {
++        *p_env = env;
++        return 0;
++    }
++
++    if ((*jvm)->AttachCurrentThread(jvm, &env, thr_args) == JNI_OK) {
++        pthread_setspecific(g_thread_key, env);
++        *p_env = env;
++        return 0;
++    }
++
++    return -1;
++}
+diff --git a/vlc-android/jni/jni_libvlc.h b/vlc-android/jni/jni_libvlc.h
+new file mode 100644
+index 0000000..f33abf0
+--- /dev/null
++++ b/vlc-android/jni/jni_libvlc.h
+@@ -0,0 +1,38 @@
++/*****************************************************************************
++ * jni_libvlc.h
++ *****************************************************************************
++ * Copyright (C) 2012~2014 Zhang Rui
++ *
++ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++#ifndef JNI_LIBVLC_H
++#define JNI_LIBVLC_H
++
++#include <stdint.h>
++#include <string.h>
++#include <jni.h>
++
++/* Pointer to the Java virtual machine
++ * Note: It's okay to use a static variable for the VM pointer since there
++ * can only be one instance of this shared library in a single VM
++ */
++extern JavaVM *myVm;
++
++extern jint SDL_AndroidJni_SetupThreadEnv(JNIEnv **p_env, void *thr_args);
++
++#endif//JNI_LIBVLC_H
+diff --git a/vlc-android/jni/jni_libvlcevent.c b/vlc-android/jni/jni_libvlcevent.c
+new file mode 100644
+index 0000000..9dc5ecd
+--- /dev/null
++++ b/vlc-android/jni/jni_libvlcevent.c
+@@ -0,0 +1,92 @@
++/*****************************************************************************
++ * jni_libvlcevent.c
++ *****************************************************************************
++ * Copyright (C) 2012 Rui Zhang
++ *
++ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++#include "jni_libvlcevent.h"
++
++#define BUNDLE_MediaPlayerBuffering_NEW_CACHE "new_cache"
++#define BUNDLE_MediaPlayerSeekableChanged_NEW_SEEKABLE "new_seekable"
++#define BUNDLE_MediaPlayerPausableChanged_NEW_PAUSABLE "new_pausable"
++#define BUNDLE_MediaPlayerBufferingTotal_NEW_CACHE_TOTAL "new_cache_total"
++
++#define BUNDLE_MediaPlayerModuleChanged_VideoDecoder "video_decoder"
++#define BUNDLE_MediaPlayerModuleChanged_VideoDecoderImpl "video_decoder_impl"
++#define BUNDLE_MediaPlayerModuleChanged_AudioDecoder "audio_decoder"
++#define BUNDLE_MediaPlayerModuleChanged_AudioDecoderImpl "audio_decoder_impl"
++
++JavaBundle *jbundle_from_event(JNIEnv *env, const libvlc_event_t *ev,
++        JavaBundle *p_bundle) {
++    if (NULL == jbundle_init(env, p_bundle))
++        return NULL;
++
++    switch (ev->type) {
++    case libvlc_MediaPlayerBuffering: {
++        float new_cache = ev->u.media_player_buffering.new_cache;
++        jbundle_put_float(env, p_bundle, BUNDLE_MediaPlayerBuffering_NEW_CACHE,
++                new_cache);
++        break;
++    }
++    case libvlc_MediaPlayerSeekableChanged: {
++        int new_seekable = ev->u.media_player_seekable_changed.new_seekable;
++        jbundle_put_int(env, p_bundle,
++                BUNDLE_MediaPlayerSeekableChanged_NEW_SEEKABLE, new_seekable);
++        break;
++    }
++    case libvlc_MediaPlayerPausableChanged: {
++        int new_pausable = ev->u.media_player_pausable_changed.new_pausable;
++        jbundle_put_int(env, p_bundle,
++                BUNDLE_MediaPlayerPausableChanged_NEW_PAUSABLE, new_pausable);
++        break;
++    }
++    case libvlc_MediaPlayerBufferingTotal: {
++        float new_cache_total =
++                ev->u.media_player_buffering_total.new_cache_total;
++        jbundle_put_float(env, p_bundle,
++                BUNDLE_MediaPlayerBufferingTotal_NEW_CACHE_TOTAL,
++                new_cache_total);
++        break;
++    }
++    case libvlc_MediaPlayerModuleChanged: {
++        const char* video_decoder =
++                ev->u.media_player_module_changed.psz_video_decoder;
++        const char* video_decoder_impl =
++                ev->u.media_player_module_changed.psz_video_decoder_impl;
++        const char* audio_decoder =
++                ev->u.media_player_module_changed.psz_audio_decoder;
++        const char* audio_decoder_impl =
++                ev->u.media_player_module_changed.psz_audio_decoder_impl;
++
++        jbundle_put_string(env, p_bundle,
++                BUNDLE_MediaPlayerModuleChanged_VideoDecoder, video_decoder);
++        jbundle_put_string(env, p_bundle,
++                BUNDLE_MediaPlayerModuleChanged_VideoDecoderImpl,
++                video_decoder_impl);
++        jbundle_put_string(env, p_bundle,
++                BUNDLE_MediaPlayerModuleChanged_AudioDecoder, audio_decoder);
++        jbundle_put_string(env, p_bundle,
++                BUNDLE_MediaPlayerModuleChanged_AudioDecoderImpl,
++                audio_decoder_impl);
++        break;
++    }
++    }
++
++    return p_bundle;
++}
+diff --git a/vlc-android/jni/jni_libvlcevent.h b/vlc-android/jni/jni_libvlcevent.h
+new file mode 100644
+index 0000000..92e39f2
+--- /dev/null
++++ b/vlc-android/jni/jni_libvlcevent.h
+@@ -0,0 +1,32 @@
++/*****************************************************************************
++ * jni_libvlcevent.h
++ *****************************************************************************
++ * Copyright (C) 2012 Rui Zhang
++ *
++ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++#ifndef JNI_LIBVLCEVENT_H
++#define JNI_LIBVLCEVENT_H
++
++#include <vlc/vlc.h>
++#include "jni_bundle.h"
++
++JavaBundle *jbundle_from_event(JNIEnv *env, const libvlc_event_t *ev,
++        JavaBundle *p_bundle);
++
++#endif//JNI_LIBVLCEVENT_H
+diff --git a/vlc-android/jni/jni_vsl.c b/vlc-android/jni/jni_vsl.c
+new file mode 100644
+index 0000000..d7b510e
+--- /dev/null
++++ b/vlc-android/jni/jni_vsl.c
+@@ -0,0 +1,300 @@
++/*****************************************************************************
++ * jni_vsl.c: video segment list access
++ *****************************************************************************
++ * Copyright (C) 2012 Rui Zhang
++ *
++ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++#include <stdio.h>
++#include <assert.h>
++#include <string.h>
++#include <stdint.h>
++
++#include <jni.h>
++
++#include <vlc/vlc.h>
++
++#include "jni_vsl.h"
++#include "jni_bundle.h"
++
++#define LOG_TAG "VLC/JNI/vsl"
++#include "log.h"
++
++/** Unique Java VM instance, as defined in libvlcjni.c */
++extern JavaVM *myVm;
++
++#define BUNDLE_KEY_BUF_SIZE 64
++#define BUNDLE_COUNT "count"
++
++#define BUNDLE_MRL "segment_mrl"
++#define BUNDLE_URL "segment_url"
++#define BUNDLE_DURATION "duration"
++#define BUNDLE_BYTES "bytes"
++
++static JavaVMAttachArgs g_jvsl_thr_args = {JNI_VERSION_1_2, "vsl-thread", NULL};
++
++static jobject do_get_bundle(JNIEnv* env, jobject gui)
++{
++    /* Get the object class */
++    jclass cls = (*env)->GetObjectClass(env, gui);
++    if (!cls) {
++        LOGE("vsl: failed to get class reference");
++        return NULL;
++    }
++
++    /* Find the callback ID */
++    jmethodID methodID = (*env)->GetMethodID(env, cls, "vslGetBundle",
++            "()Landroid/os/Bundle;");
++    if (!methodID) {
++        LOGE("vsl: failed to get method vslGetBundle");
++        return NULL;
++    }
++
++    jobject jbundle = (*env)->CallObjectMethod(env, gui, methodID);
++    return jbundle;
++}
++
++/* */
++static int do_load(JNIEnv* env, jobject gui, bool b_force_reload)
++{
++    /* Get the object class */
++    jclass cls = (*env)->GetObjectClass(env, gui);
++    if (!cls) {
++        LOGE("vsl: failed to get class reference");
++        return -1;
++    }
++
++    /* Find the callback ID */
++    jmethodID methodID = (*env)->GetMethodID(env, cls, "vslLoad", "(Z)Z");
++    if (!methodID) {
++        LOGE("vsl: failed to get method vslLoad");
++        return -1;
++    }
++
++    jboolean jsuccess = (*env)->CallBooleanMethod(env, gui, methodID,
++            b_force_reload);
++    return jsuccess ? 0 : -1;
++}
++
++int jvsl_load(void *p_cb_data, bool b_force_reload)
++{
++    JNIEnv *env = NULL;
++    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++        LOGE("Could not attach the jvsl thread to the JVM !");
++        return -1;
++    }
++
++    int ret = do_load(env, p_cb_data, b_force_reload);
++    return ret;
++}
++
++/* */
++static int do_load_segment(JNIEnv* env, jobject gui, bool b_force_reload, int segment)
++{
++    /* Get the object class */
++    jclass cls = (*env)->GetObjectClass(env, gui);
++    if (!cls) {
++        LOGE("vsl: failed to get class reference");
++        return -1;
++    }
++
++    /* Find the callback ID */
++    jmethodID methodID = (*env)->GetMethodID(env, cls, "vslLoadSegment", "(ZI)Z");
++    if (!methodID) {
++        LOGE("vsl: failed to get method vslLoad");
++        return -1;
++    }
++
++    jboolean jsuccess = (*env)->CallBooleanMethod(env, gui, methodID,
++                                                  b_force_reload, segment);
++    return jsuccess ? 0 : -1;
++}
++
++int jvsl_load_segment(void *p_cb_data, bool b_force_reload, int segment)
++{
++    JNIEnv *env = NULL;
++    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++        LOGE("Could not attach the jvsl thread to the JVM !");
++        return -1;
++    }
++
++    int ret = do_load_segment(env, p_cb_data, b_force_reload, segment);
++    return ret;
++}
++
++/* */
++static int do_get_count(JNIEnv* env, jobject gui)
++{
++    jobject jbundle = do_get_bundle(env, gui);
++    if (!jbundle) {
++        LOGE("do_get_count NULL bundle");
++        return -1;
++    }
++
++    JavaBundle javaBundle;
++    jbundle_attach(env, &javaBundle, jbundle);
++    int ret = jbundle_get_int(env, &javaBundle, BUNDLE_COUNT, -1);
++    jbundle_destroy(env, &javaBundle);
++
++    (*env)->DeleteLocalRef(env, jbundle);
++    return ret;
++}
++
++int jvsl_get_count(void *p_cb_data)
++{
++    JNIEnv *env = NULL;
++    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++        LOGE("Could not attach the jvsl thread to the JVM !");
++        return -1;
++    }
++
++    int ret = do_get_count(env, p_cb_data);
++    return ret;
++}
++
++/* */
++static char *do_get_mrl(JNIEnv* env, jobject gui, int order)
++{
++    jobject jbundle = do_get_bundle(env, gui);
++    if (!jbundle) {
++        LOGE("do_get_count NULL bundle");
++        return NULL;
++    }
++
++    char szBuf[BUNDLE_KEY_BUF_SIZE];
++    sprintf(szBuf, "%d_%s", order, BUNDLE_MRL);
++    JavaBundle javaBundle;
++    jbundle_attach(env, &javaBundle, jbundle);
++    LOGD("do_get_mrl: %s", szBuf);
++    char *ret = jbundle_get_string(env, &javaBundle, szBuf);
++    jbundle_destroy(env, &javaBundle);
++
++    (*env)->DeleteLocalRef(env, jbundle);
++    return ret;
++}
++
++char *jvsl_get_mrl(void *p_cb_data, int order)
++{
++    JNIEnv *env = NULL;
++    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++        LOGE("Could not attach the jvsl thread to the JVM !");
++        return NULL;
++    }
++
++    char *ret = do_get_mrl(env, p_cb_data, order);
++    return ret;
++}
++
++/* */
++static char *do_get_url(JNIEnv* env, jobject gui, int order)
++{
++    jobject jbundle = do_get_bundle(env, gui);
++    if (!jbundle) {
++        LOGE("do_get_count NULL bundle");
++        return NULL;
++    }
++
++    char szBuf[BUNDLE_KEY_BUF_SIZE];
++    sprintf(szBuf, "%d_%s", order, BUNDLE_URL);
++    JavaBundle javaBundle;
++    jbundle_attach(env, &javaBundle, jbundle);
++    LOGD("do_get_url: %s", szBuf);
++    char *ret = jbundle_get_string(env, &javaBundle, szBuf);
++    jbundle_destroy(env, &javaBundle);
++
++    (*env)->DeleteLocalRef(env, jbundle);
++    return ret;
++}
++
++char *jvsl_get_url(void *p_cb_data, int order)
++{
++    JNIEnv *env = NULL;
++    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++        LOGE("Could not attach the jvsl thread to the JVM !");
++        return NULL;
++    }
++
++    char *ret = do_get_url(env, p_cb_data, order);
++    return ret;
++}
++
++/* */
++static int do_get_duratuon(JNIEnv* env, jobject gui, int order)
++{
++    jobject jbundle = do_get_bundle(env, gui);
++    if (!jbundle) {
++        LOGE("do_get_count NULL bundle");
++        return -1;
++    }
++
++    char szBuf[BUNDLE_KEY_BUF_SIZE];
++    sprintf(szBuf, "%d_%s", order, BUNDLE_DURATION);
++    JavaBundle javaBundle;
++    jbundle_attach(env, &javaBundle, jbundle);
++    LOGD("do_get_duratuon: %s", szBuf);
++    int ret = jbundle_get_int(env, &javaBundle, szBuf, -1);
++    jbundle_destroy(env, &javaBundle);
++
++    (*env)->DeleteLocalRef(env, jbundle);
++    return ret;
++}
++
++int jvsl_get_duration(void *p_cb_data, int order)
++{
++    JNIEnv *env = NULL;
++    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++        LOGE("Could not attach the jvsl thread to the JVM !");
++        return -1;
++    }
++
++    int ret = do_get_duratuon(env, p_cb_data, order);
++    return ret;
++}
++
++/* */
++static int64_t do_get_bytes(JNIEnv* env, jobject gui, int order)
++{
++    jobject jbundle = do_get_bundle(env, gui);
++    if (!jbundle) {
++        LOGE("do_get_count NULL bundle");
++        return -1;
++    }
++
++    char szBuf[BUNDLE_KEY_BUF_SIZE];
++    sprintf(szBuf, "%d_%s", order, BUNDLE_BYTES);
++    JavaBundle javaBundle;
++    jbundle_attach(env, &javaBundle, jbundle);
++    LOGD("do_get_bytes: %s", szBuf);
++    int64_t ret = jbundle_get_long(env, &javaBundle, szBuf, -1);
++    jbundle_destroy(env, &javaBundle);
++
++    (*env)->DeleteLocalRef(env, jbundle);
++    return ret;
++}
++
++int64_t jvsl_get_bytes(void *p_cb_data, int order)
++{
++    JNIEnv *env = NULL;
++    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++        LOGE("Could not attach the jvsl thread to the JVM !");
++        return -1;
++    }
++
++    int64_t ret = do_get_bytes(env, p_cb_data, order);
++    return ret;
++}
+diff --git a/vlc-android/jni/jni_vsl.h b/vlc-android/jni/jni_vsl.h
+new file mode 100644
+index 0000000..527277a
+--- /dev/null
++++ b/vlc-android/jni/jni_vsl.h
+@@ -0,0 +1,37 @@
++/*****************************************************************************
++ * jni_vsl.h: video segment list access
++ *****************************************************************************
++ * Copyright (C) 2012 Rui Zhang
++ *
++ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++#ifndef JNI_VSL_H
++#define JNI_VSL_H
++
++#include <stdint.h>
++#include <stdbool.h>
++
++int     jvsl_load(void *p_cb_data, bool b_force_reload);
++int     jvsl_load_segment(void *p_cb_data, bool b_force_reload, int segment);
++int     jvsl_get_count(void *p_cb_data);
++char   *jvsl_get_mrl(void *p_cb_data, int i_order);
++char   *jvsl_get_url(void *p_cb_data, int i_order);
++int     jvsl_get_duration(void *p_cb_data, int i_order);
++int64_t jvsl_get_bytes(void *p_cb_data, int i_order);
++
++#endif // JNI_VSL_H
+diff --git a/vlc-android/jni/libvlcjni.c b/vlc-android/jni/libvlcjni.c
+index 0813d7c..2cc71fe 100644
+--- a/vlc-android/jni/libvlcjni.c
++++ b/vlc-android/jni/libvlcjni.c
+@@ -115,7 +115,7 @@ static void releaseMediaPlayer(JNIEnv *env, jobject thiz)
+  * Note: It's okay to use a static variable for the VM pointer since there
+  * can only be one instance of this shared library in a single VM
+  */
+-static JavaVM *myVm;
++JavaVM *myVm;
+ 
+ static jobject eventHandlerInstance = NULL;
+ 
+diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
+new file mode 100644
+index 0000000..cf8eeba
+--- /dev/null
++++ b/vlc-android/jni/libvlcjni_danmaku.c
+@@ -0,0 +1,777 @@
++/*****************************************************************************
++ * libvlcjni.c
++ *****************************************************************************
++ * Copyright © 2010-2013 VLC authors and VideoLAN
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++#include <dirent.h>
++#include <errno.h>
++#include <string.h>
++#include <pthread.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <unistd.h>
++
++#include <vlc/vlc.h>
++#include <vlc_common.h>
++#include <vlc_url.h>
++
++#include <jni.h>
++
++#include <android/api-level.h>
++
++#include "libvlcjni.h"
++#include "aout.h"
++#include "vout.h"
++#include "utils.h"
++#if 0
++#include "native_crash_handler.h"
++#endif
++
++#define VOUT_ANDROID_SURFACE 0
++#define VOUT_OPENGLES2       1
++
++#define LOG_TAG "VLC/JNI/main"
++#include "log.h"
++
++#ifdef HAVE_IOMX_DR
++#define NO_IOMX_DR "--no-omxil-dr"
++#else
++#define NO_IOMX_DR ""
++#endif
++
++#include "jni_libvlc.h"
++#include "jni_vsl.h"
++#include "libvlcjni_danmaku_events.inc.c"
++
++#define VLC_JNI_VERSION JNI_VERSION_1_2
++
++#define THREAD_NAME "libvlcjni"
++int jni_attach_thread(JNIEnv **env, const char *thread_name);
++void jni_detach_thread();
++int jni_get_env(JNIEnv **env);
++
++static void add_media_options(libvlc_media_t *p_md, JNIEnv *env, jobjectArray mediaOptions)
++{
++    int stringCount = (*env)->GetArrayLength(env, mediaOptions);
++    for(int i = 0; i < stringCount; i++)
++    {
++        jstring option = (jstring)(*env)->GetObjectArrayElement(env, mediaOptions, i);
++        const char* p_st = (*env)->GetStringUTFChars(env, option, 0);
++        libvlc_media_add_option(p_md, p_st); // option
++        (*env)->ReleaseStringUTFChars(env, option, p_st);
++    }
++}
++
++libvlc_media_t *new_media(jlong instance, JNIEnv *env, jobject thiz, jstring fileLocation, bool noOmx, bool noVideo)
++{
++    libvlc_instance_t *libvlc = (libvlc_instance_t*)(intptr_t)instance;
++    jboolean isCopy;
++    const char *psz_location = (*env)->GetStringUTFChars(env, fileLocation, &isCopy);
++    libvlc_media_t *p_md = libvlc_media_new_location(libvlc, psz_location);
++    (*env)->ReleaseStringUTFChars(env, fileLocation, psz_location);
++    if (!p_md)
++        return NULL;
++
++    jclass cls = (*env)->GetObjectClass(env, thiz);
++    jmethodID methodId = (*env)->GetMethodID(env, cls, "getMediaOptions", "(ZZ)[Ljava/lang/String;");
++    if (methodId != NULL)
++    {
++        jobjectArray mediaOptions = (*env)->CallObjectMethod(env, thiz, methodId, noOmx, noVideo);
++        if (mediaOptions != NULL)
++        {
++            add_media_options(p_md, env, mediaOptions);
++            (*env)->DeleteLocalRef(env, mediaOptions);
++        }
++    }
++    return p_md;
++}
++
++libvlc_media_player_t *getMediaPlayer(JNIEnv *env, jobject thiz)
++{
++    return (libvlc_media_player_t*)(intptr_t)getLong(env, thiz, "mInternalMediaPlayerInstance");
++}
++
++static void releaseMediaPlayer(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t* p_mp = getMediaPlayer(env, thiz);
++    if (p_mp)
++    {
++        libvlc_media_player_stop(p_mp);
++        libvlc_media_player_release(p_mp);
++        setLong(env, thiz, "mInternalMediaPlayerInstance", 0);
++    }
++}
++
++/* Pointer to the Java virtual machine
++ * Note: It's okay to use a static variable for the VM pointer since there
++ * can only be one instance of this shared library in a single VM
++ */
++JavaVM *myVm;
++
++static jobject eventHandlerInstance = NULL;
++
++#define BUNDLE_PUT_TYPED(env, obj, mid, KEY, VAL) do { \
++        jstring KEY ## _key = (*env)->NewStringUTF(env, #KEY); \
++        (*env)->CallVoidMethod(env, obj, mid, KEY ## _key, VAL); \
++        (*env)->DeleteLocalRef(env, KEY ## _key); \
++    } while (0)
++
++#define BUNDLE_PUT_STRING(env, obj, KEY, VAL) do { \
++        jstring KEY ## _key = (*env)->NewStringUTF(env, #KEY); \
++        jstring KEY ## _val = (*env)->NewStringUTF(env, VAL); \
++        (*env)->CallVoidMethod(env, obj, putString, KEY ## _key, KEY ## _val); \
++        (*env)->DeleteLocalRef(env, KEY ## _key); \
++        (*env)->DeleteLocalRef(env, KEY ## _val); \
++    } while (0)
++
++#include "libvlcjni_danmaku_events.inc.c"
++static void vlc_event_callback(const libvlc_event_t *ev, void *data)
++{
++    JNIEnv *env;
++
++    bool isAttached = false;
++
++    if (eventHandlerInstance == NULL)
++        return;
++
++    if (jni_get_env(&env) < 0) {
++        if (jni_attach_thread(&env, THREAD_NAME) < 0)
++            return;
++        isAttached = true;
++    }
++
++    /* Creating the bundle in C allows us to subscribe to more events
++     * and get better flexibility for each event. For example, we can
++     * have totally different types of data for each event, instead of,
++     * for example, only an integer and/or string.
++     */
++    jclass clsBundle = (*env)->FindClass(env, "android/os/Bundle");
++    jmethodID clsCtor = (*env)->GetMethodID(env, clsBundle, "<init>", "()V" );
++    jobject bundle = (*env)->NewObject(env, clsBundle, clsCtor);
++
++    jmethodID putInt = (*env)->GetMethodID(env, clsBundle, "putInt", "(Ljava/lang/String;I)V" );
++    jmethodID putLong = (*env)->GetMethodID(env, clsBundle, "putLong", "(Ljava/lang/String;J)V" );
++    jmethodID putFloat = (*env)->GetMethodID(env, clsBundle, "putFloat", "(Ljava/lang/String;F)V" );
++    jmethodID putString = (*env)->GetMethodID(env, clsBundle, "putString", "(Ljava/lang/String;Ljava/lang/String;)V" );
++
++    if (ev->type == libvlc_MediaPlayerPositionChanged) {
++        jstring sData = (*env)->NewStringUTF(env, "data");
++        (*env)->CallVoidMethod(env, bundle, putFloat, sData, ev->u.media_player_position_changed.new_position);
++        (*env)->DeleteLocalRef(env, sData);
++    } else if (ev->type == libvlc_MediaPlayerTimeChanged) {
++        jstring sData = (*env)->NewStringUTF(env, "data");
++        (*env)->CallVoidMethod(env, bundle, putLong, sData, ev->u.media_player_time_changed.new_time);
++        (*env)->DeleteLocalRef(env, sData);
++    } else if(ev->type == libvlc_MediaPlayerVout) {
++        /* For determining the vout/ES track change */
++        jstring sData = (*env)->NewStringUTF(env, "data");
++        (*env)->CallVoidMethod(env, bundle, putInt, sData, ev->u.media_player_vout.new_count);
++        (*env)->DeleteLocalRef(env, sData);
++    } else if(ev->type == libvlc_MediaListItemAdded ||
++              ev->type == libvlc_MediaListItemDeleted ) {
++        jstring item_uri = (*env)->NewStringUTF(env, "item_uri");
++        jstring item_index = (*env)->NewStringUTF(env, "item_index");
++        char* mrl = libvlc_media_get_mrl(
++            ev->type == libvlc_MediaListItemAdded ?
++            ev->u.media_list_item_added.item :
++            ev->u.media_list_item_deleted.item
++            );
++        jstring item_uri_value = (*env)->NewStringUTF(env, mrl);
++        jint item_index_value;
++        if(ev->type == libvlc_MediaListItemAdded)
++            item_index_value = ev->u.media_list_item_added.index;
++        else
++            item_index_value = ev->u.media_list_item_deleted.index;
++
++        (*env)->CallVoidMethod(env, bundle, putString, item_uri, item_uri_value);
++        (*env)->CallVoidMethod(env, bundle, putInt, item_index, item_index_value);
++
++        (*env)->DeleteLocalRef(env, item_uri);
++        (*env)->DeleteLocalRef(env, item_uri_value);
++        (*env)->DeleteLocalRef(env, item_index);
++        free(mrl);
++    } else if (ev->type == libvlc_MediaPlayerBuffering) {
++        float new_cache = ev->u.media_player_buffering.new_cache;
++        BUNDLE_PUT_TYPED(env, bundle, putFloat, new_cache, new_cache);
++    } else if (ev->type == libvlc_MediaPlayerSeekableChanged) {
++        int new_seekable = ev->u.media_player_seekable_changed.new_seekable;
++        BUNDLE_PUT_TYPED(env, bundle, putInt, new_seekable, new_seekable);
++    } else if (ev->type == libvlc_MediaPlayerPausableChanged) {
++        int new_pausable = ev->u.media_player_pausable_changed.new_pausable;
++        BUNDLE_PUT_TYPED(env, bundle, putInt, new_pausable, new_pausable);
++    } else if (ev->type == libvlc_MediaPlayerBufferingTotal) {
++        float new_cache_total = ev->u.media_player_buffering_total.new_cache_total;
++        BUNDLE_PUT_TYPED(env, bundle, putFloat, new_cache_total, new_cache_total);
++    } else if (ev->type == libvlc_MediaPlayerModuleChanged) {
++        BUNDLE_PUT_STRING(env, bundle, video_decoder,
++            ev->u.media_player_module_changed.psz_video_decoder);
++        BUNDLE_PUT_STRING(env, bundle, video_decoder_impl,
++            ev->u.media_player_module_changed.psz_video_decoder_impl);
++        BUNDLE_PUT_STRING(env, bundle, audio_decoder,
++            ev->u.media_player_module_changed.psz_audio_decoder);
++        BUNDLE_PUT_STRING(env, bundle, audio_decoder_impl,
++            ev->u.media_player_module_changed.psz_audio_decoder_impl);
++    }
++
++    /* Get the object class */
++    jclass cls = (*env)->GetObjectClass(env, eventHandlerInstance);
++    if (!cls) {
++        LOGE("EventHandler: failed to get class reference");
++        goto end;
++    }
++
++    /* Find the callback ID */
++    jmethodID methodID = (*env)->GetMethodID(env, cls, "callback", "(ILandroid/os/Bundle;)V");
++    if (methodID) {
++        (*env)->CallVoidMethod(env, eventHandlerInstance, methodID, ev->type, bundle);
++    } else {
++        LOGE("EventHandler: failed to get the callback method");
++    }
++
++    (*env)->DeleteLocalRef(env, cls);
++end:
++    (*env)->DeleteLocalRef(env, bundle);
++    if (isAttached)
++        jni_detach_thread();
++}
++
++jint JNI_OnLoad(JavaVM *vm, void *reserved)
++{
++    // Keep a reference on the Java VM.
++    myVm = vm;
++
++    pthread_mutex_init(&vout_android_lock, NULL);
++    pthread_cond_init(&vout_android_surf_attached, NULL);
++
++    LOGD("JNI interface loaded.");
++    return VLC_JNI_VERSION;
++}
++
++void JNI_OnUnload(JavaVM* vm, void* reserved) {
++    pthread_mutex_destroy(&vout_android_lock);
++    pthread_cond_destroy(&vout_android_surf_attached);
++}
++
++int jni_attach_thread(JNIEnv **env, const char *thread_name)
++{
++    JavaVMAttachArgs args;
++    jint result;
++
++    args.version = VLC_JNI_VERSION;
++    args.name = thread_name;
++    args.group = NULL;
++
++    result = (*myVm)->AttachCurrentThread(myVm, env, &args);
++    return result == JNI_OK ? 0 : -1;
++}
++
++void jni_detach_thread()
++{
++    (*myVm)->DetachCurrentThread(myVm);
++}
++
++int jni_get_env(JNIEnv **env)
++{
++    return (*myVm)->GetEnv(myVm, (void **)env, VLC_JNI_VERSION) == JNI_OK ? 0 : -1;
++}
++
++// FIXME: use atomics
++static bool verbosity;
++
++void Java_org_videolan_libvlc_LibVLC_nativeInit(JNIEnv *env, jobject thiz)
++{
++    //only use OpenSLES if java side says we can
++    jclass cls = (*env)->GetObjectClass(env, thiz);
++    jmethodID methodId = (*env)->GetMethodID(env, cls, "getAout", "()I");
++    bool use_opensles = (*env)->CallIntMethod(env, thiz, methodId) == AOUT_OPENSLES;
++
++    methodId = (*env)->GetMethodID(env, cls, "getVout", "()I");
++    bool use_opengles2 = (*env)->CallIntMethod(env, thiz, methodId) == VOUT_OPENGLES2;
++
++    methodId = (*env)->GetMethodID(env, cls, "timeStretchingEnabled", "()Z");
++    bool enable_time_stretch = (*env)->CallBooleanMethod(env, thiz, methodId);
++
++    methodId = (*env)->GetMethodID(env, cls, "frameSkipEnabled", "()Z");
++    bool enable_frame_skip = (*env)->CallBooleanMethod(env, thiz, methodId);
++
++    methodId = (*env)->GetMethodID(env, cls, "getDeblocking", "()I");
++    int deblocking = (*env)->CallIntMethod(env, thiz, methodId);
++    char deblockstr[2];
++    snprintf(deblockstr, sizeof(deblockstr), "%d", deblocking);
++    LOGD("Using deblocking level %d", deblocking);
++
++    methodId = (*env)->GetMethodID(env, cls, "getNetworkCaching", "()I");
++    int networkCaching = (*env)->CallIntMethod(env, thiz, methodId);
++    char networkCachingstr[25];
++    if(networkCaching > 0) {
++        snprintf(networkCachingstr, sizeof(networkCachingstr), "--network-caching=%d", networkCaching);
++        LOGD("Using network caching of %d ms", networkCaching);
++    }
++
++    methodId = (*env)->GetMethodID(env, cls, "getHttpReconnect", "()Z");
++    bool enable_http_reconnect = (*env)->CallBooleanMethod(env, thiz, methodId);
++
++    methodId = (*env)->GetMethodID(env, cls, "getChroma", "()Ljava/lang/String;");
++    jstring chroma = (*env)->CallObjectMethod(env, thiz, methodId);
++    const char *chromastr = (*env)->GetStringUTFChars(env, chroma, 0);
++    LOGD("Chroma set to \"%s\"", chromastr);
++
++    methodId = (*env)->GetMethodID(env, cls, "getSubtitlesEncoding", "()Ljava/lang/String;");
++    jstring subsencoding = (*env)->CallObjectMethod(env, thiz, methodId);
++    const char *subsencodingstr = (*env)->GetStringUTFChars(env, subsencoding, 0);
++    LOGD("Subtitle encoding set to \"%s\"", subsencodingstr);
++
++    methodId = (*env)->GetMethodID(env, cls, "isVerboseMode", "()Z");
++    verbosity = (*env)->CallBooleanMethod(env, thiz, methodId);
++
++    methodId = (*env)->GetMethodID(env, cls, "isDirectRendering", "()Z");
++    bool direct_rendering = (*env)->CallBooleanMethod(env, thiz, methodId);
++    /* With the MediaCodec opaque mode we cannot use the OpenGL ES vout. */
++    if (direct_rendering)
++        use_opengles2 = false;
++
++    methodId = (*env)->GetMethodID(env, cls, "getCachePath", "()Ljava/lang/String;");
++    jstring cachePath = (*env)->CallObjectMethod(env, thiz, methodId);
++    if (cachePath) {
++        const char *cache_path = (*env)->GetStringUTFChars(env, cachePath, 0);
++        setenv("DVDCSS_CACHE", cache_path, 1);
++        (*env)->ReleaseStringUTFChars(env, cachePath, cache_path);
++    }
++
++    /* Don't add any invalid options, otherwise it causes LibVLC to crash */
++    const char *argv[] = {
++        /* CPU intensive plugin, setting for slow devices */
++        enable_time_stretch ? "--audio-time-stretch" : "--no-audio-time-stretch",
++
++        /* avcodec speed settings for slow devices */
++        //"--avcodec-fast", // non-spec-compliant speedup tricks
++        "--avcodec-skiploopfilter", deblockstr,
++        "--avcodec-skip-frame", enable_frame_skip ? "2" : "0",
++        "--avcodec-skip-idct", enable_frame_skip ? "2" : "0",
++
++        /* Remove me when UTF-8 is enforced by law */
++        "--subsdec-encoding", subsencodingstr,
++
++        /* Enable statistics */
++        "--stats",
++
++        /* XXX: why can't the default be fine ? #7792 */
++        (networkCaching > 0) ? networkCachingstr : "",
++
++        /* Android audio API is a mess */
++        use_opensles ? "--aout=opensles" : "--aout=android_audiotrack",
++
++        /* Android video API is a mess */
++        use_opengles2 ? "--vout=gles2" : "--vout=androidsurface",
++        "--androidsurface-chroma", chromastr != NULL && chromastr[0] != 0 ? chromastr : "RV32",
++        /* XXX: we can't recover from direct rendering failure */
++        direct_rendering ? "" : "--no-mediacodec-dr",
++        direct_rendering ? "" : NO_IOMX_DR,
++
++        /* Reconnect on lost HTTP streams, e.g. network change */
++        enable_http_reconnect ? "--http-reconnect" : "",
++    };
++    libvlc_instance_t *instance = libvlc_new(sizeof(argv) / sizeof(*argv), argv);
++
++    setLong(env, thiz, "mLibVlcInstance", (jlong)(intptr_t) instance);
++
++    (*env)->ReleaseStringUTFChars(env, chroma, chromastr);
++    (*env)->ReleaseStringUTFChars(env, subsencoding, subsencodingstr);
++
++    if (!instance)
++    {
++        jclass exc = (*env)->FindClass(env, "org/videolan/libvlc/LibVlcException");
++        (*env)->ThrowNew(env, exc, "Unable to instantiate LibVLC");
++    }
++
++    LOGI("LibVLC initialized: %p", instance);
++
++    libvlc_log_set(instance, debug_log, &verbosity);
++
++#if 0
++    init_native_crash_handler(env, thiz);
++#endif
++}
++
++void Java_org_videolan_libvlc_LibVLC_nativeInitEx(JNIEnv *env, jobject thiz, jarray arguments)
++{
++    libvlc_instance_t *instance = NULL;
++
++    int user_argc = (*env)->GetArrayLength(env, arguments);
++    char **user_argv = (char **) calloc(user_argc, sizeof(char *));
++    int i = 0;
++    for (i = 0; i < user_argc; i++)
++    {
++        jstring argument = (*env)->GetObjectArrayElement(env, arguments, i);
++        if (argument)
++            user_argv[i] = (char *) (*env)->GetStringUTFChars(env, argument, NULL);
++    }
++    instance = libvlc_new(user_argc, (const char **) user_argv);
++    for (i = 0; i < user_argc; i++)
++    {
++        jstring argument = (*env)->GetObjectArrayElement(env, arguments, i);
++        if (argument)
++            (*env)->ReleaseStringUTFChars(env, argument, user_argv[i]);
++    }
++
++    setLong(env, thiz, "mLibVlcInstance", (jlong)(intptr_t) instance);
++
++    if (!instance)
++    {
++        jclass exc = (*env)->FindClass(env, "org/videolan/libvlc/LibVlcException");
++        (*env)->ThrowNew(env, exc, "Unable to instantiate LibVLC");
++    }
++
++    LOGI("LibVLC initialized: %p", instance);
++
++    if (instance)
++        libvlc_log_set(instance, debug_log, &verbosity);
++}
++
++void Java_org_videolan_libvlc_LibVLC_nativeDestroy(JNIEnv *env, jobject thiz)
++{
++#if 0
++    destroy_native_crash_handler(env);
++#endif
++
++    releaseMediaPlayer(env, thiz);
++    jlong libVlcInstance = getLong(env, thiz, "mLibVlcInstance");
++    if (!libVlcInstance)
++        return; // Already destroyed
++
++    libvlc_instance_t *instance = (libvlc_instance_t*)(intptr_t) libVlcInstance;
++    libvlc_log_unset(instance);
++    libvlc_release(instance);
++
++    setLong(env, thiz, "mLibVlcInstance", 0);
++    jobject ref = (jobject) getInt(env, thiz, "mLibVlcVsl");
++    if (ref)
++        (*env)->DeleteGlobalRef(env, ref);
++    setInt(env, thiz, "mLibVlcVsl", 0);
++}
++
++void Java_org_videolan_libvlc_LibVLC_changeVerbosity(JNIEnv *env, jobject thiz, jboolean verbose)
++{
++    verbosity = verbose;
++}
++
++void Java_org_videolan_libvlc_LibVLC_detachEventHandler(JNIEnv *env, jobject thiz)
++{
++    if (eventHandlerInstance != NULL) {
++        (*env)->DeleteGlobalRef(env, eventHandlerInstance);
++        eventHandlerInstance = NULL;
++    }
++}
++
++void Java_org_videolan_libvlc_LibVLC_setEventHandler(JNIEnv *env, jobject thiz, jobject eventHandler)
++{
++    if (eventHandlerInstance != NULL) {
++        (*env)->DeleteGlobalRef(env, eventHandlerInstance);
++        eventHandlerInstance = NULL;
++    }
++
++    eventHandlerInstance = getEventHandlerReference(env, thiz, eventHandler);
++}
++
++void Java_org_videolan_libvlc_LibVLC_setVslHandler(JNIEnv *env, jobject thiz, jobject handler)
++{
++    jobject ref;
++
++    ref = (jobject) getInt(env, thiz, "mLibVlcVsl");
++    if (ref)
++        (*env)->DeleteGlobalRef(env, ref);
++    ref = (*env)->NewGlobalRef(env, handler);
++    setInt(env, thiz, "mLibVlcVsl", (int) ref);
++}
++
++void Java_org_videolan_libvlc_LibVLC_playMRL(JNIEnv *env, jobject thiz, jlong instance,
++                                             jstring mrl, jobjectArray mediaOptions)
++{
++    /* Release previous media player, if any */
++    releaseMediaPlayer(env, thiz);
++
++    /* Create a media player playing environment */
++    libvlc_media_player_t *mp = libvlc_media_player_new((libvlc_instance_t*)(intptr_t)instance);
++#if 0
++    libvlc_media_player_set_video_title_display(mp, libvlc_position_disable, 0);
++#endif
++    jobject myJavaLibVLC = (*env)->NewGlobalRef(env, thiz);
++
++#if 0
++    //if AOUT_AUDIOTRACK_JAVA, we use amem
++    jclass cls = (*env)->GetObjectClass(env, thiz);
++    jmethodID methodId = (*env)->GetMethodID(env, cls, "getAout", "()I");
++    if ( (*env)->CallIntMethod(env, thiz, methodId) == AOUT_AUDIOTRACK_JAVA )
++    {
++        libvlc_audio_set_callbacks(mp, aout_play, aout_pause, NULL, NULL, NULL,
++                                   (void*) myJavaLibVLC);
++        libvlc_audio_set_format_callbacks(mp, aout_open, aout_close);
++    }
++#endif
++
++    /* Connect the event manager */
++    libvlc_event_manager_t *ev = libvlc_media_player_event_manager(mp);
++#if 0
++    static const libvlc_event_type_t mp_events[] = {
++        libvlc_MediaPlayerPlaying,
++        libvlc_MediaPlayerPaused,
++        libvlc_MediaPlayerEndReached,
++        libvlc_MediaPlayerStopped,
++        libvlc_MediaPlayerVout,
++        libvlc_MediaPlayerPositionChanged,
++        libvlc_MediaPlayerTimeChanged,
++        libvlc_MediaPlayerEncounteredError
++    };
++#endif
++    for(int i = 0; i < (sizeof(mp_events) / sizeof(*mp_events)); i++)
++        libvlc_event_attach(ev, mp_events[i], vlc_event_callback, myVm);
++
++    /* Keep a pointer to this media player */
++    setLong(env, thiz, "mInternalMediaPlayerInstance", (jlong)(intptr_t)mp);
++
++#if 0
++    cls = (*env)->GetObjectClass(env, thiz);
++    jmethodID methodID = (*env)->GetMethodID(env, cls, "applyEqualizer", "()V");
++    (*env)->CallVoidMethod(env, thiz, methodID);
++#endif
++
++    const char* p_mrl = (*env)->GetStringUTFChars(env, mrl, 0);
++
++    libvlc_media_t* p_md = libvlc_media_new_location((libvlc_instance_t*)(intptr_t)instance, p_mrl);
++    /* media options */
++    if (mediaOptions != NULL)
++#if 0
++        add_media_options(p_md, env, mediaOptions);
++#else
++    {
++        int stringCount = (*env)->GetArrayLength(env, mediaOptions);
++        for(int i = 0; i < stringCount; i++)
++        {
++            jstring option = (jstring)(*env)->GetObjectArrayElement(env, mediaOptions, i);
++            const char* p_st = (*env)->GetStringUTFChars(env, option, 0);
++            libvlc_media_add_option(p_md, p_st); // option
++            if (!strncmp(p_st, ":aout=", 6)) {
++                // seems ":aout" does not effect libvlc_media_add_option()
++                const char* aout_name = p_st + 6;
++                if (!strncmp(aout_name, "audiotrack_java", 15)) {
++                    libvlc_audio_set_callbacks(mp, aout_play, aout_pause, NULL,
++                                               NULL, NULL, (void*) myJavaLibVLC);
++                    libvlc_audio_set_format_callbacks(mp, aout_open,
++                                                      aout_close);
++                } else {
++                    libvlc_audio_output_set(mp, aout_name);
++                }
++            } else {
++                libvlc_media_add_option(p_md, p_st); // option
++            }
++            (*env)->ReleaseStringUTFChars(env, option, p_st);
++        }
++    }
++#endif
++
++    (*env)->ReleaseStringUTFChars(env, mrl, p_mrl);
++
++    libvlc_media_player_set_vsl_callback(mp,
++                                         (void *) getInt(env, thiz, "mLibVlcVsl"), //
++                                         jvsl_load, //
++                                         jvsl_load_segment, //
++                                         jvsl_get_count, //
++                                         jvsl_get_mrl, //
++                                         jvsl_get_url, //
++                                         jvsl_get_duration, //
++                                         jvsl_get_bytes);
++
++    /* Connect the media event manager. */
++    libvlc_event_manager_t *ev_media = libvlc_media_event_manager(p_md);
++#if 0
++    static const libvlc_event_type_t mp_media_events[] = {
++        libvlc_MediaParsedChanged
++    };
++#endif
++    for(int i = 0; i < (sizeof(mp_media_events) / sizeof(*mp_media_events)); i++)
++        libvlc_event_attach(ev_media, mp_media_events[i], vlc_event_callback, myVm);
++
++    libvlc_media_player_set_media(mp, p_md);
++    libvlc_media_player_play(mp);
++}
++
++jfloat Java_org_videolan_libvlc_LibVLC_getRate(JNIEnv *env, jobject thiz) {
++    libvlc_media_player_t* mp = getMediaPlayer(env, thiz);
++    if(mp)
++        return libvlc_media_player_get_rate(mp);
++    else
++        return 1.00;
++}
++
++void Java_org_videolan_libvlc_LibVLC_setRate(JNIEnv *env, jobject thiz, jfloat rate) {
++    libvlc_media_player_t* mp = getMediaPlayer(env, thiz);
++    if(mp)
++        libvlc_media_player_set_rate(mp, rate);
++}
++
++jboolean Java_org_videolan_libvlc_LibVLC_hasMediaPlayer(JNIEnv *env, jobject thiz)
++{
++    return !!getMediaPlayer(env, thiz);
++}
++
++jboolean Java_org_videolan_libvlc_LibVLC_isPlaying(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return !!libvlc_media_player_is_playing(mp);
++    else
++        return 0;
++}
++
++jboolean Java_org_videolan_libvlc_LibVLC_isSeekable(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return !!libvlc_media_player_is_seekable(mp);
++    return 0;
++}
++
++void Java_org_videolan_libvlc_LibVLC_play(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        libvlc_media_player_play(mp);
++}
++
++void Java_org_videolan_libvlc_LibVLC_pause(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        libvlc_media_player_pause(mp);
++}
++
++void Java_org_videolan_libvlc_LibVLC_stop(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        libvlc_media_player_stop(mp);
++}
++
++jint Java_org_videolan_libvlc_LibVLC_getPlayerState(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return (jint) libvlc_media_player_get_state(mp);
++    return -1;
++}
++
++jint Java_org_videolan_libvlc_LibVLC_getVolume(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return (jint) libvlc_audio_get_volume(mp);
++    return -1;
++}
++
++jint Java_org_videolan_libvlc_LibVLC_setVolume(JNIEnv *env, jobject thiz, jint volume)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        //Returns 0 if the volume was set, -1 if it was out of range or error
++        return (jint) libvlc_audio_set_volume(mp, (int) volume);
++    return -1;
++}
++
++jlong Java_org_videolan_libvlc_LibVLC_getTime(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return libvlc_media_player_get_time(mp);
++    return -1;
++}
++
++void Java_org_videolan_libvlc_LibVLC_setTime(JNIEnv *env, jobject thiz, jlong time)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        libvlc_media_player_set_time(mp, time);
++}
++
++jfloat Java_org_videolan_libvlc_LibVLC_getPosition(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return (jfloat) libvlc_media_player_get_position(mp);
++    return -1;
++}
++
++void Java_org_videolan_libvlc_LibVLC_setPosition(JNIEnv *env, jobject thiz, jfloat pos)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        libvlc_media_player_set_position(mp, pos);
++}
++
++jlong Java_org_videolan_libvlc_LibVLC_getLength(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return (jlong) libvlc_media_player_get_length(mp);
++    return -1;
++}
++
++jstring Java_org_videolan_libvlc_LibVLC_version(JNIEnv* env, jobject thiz)
++{
++    return (*env)->NewStringUTF(env, libvlc_get_version());
++}
++
++jstring Java_org_videolan_libvlc_LibVLC_compiler(JNIEnv* env, jobject thiz)
++{
++    return (*env)->NewStringUTF(env, libvlc_get_compiler());
++}
++
++jstring Java_org_videolan_libvlc_LibVLC_changeset(JNIEnv* env, jobject thiz)
++{
++    return (*env)->NewStringUTF(env, libvlc_get_changeset());
++}
++
++jint Java_org_videolan_libvlc_LibVLC_getTitle(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return libvlc_media_player_get_title(mp);
++    return -1;
++}
++
++void Java_org_videolan_libvlc_LibVLC_setTitle(JNIEnv *env, jobject thiz, jint title)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        libvlc_media_player_set_title(mp, title);
++}
++
++jint Java_org_videolan_libvlc_LibVLC_getChapterCountForTitle(JNIEnv *env, jobject thiz, jint title)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return libvlc_media_player_get_chapter_count_for_title(mp, title);
++    return -1;
++}
++
++jint Java_org_videolan_libvlc_LibVLC_getTitleCount(JNIEnv *env, jobject thiz)
++{
++    libvlc_media_player_t *mp = getMediaPlayer(env, thiz);
++    if (mp)
++        return libvlc_media_player_get_title_count(mp);
++    return -1;
++}
+diff --git a/vlc-android/jni/libvlcjni_danmaku_events.inc.c b/vlc-android/jni/libvlcjni_danmaku_events.inc.c
+new file mode 100644
+index 0000000..b6e081c
+--- /dev/null
++++ b/vlc-android/jni/libvlcjni_danmaku_events.inc.c
+@@ -0,0 +1,65 @@
++/*****************************************************************************
++ * libvlcjni_danmaku_events.inc.c
++ *****************************************************************************
++ * Copyright (C) 2012 Rui Zhang
++ *
++ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as published by
++ * the Free Software Foundation; either version 2.1 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
++ *****************************************************************************/
++
++#ifndef LIBVLCJNI_DANMAKU_INCLUDE_INC_C
++#define LIBVLCJNI_DANMAKU_INCLUDE_INC_C
++
++/* Pointer to the Java virtual machine
++ * Note: It's okay to use a static variable for the VM pointer since there
++ * can only be one instance of this shared library in a single VM
++ */
++extern JavaVM *myVm;
++
++static const libvlc_event_type_t mp_events[] = {
++//        libvlc_MediaPlayerMediaChanged,
++//        libvlc_MediaPlayerNothingSpecial,
++        libvlc_MediaPlayerOpening, //
++        libvlc_MediaPlayerBuffering, //
++        libvlc_MediaPlayerPlaying, //
++        libvlc_MediaPlayerPaused, //
++        libvlc_MediaPlayerStopped, //
++//        libvlc_MediaPlayerForward,
++//        libvlc_MediaPlayerBackward,
++        libvlc_MediaPlayerEndReached, //
++        libvlc_MediaPlayerEncounteredError, //
++//        libvlc_MediaPlayerTimeChanged,
++//        libvlc_MediaPlayerPositionChanged,
++        libvlc_MediaPlayerSeekableChanged, //
++        libvlc_MediaPlayerPausableChanged, //
++//        libvlc_MediaPlayerTitleChanged,
++//        libvlc_MediaPlayerSnapshotTaken,
++        libvlc_MediaPlayerLengthChanged, //
++//        libvlc_MediaPlayerVout,
++        libvlc_MediaPlayerBufferingTotal, //
++        libvlc_MediaPlayerModuleChanged, //
++        };
++
++static const libvlc_event_type_t mp_media_events[] = {
++//        libvlc_MediaMetaChanged,
++//        libvlc_MediaSubItemAdded,
++        libvlc_MediaDurationChanged, //
++        libvlc_MediaParsedChanged, //
++//        libvlc_MediaFreed,
++        libvlc_MediaStateChanged, //
++        };
++
++#endif//LIBVLCJNI_DANMAKU_INCLUDE_INC_C
+diff --git a/vlc-android/jni/utils.h b/vlc-android/jni/utils.h
+index f8502d9..182099b 100644
+--- a/vlc-android/jni/utils.h
++++ b/vlc-android/jni/utils.h
+@@ -45,4 +45,6 @@ jobject getEventHandlerReference(JNIEnv *env, jobject thiz, jobject eventHandler
+ 
+ void debug_log(void *data, int level, const libvlc_log_t *ctx, const char *fmt, va_list ap);
+ 
++void *get_vout_android_gui();
++
+ #endif // LIBVLCJNI_UTILS_H
+diff --git a/vlc-android/jni/vout.c b/vlc-android/jni/vout.c
+index e178bcb..c48e65e 100644
+--- a/vlc-android/jni/vout.c
++++ b/vlc-android/jni/vout.c
+@@ -35,6 +35,11 @@ static jobject vout_android_java_surf = NULL;
+ static jobject vout_android_subtitles_surf = NULL;
+ static bool vout_video_player_activity_created = false;
+ 
++// FIXME: this is VlcMediaPlayer
++extern void *get_vout_android_gui() {
++    return vout_android_gui;
++}
++
+ void *jni_LockAndGetSubtitlesSurface() {
+     pthread_mutex_lock(&vout_android_lock);
+     while (vout_android_subtitles_surf == NULL)
+-- 
+2.1.3
+

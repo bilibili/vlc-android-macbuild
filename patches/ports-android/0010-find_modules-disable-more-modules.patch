@@ -1,0 +1,34 @@
+From 82a10812d1723f931d5ee4898e2ef6c453daa9c8 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Fri, 31 Oct 2014 11:47:54 +0800
+Subject: [PATCH 10/11] find_modules: disable more modules
+
+---
+ find_modules.sh | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/find_modules.sh b/find_modules.sh
+index 3885799..eff1b19 100755
+--- a/find_modules.sh
++++ b/find_modules.sh
+@@ -58,6 +58,17 @@ fb
+ aout_file
+ yuv
+ .dummy
++httplive
++rtp
++dash
++a52
++decom
++ftp
++smooth
++mp4
++avi
++spatializer
++mms
+ "
+ 
+ regexp=
+-- 
+2.1.3
+

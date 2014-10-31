@@ -1,0 +1,41 @@
+From f34019acf4510f9c13236d0d16b7e6bc24f4c33b Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Thu, 6 Nov 2014 12:54:11 +0800
+Subject: [PATCH 11/11] compile.sh: use ffmpeg from ijkplayer
+
+---
+ compile.sh | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/compile.sh b/compile.sh
+index d19c3e9..c037aeb 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -284,6 +284,24 @@ mkdir -p contrib/${TARGET_TUPLE}/lib/pkgconfig
+ gen_pc_file EGL 1.1
+ gen_pc_file GLESv2 2
+ 
++IJKPLAYER=`pwd`/../../../ijkplayer
++if [ -d $IJKPLAYER ]; then
++    IJKFFMPEG=""
++    if [ $ANDROID_ABI = "armeabi-v7a" ]; then
++        IJKFFMPEG=${IJKPLAYER}/android/build/ffmpeg-armv7a/output/shared
++    elif [ $ANDROID_ABI = "armeabi" ]; then
++        IJKFFMPEG=${IJKPLAYER}/android/build/ffmpeg-armv5/output/shared
++    elif [ $ANDROID_ABI = "x86" ]; then
++        IJKFFMPEG=${IJKPLAYER}/android/build/ffmpeg-x86/output/shared
++    else
++        echo "Unknown ABI ${ANDROID_ABI} to ijkplayer"
++        exit 1
++    fi
++    cp ${IJKFFMPEG}/lib/pkgconfig/*.pc contrib/${TARGET_TUPLE}/lib/pkgconfig
++    # find a way to make Android.mk use -L in pkgconfig
++    ln -sf ${IJKFFMPEG}/lib/libijkffmpeg.so contrib/${TARGET_TUPLE}/lib/libijkffmpeg.so
++fi
++
+ cd contrib/contrib-android-${TARGET_TUPLE}
+ ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout \
+     --disable-dvdread \
+-- 
+2.1.3
+

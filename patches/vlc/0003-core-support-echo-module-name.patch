@@ -1,0 +1,195 @@
+From 8e96cbb50e9b0acc3fd3b80f9416f8070828bd0c Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sun, 22 Jul 2012 15:42:47 +0800
+Subject: [PATCH 03/17] core: support echo module name
+
+---
+ include/vlc/libvlc_events.h |  8 ++++++++
+ include/vlc_input.h         |  3 +++
+ lib/media_player.c          | 10 ++++++++++
+ src/input/decoder.c         | 22 ++++++++++++++++++++++
+ src/input/event.c           | 24 ++++++++++++++++++++++++
+ src/input/event.h           |  4 ++++
+ src/input/var.c             |  8 ++++++++
+ 7 files changed, 79 insertions(+)
+
+diff --git a/include/vlc/libvlc_events.h b/include/vlc/libvlc_events.h
+index fd3e404..bc5f0b1 100644
+--- a/include/vlc/libvlc_events.h
++++ b/include/vlc/libvlc_events.h
+@@ -108,6 +108,7 @@ enum libvlc_event_e {
+     libvlc_VlmMediaInstanceStatusError,
+ 
+     libvlc_MediaPlayerBufferingTotal=0x700,
++    libvlc_MediaPlayerModuleChanged=0x701,
+ };
+ 
+ /**
+@@ -186,6 +187,13 @@ typedef struct libvlc_event_t
+         {
+             float new_cache_total;
+         } media_player_buffering_total;
++        struct
++        {
++            const char * psz_video_decoder;
++            const char * psz_audio_decoder;
++            const char * psz_video_decoder_impl;
++            const char * psz_audio_decoder_impl;
++        } media_player_module_changed;
+ 
+         /* media list */
+         struct
+diff --git a/include/vlc_input.h b/include/vlc_input.h
+index 64f8461..3333d4d 100644
+--- a/include/vlc_input.h
++++ b/include/vlc_input.h
+@@ -397,6 +397,9 @@ typedef enum input_event_type_e
+     /* "cache-total" has changed */
+     INPUT_EVENT_CACHE_TOTAL,
+ 
++    /* module changed */
++    INPUT_EVENT_MODULE_CHANGED,
++
+ } input_event_type_e;
+ 
+ /**
+diff --git a/lib/media_player.c b/lib/media_player.c
+index 0bdb460..6eb0068 100644
+--- a/lib/media_player.c
++++ b/lib/media_player.c
+@@ -348,6 +348,15 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
+                                                          var_GetFloat( p_input, "cache-total" ));
+         libvlc_event_send( p_mi->p_event_manager, &event );
+     }
++    else if (newval.i_int == INPUT_EVENT_MODULE_CHANGED )
++    {
++        event.type = libvlc_MediaPlayerModuleChanged;
++        event.u.media_player_module_changed.psz_video_decoder = var_GetString( p_input, "module-video-decoder" );
++        event.u.media_player_module_changed.psz_audio_decoder = var_GetString( p_input, "module-audio-decoder" );
++        event.u.media_player_module_changed.psz_video_decoder_impl = var_GetString( p_input, "module-video-decoder-impl" );
++        event.u.media_player_module_changed.psz_audio_decoder_impl = var_GetString( p_input, "module-audio-decoder-impl" );
++        libvlc_event_send( p_mi->p_event_manager, &event );
++    }
+     else if( newval.i_int == INPUT_EVENT_VOUT )
+     {
+         vout_thread_t **pp_vout;
+@@ -652,6 +661,7 @@ libvlc_media_player_new( libvlc_instance_t *instance )
+     register_event(mp, MediaChanged);
+ 
+     register_event(mp, BufferingTotal);
++    register_event(mp, ModuleChanged);
+ 
+     /* Attach a var callback to the global object to provide the glue between
+      * vout_thread that generates the event and media_player that re-emits it
+diff --git a/src/input/decoder.c b/src/input/decoder.c
+index 972522a..00f4cc3 100644
+--- a/src/input/decoder.c
++++ b/src/input/decoder.c
+@@ -268,6 +268,25 @@ static decoder_t *decoder_New( vlc_object_t *p_parent, input_thread_t *p_input,
+         return NULL;
+     }
+ 
++    if( p_dec->fmt_out.i_cat == AUDIO_ES )
++    {
++        const char *p_decoder = module_get_object( p_dec->p_module );
++        input_SendEventModuleChanged_AudioDecoder( p_input, p_decoder );
++
++        const char *p_decoder_impl = var_GetString( p_dec, "module-audio-decoder-impl" );
++        if( p_decoder_impl )
++            input_SendEventModuleChanged_AudioDecoderImpl( p_input, p_decoder_impl );
++    }
++    else
++    {
++        const char *p_decoder = module_get_object( p_dec->p_module );
++        input_SendEventModuleChanged_VideoDecoder( p_input, p_decoder );
++
++        const char *p_decoder_impl = var_GetString( p_dec, "module-video-decoder-impl" );
++        if( p_decoder_impl )
++            input_SendEventModuleChanged_VideoDecoderImpl( p_input, p_decoder_impl );
++    }
++
+     p_dec->p_owner->p_clock = p_clock;
+     assert( p_dec->fmt_out.i_cat != UNKNOWN_ES );
+ 
+@@ -730,6 +749,9 @@ static decoder_t * CreateDecoder( vlc_object_t *p_parent,
+     if( p_dec == NULL )
+         return NULL;
+ 
++    var_Create( p_dec, "module-audio-decoder-impl", VLC_VAR_STRING );
++    var_Create( p_dec, "module-video-decoder-impl", VLC_VAR_STRING );
++
+     p_dec->pf_decode_audio = NULL;
+     p_dec->pf_decode_video = NULL;
+     p_dec->pf_decode_sub = NULL;
+diff --git a/src/input/event.c b/src/input/event.c
+index 2b0a4bc..81bee9d 100644
+--- a/src/input/event.c
++++ b/src/input/event.c
+@@ -205,6 +205,30 @@ void input_SendEventCacheTotal( input_thread_t *p_input, double f_level )
+     Trigger( p_input, INPUT_EVENT_CACHE_TOTAL );
+ }
+ 
++void input_SendEventModuleChanged_VideoDecoder( input_thread_t *p_input, const char *p_decoder )
++{
++    var_SetString( p_input, "module-video-decoder", p_decoder );
++    Trigger( p_input, INPUT_EVENT_MODULE_CHANGED );
++}
++
++void input_SendEventModuleChanged_AudioDecoder( input_thread_t *p_input, const char *p_decoder )
++{
++    var_SetString( p_input, "module-audio-decoder", p_decoder );
++    Trigger( p_input, INPUT_EVENT_MODULE_CHANGED );
++}
++
++void input_SendEventModuleChanged_VideoDecoderImpl( input_thread_t *p_input, const char *p_decoder_impl )
++{
++    var_SetString( p_input, "module-video-decoder-impl", p_decoder_impl );
++    Trigger( p_input, INPUT_EVENT_MODULE_CHANGED );
++}
++
++void input_SendEventModuleChanged_AudioDecoderImpl( input_thread_t *p_input, const char *p_decoder_impl )
++{
++    var_SetString( p_input, "module-audio-decoder-impl", p_decoder_impl );
++    Trigger( p_input, INPUT_EVENT_MODULE_CHANGED );
++}
++
+ /* FIXME: review them because vlc_event_send might be
+  * moved inside input_item* functions.
+  */
+diff --git a/src/input/event.h b/src/input/event.h
+index 3991453..40bb585 100644
+--- a/src/input/event.h
++++ b/src/input/event.h
+@@ -44,6 +44,10 @@ void input_SendEventSignal( input_thread_t *p_input, double f_quality, double f_
+ void input_SendEventState( input_thread_t *p_input, int i_state );
+ void input_SendEventCache( input_thread_t *p_input, double f_level );
+ void input_SendEventCacheTotal( input_thread_t *p_input, double f_level );
++void input_SendEventModuleChanged_VideoDecoder( input_thread_t *p_input, const char *p_decoder );
++void input_SendEventModuleChanged_AudioDecoder( input_thread_t *p_input, const char *p_decoder );
++void input_SendEventModuleChanged_VideoDecoderImpl( input_thread_t *p_input, const char *p_decoder_impl );
++void input_SendEventModuleChanged_AudioDecoderImpl( input_thread_t *p_input, const char *p_decoder_impl );
+ 
+ /* TODO rename Item* */
+ void input_SendEventMeta( input_thread_t *p_input );
+diff --git a/src/input/var.c b/src/input/var.c
+index 04e2dff..b715384 100644
+--- a/src/input/var.c
++++ b/src/input/var.c
+@@ -512,6 +512,14 @@ void input_ConfigVarInit ( input_thread_t *p_input )
+     var_Create( p_input, "cache-total", VLC_VAR_FLOAT );
+     var_SetFloat( p_input, "cache-total", 0.0 );
+ 
++    var_Create( p_input, "module-video-decoder", VLC_VAR_STRING );
++
++    var_Create( p_input, "module-audio-decoder", VLC_VAR_STRING );
++
++    var_Create( p_input, "module-video-decoder-impl", VLC_VAR_STRING );
++
++    var_Create( p_input, "module-audio-decoder-impl", VLC_VAR_STRING );
++
+     /* */
+     var_Create( p_input, "input-record-native", VLC_VAR_BOOL | VLC_VAR_DOINHERIT );
+ 
+-- 
+2.1.2
+

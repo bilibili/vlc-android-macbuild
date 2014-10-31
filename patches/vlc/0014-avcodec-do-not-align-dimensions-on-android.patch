@@ -1,0 +1,32 @@
+From 3d7e0a40c7ce1eff2a28bed98240b8c880373ca8 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 24 Oct 2013 16:29:21 +0800
+Subject: [PATCH 14/17] avcodec: do not align dimensions on android
+
+---
+ modules/codec/avcodec/video.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/modules/codec/avcodec/video.c b/modules/codec/avcodec/video.c
+index a542732..c634ddc 100644
+--- a/modules/codec/avcodec/video.c
++++ b/modules/codec/avcodec/video.c
+@@ -125,13 +125,14 @@ static inline picture_t *ffmpeg_NewPictBuf( decoder_t *p_dec,
+     int width = p_context->coded_width;
+     int height = p_context->coded_height;
+ 
++#ifndef __ANDROID__
+     if( p_sys->p_va == NULL )
+     {
+         int aligns[AV_NUM_DATA_POINTERS];
+ 
+         avcodec_align_dimensions2(p_context, &width, &height, aligns);
+     }
+-
++#endif
+ 
+     if( width == 0 || height == 0 || width > 8192 || height > 8192 )
+     {
+-- 
+2.1.2
+

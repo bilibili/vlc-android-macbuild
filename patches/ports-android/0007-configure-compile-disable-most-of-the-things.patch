@@ -1,0 +1,153 @@
+From 6cc27b664b1a4fa9e2308859fc76f1bb5e53a6cc Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Fri, 31 Oct 2014 10:34:32 +0800
+Subject: [PATCH 07/11] configure & compile: disable most of the things
+
+---
+ compile.sh   | 46 +++++++++++++++++++++++++++++++++++++++++-----
+ configure.sh | 24 +++++++++++++-----------
+ 2 files changed, 54 insertions(+), 16 deletions(-)
+
+diff --git a/compile.sh b/compile.sh
+index bb48f0b..d19c3e9 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -286,8 +286,8 @@ gen_pc_file GLESv2 2
+ 
+ cd contrib/contrib-android-${TARGET_TUPLE}
+ ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout \
+-    --enable-dvdread \
+-    --enable-dvdnav \
++    --disable-dvdread \
++    --disable-dvdnav \
+     --disable-dca \
+     --disable-goom \
+     --disable-chromaprint \
+@@ -304,14 +304,50 @@ cd contrib/contrib-android-${TARGET_TUPLE}
+     --disable-upnp \
+     --disable-gme \
+     --disable-tremor \
+-    --enable-vorbis \
++    --disable-vorbis \
+     --disable-sidplay2 \
+     --disable-samplerate \
+     --disable-faad2 \
+     --disable-harfbuzz \
+-    --enable-iconv \
++    --disable-iconv \
+     --disable-aribb24 \
+-    --disable-aribb25
++    --disable-aribb25 \
++    --disable-iconv \
++    --disable-aribb24 \
++    --disable-a52 \
++    --disable-ass \
++    --disable-dvbpsi \
++    --disable-ebml \
++    --disable-ffmpeg \
++    --disable-flac \
++    --disable-freetype2 \
++    --disable-fribidi \
++    --disable-gcrypt \
++    --disable-gmp \
++    --disable-gpg-error \
++    --disable-gsm \
++    --disable-gnutls \
++    --disable-jpeg \
++    --disable-libmpeg2 \
++    --disable-libxml2 \
++    --disable-live555 \
++    --disable-mad \
++    --disable-matroska \
++    --disable-modplug \
++    --disable-nettle \
++    --disable-ogg \
++    --disable-openjpeg \
++    --disable-opus \
++    --disable-png \
++    --disable-postproc \
++    --disable-protobuf \
++    --disable-speex \
++    --disable-speexdsp \
++    --disable-ssh2 \
++    --disable-taglib \
++    --disable-theora \
++    --disable-vncserver \
++    --disable-zlib
+ 
+ # TODO: mpeg2, theora
+ 
+diff --git a/configure.sh b/configure.sh
+index aefecf2..8b9be53 100755
+--- a/configure.sh
++++ b/configure.sh
+@@ -52,16 +52,16 @@ AR="${CROSS_COMPILE}ar" \
+ PKG_CONFIG_LIBDIR=$VLC_SOURCEDIR/contrib/$TARGET_TUPLE/lib/pkgconfig \
+ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $EXTRA_PARAMS \
+                 --disable-nls \
+-                --enable-live555 --enable-realrtsp \
++                --disable-live555 --disable-realrtsp \
+                 --enable-avformat \
+                 --enable-swscale \
+                 --enable-avcodec \
+-                --enable-opus \
++                --disable-opus \
+                 --enable-opensles \
+                 --enable-android-surface \
+-                --enable-mkv \
+-                --enable-taglib \
+-                --enable-dvbpsi \
++                --disable-mkv \
++                --disable-taglib \
++                --disable-dvbpsi \
+                 --disable-vlc --disable-shared \
+                 --disable-update-check \
+                 --disable-vlm \
+@@ -70,8 +70,8 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+                 --disable-vcd \
+                 --disable-v4l2 \
+                 --disable-gnomevfs \
+-                --enable-dvdread \
+-                --enable-dvdnav \
++                --disable-dvdread \
++                --disable-dvdnav \
+                 --disable-bluray \
+                 --disable-linsys \
+                 --disable-decklink \
+@@ -81,7 +81,7 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+                 --disable-sid \
+                 --disable-gme \
+                 --disable-tremor \
+-                --enable-mad \
++                --disable-mad \
+                 --disable-dca \
+                 --disable-sdl-image \
+                 --disable-zvbi \
+@@ -97,10 +97,10 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+                 --disable-skins2 \
+                 --disable-mtp \
+                 --disable-notify \
+-                --enable-libass \
++                --disable-libass \
+                 --disable-svg \
+                 --disable-udev \
+-                --enable-libxml2 \
++                --disable-libxml2 \
+                 --disable-caca \
+                 --disable-glx \
+                 --enable-egl \
+@@ -108,8 +108,10 @@ sh $VLC_SOURCEDIR/configure --host=$TARGET_TUPLE --build=x86_64-unknown-linux $E
+                 --disable-goom \
+                 --disable-projectm \
+                 --disable-sout \
+-                --enable-vorbis \
++                --disable-vorbis \
+                 --disable-faad \
+                 --disable-x264 \
+                 --disable-schroedinger --disable-dirac \
++                --disable-a52 \
++                --disable-libgcrypt \
+                 $*
+-- 
+2.1.3
+

@@ -1,0 +1,46 @@
+From c9a9ee5109a0fddde8462caad3fd529a33a9f945 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Thu, 6 Nov 2014 12:57:26 +0800
+Subject: [PATCH 17/17] modules: build less
+
+---
+ modules/Makefile.am | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/modules/Makefile.am b/modules/Makefile.am
+index f057871..b477dd0 100644
+--- a/modules/Makefile.am
++++ b/modules/Makefile.am
+@@ -34,21 +34,21 @@ EXTRA_LTLIBRARIES =
+ 
+ include common.am
+ include access/Makefile.am
+-include access/rtp/Makefile.am
++#include access/rtp/Makefile.am
+ include arm_neon/Makefile.am
+ include audio_mixer/Makefile.am
+ include audio_output/Makefile.am
+ include codec/Makefile.am
+ include demux/Makefile.am
+-include hw/vdpau/Makefile.am
+-include lua/Makefile.am
+-include meta_engine/Makefile.am
+-include misc/Makefile.am
+-include notify/Makefile.am
+-include services_discovery/Makefile.am
++#include hw/vdpau/Makefile.am
++#include lua/Makefile.am
++#include meta_engine/Makefile.am
++#include misc/Makefile.am
++#include notify/Makefile.am
++#include services_discovery/Makefile.am
+ include stream_filter/Makefile.am
+ include video_chroma/Makefile.am
+-include video_splitter/Makefile.am
++#include video_splitter/Makefile.am
+ include video_output/Makefile.am
+ 
+ BUILT_SOURCES += dummy.cpp
+-- 
+2.1.2
+

@@ -1,0 +1,38 @@
+From 1492696a3c11264072403ce09b5104443ed67487 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Fri, 31 Oct 2014 11:38:10 +0800
+Subject: [PATCH 09/11] Android.mk: link less libs
+
+---
+ vlc-android/jni/Android.mk | 15 ++-------------
+ 1 file changed, 2 insertions(+), 13 deletions(-)
+
+diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
+index 15b3871..d92ddaf 100644
+--- a/vlc-android/jni/Android.mk
++++ b/vlc-android/jni/Android.mk
+@@ -67,19 +67,8 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+ 	$(VLC_BUILD_DIR)/src/.libs/libvlccore.a \
+ 	$(VLC_BUILD_DIR)/compat/.libs/libcompat.a \
+ 	-ldl -lz -lm -llog \
+-	-ldvbpsi -lebml -lmatroska -ltag \
+-	-logg -lFLAC -ltheora -lvorbis \
+-	-lmpeg2 -la52 \
+-	-lavformat -lavcodec -lswscale -lavutil -lpostproc -lgsm -lopenjpeg \
+-	-lliveMedia -lUsageEnvironment -lBasicUsageEnvironment -lgroupsock \
+-	-lspeex -lspeexdsp \
+-	-lxml2 -lpng -lgnutls -lgcrypt -lgpg-error \
+-	-lnettle -lhogweed -lgmp \
+-	-lfreetype -liconv -lass -lfribidi -lopus \
+-	-lEGL -lGLESv2 -ljpeg \
+-	-ldvdnav -ldvdread -ldvdcss \
+-	-lmad \
+-	$(CPP_STATIC)
++	-lijkffmpeg \
++	-lEGL -lGLESv2
+ 
+ include $(BUILD_SHARED_LIBRARY)
+ 
+-- 
+2.1.3
+

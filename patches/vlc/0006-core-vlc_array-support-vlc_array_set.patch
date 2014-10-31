@@ -1,0 +1,29 @@
+From db84b451bc6b25338a27273eae57e1a4c5bc7fed Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 19 Jun 2012 17:04:09 +0800
+Subject: [PATCH 06/19] core: vlc_array: support vlc_array_set
+
+---
+ include/vlc_arrays.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/include/vlc_arrays.h b/include/vlc_arrays.h
+index 91f5405..6a8e24a 100644
+--- a/include/vlc_arrays.h
++++ b/include/vlc_arrays.h
+@@ -366,6 +366,12 @@ vlc_array_remove( vlc_array_t * p_array, int i_index )
+     }
+ }
+ 
++static inline void
++vlc_array_set( vlc_array_t * p_array, void * p_elem, int i_index )
++{
++    p_array->pp_elems[i_index] = p_elem;
++}
++
+ 
+ /************************************************************************
+  * Dictionaries
+-- 
+2.1.3
+

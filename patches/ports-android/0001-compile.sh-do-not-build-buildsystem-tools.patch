@@ -1,0 +1,35 @@
+From a957c90056a531ac3247a0b3beaed09bee5ac05b Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Thu, 23 Oct 2014 14:28:10 +0800
+Subject: [PATCH 01/11] compile.sh: do not build buildsystem tools
+
+---
+ compile.sh | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/compile.sh b/compile.sh
+index d93db99..004c284 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -258,12 +258,12 @@ if [ -z "$MAKEFLAGS" ]; then
+ fi
+ 
+ # Build buildsystem tools
+-export PATH=`pwd`/extras/tools/build/bin:$PATH
+-echo "Building tools"
+-cd extras/tools
+-./bootstrap
+-make $MAKEFLAGS
+-cd ../..
++# export PATH=`pwd`/extras/tools/build/bin:$PATH
++# echo "Building tools"
++# cd extras/tools
++# ./bootstrap
++# make $MAKEFLAGS
++# cd ../..
+ 
+ ############
+ # Contribs #
+-- 
+2.1.3
+

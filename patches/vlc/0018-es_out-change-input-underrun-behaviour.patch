@@ -1,0 +1,127 @@
+From bb3ec42f4c67ae9ff482360f6c64d983db1b7ac8 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Fri, 9 May 2014 00:40:32 +0800
+Subject: [PATCH 18/19] es_out: change input underrun behaviour
+
+When input is underrun VLC drops all data and flushes decoders.
+This patch attempts to not dropping any data. Instead, it stops decoders when input is underrun.
+A/V may be slightly out of sync when underrun happens frequently.
+---
+ src/input/es_out.c           | 29 +++++++++++++++++++++++++++++
+ src/input/es_out.h           |  2 ++
+ src/input/es_out_timeshift.c |  3 +++
+ 3 files changed, 34 insertions(+)
+
+diff --git a/src/input/es_out.c b/src/input/es_out.c
+index 6709bde..1db7bc6 100644
+--- a/src/input/es_out.c
++++ b/src/input/es_out.c
+@@ -592,7 +592,23 @@ static void EsOutChangePosition( es_out_t *out )
+     p_sys->i_preroll_end = -1;
+ }
+ 
++static void EsOutProgramReset( es_out_t *out )
++{
++    es_out_sys_t      *p_sys = out->p_sys;
++
++    input_SendEventCache( p_sys->p_input, 0.0 );
++
++    for( int i = 0; i < p_sys->i_pgrm; i++ )
++        input_clock_Reset( p_sys->pgrm[i]->p_clock );
++
++    p_sys->b_buffering = true;
++    p_sys->i_buffering_extra_initial = 0;
++    p_sys->i_buffering_extra_stream = 0;
++    p_sys->i_buffering_extra_system = 0;
++    p_sys->i_preroll_end = -1;
+ 
++    EsOutDecodersChangePause( out, true, mdate() );
++}
+ 
+ static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
+ {
+@@ -635,6 +651,10 @@ static void EsOutDecodersStopBuffering( es_out_t *out, bool b_forced )
+     p_sys->b_buffering = false;
+     p_sys->i_preroll_end = -1;
+ 
++    /* buffering is done, so resume decoders */
++    /* XXX: take care of pause/resume */
++    EsOutDecodersChangePause( out, false, mdate() );
++
+     if( p_sys->i_buffering_extra_initial > 0 )
+     {
+         /* FIXME wrong ? */
+@@ -2329,6 +2349,7 @@ static int EsOutControlLocked( es_out_t *out, int i_query, va_list args )
+                 const mtime_t i_pts_delay_base = p_sys->i_pts_delay - p_sys->i_pts_jitter;
+                 mtime_t i_pts_delay = input_clock_GetJitter( p_pgrm->p_clock );
+ 
++#if 0
+                 /* Avoid dangerously high value */
+                 const mtime_t i_jitter_max = INT64_C(1000) * var_InheritInteger( p_sys->p_input, "clock-jitter" );
+                 if( i_pts_delay > __MIN( i_pts_delay_base + i_jitter_max, INPUT_PTS_DELAY_MAX ) )
+@@ -2355,6 +2376,9 @@ static int EsOutControlLocked( es_out_t *out, int i_query, va_list args )
+                     es_out_Control( out, ES_OUT_RESET_PCR );
+                 }
+ 
++#endif
++                /* when input is underrun, start buffering and stop decoders */
++                es_out_Control( out, ES_OUT_PROGRAM_RESET );
+                 es_out_SetJitter( out, i_pts_delay_base, i_pts_delay - i_pts_delay_base, p_sys->i_cr_average );
+             }
+         }
+@@ -2366,6 +2390,11 @@ static int EsOutControlLocked( es_out_t *out, int i_query, va_list args )
+         EsOutChangePosition( out );
+         return VLC_SUCCESS;
+ 
++    case ES_OUT_PROGRAM_RESET:
++        msg_Err( p_sys->p_input, "ES_OUT_PROGRAM_RESET called" );
++        EsOutProgramReset( out );
++        return VLC_SUCCESS;
++
+     case ES_OUT_SET_GROUP:
+     {
+         int i = va_arg( args, int );
+diff --git a/src/input/es_out.h b/src/input/es_out.h
+index 56cefed..3d0bf63 100644
+--- a/src/input/es_out.h
++++ b/src/input/es_out.h
+@@ -82,6 +82,8 @@ enum es_out_query_private_e
+ 
+     /* Set End Of Stream */
+     ES_OUT_SET_EOS,                                 /* res=cannot fail */
++    /* */
++    ES_OUT_PROGRAM_RESET,
+ };
+ 
+ static inline void es_out_SetMode( es_out_t *p_out, int i_mode )
+diff --git a/src/input/es_out_timeshift.c b/src/input/es_out_timeshift.c
+index 68589da..876b569 100644
+--- a/src/input/es_out_timeshift.c
++++ b/src/input/es_out_timeshift.c
+@@ -592,6 +592,7 @@ static int ControlLocked( es_out_t *p_out, int i_query, va_list args )
+     case ES_OUT_SET_PCR:
+     case ES_OUT_SET_GROUP_PCR:
+     case ES_OUT_RESET_PCR:
++    case ES_OUT_PROGRAM_RESET:
+     case ES_OUT_SET_NEXT_DISPLAY_TIME:
+     case ES_OUT_SET_GROUP_META:
+     case ES_OUT_SET_GROUP_EPG:
+@@ -1328,6 +1329,7 @@ static int CmdInitControl( ts_cmd_t *p_cmd, int i_query, va_list args, bool b_co
+         break;
+ 
+     case ES_OUT_RESET_PCR:           /* no arg */
++    case ES_OUT_PROGRAM_RESET:
+     case ES_OUT_SET_EOS:
+     case ES_OUT_POST_DISCONTINUITY:
+         break;
+@@ -1466,6 +1468,7 @@ static int CmdExecuteControl( es_out_t *p_out, ts_cmd_t *p_cmd )
+                                                p_cmd->u.control.u.int_i64.i_i64 );
+ 
+     case ES_OUT_RESET_PCR:           /* no arg */
++    case ES_OUT_PROGRAM_RESET:
+     case ES_OUT_SET_EOS:
+     case ES_OUT_POST_DISCONTINUITY:
+         return es_out_Control( p_out, i_query );
+-- 
+2.1.3
+

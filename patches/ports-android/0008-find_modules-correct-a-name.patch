@@ -1,0 +1,25 @@
+From 6f419f2a05df94712e1ae7bcb913f26f39fdabb6 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Fri, 31 Oct 2014 11:18:50 +0800
+Subject: [PATCH 08/11] find_modules: correct a name
+
+---
+ find_modules.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/find_modules.sh b/find_modules.sh
+index 6e70bb8..3885799 100755
+--- a/find_modules.sh
++++ b/find_modules.sh
+@@ -45,7 +45,7 @@ smf
+ podcast
+ bluescreen
+ erase
+-stream_filter_record
++record
+ speex_resampler
+ remoteosd
+ magnify
+-- 
+2.1.3
+

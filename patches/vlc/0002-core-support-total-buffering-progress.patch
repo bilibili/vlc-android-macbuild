@@ -1,0 +1,131 @@
+From 0df311925536079ee3b7ce163f751521cfb59014 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Sun, 1 Jul 2012 18:44:58 +0800
+Subject: [PATCH 02/17] core: support total buffering progress
+
+---
+ include/vlc/libvlc_events.h |  8 +++++++-
+ include/vlc_input.h         |  3 +++
+ lib/media_player.c          |  9 +++++++++
+ src/input/event.c           | 10 ++++++++++
+ src/input/event.h           |  1 +
+ src/input/var.c             |  3 +++
+ 6 files changed, 33 insertions(+), 1 deletion(-)
+
+diff --git a/include/vlc/libvlc_events.h b/include/vlc/libvlc_events.h
+index 963163a..fd3e404 100644
+--- a/include/vlc/libvlc_events.h
++++ b/include/vlc/libvlc_events.h
+@@ -105,7 +105,9 @@ enum libvlc_event_e {
+     libvlc_VlmMediaInstanceStatusPlaying,
+     libvlc_VlmMediaInstanceStatusPause,
+     libvlc_VlmMediaInstanceStatusEnd,
+-    libvlc_VlmMediaInstanceStatusError
++    libvlc_VlmMediaInstanceStatusError,
++
++    libvlc_MediaPlayerBufferingTotal=0x700,
+ };
+ 
+ /**
+@@ -180,6 +182,10 @@ typedef struct libvlc_event_t
+         {
+             int new_count;
+         } media_player_vout;
++        struct
++        {
++            float new_cache_total;
++        } media_player_buffering_total;
+ 
+         /* media list */
+         struct
+diff --git a/include/vlc_input.h b/include/vlc_input.h
+index 6ec305b..64f8461 100644
+--- a/include/vlc_input.h
++++ b/include/vlc_input.h
+@@ -394,6 +394,9 @@ typedef enum input_event_type_e
+     /* A vout_thread_t object has been created/deleted by *the input* */
+     INPUT_EVENT_VOUT,
+ 
++    /* "cache-total" has changed */
++    INPUT_EVENT_CACHE_TOTAL,
++
+ } input_event_type_e;
+ 
+ /**
+diff --git a/lib/media_player.c b/lib/media_player.c
+index 64240aa..0bdb460 100644
+--- a/lib/media_player.c
++++ b/lib/media_player.c
+@@ -341,6 +341,13 @@ input_event_changed( vlc_object_t * p_this, char const * psz_cmd,
+             var_GetFloat( p_input, "cache" ));
+         libvlc_event_send( p_mi->p_event_manager, &event );
+     }
++    else if( newval.i_int == INPUT_EVENT_CACHE_TOTAL )
++    {
++        event.type = libvlc_MediaPlayerBufferingTotal;
++        event.u.media_player_buffering_total.new_cache_total = (int)(100 *
++                                                         var_GetFloat( p_input, "cache-total" ));
++        libvlc_event_send( p_mi->p_event_manager, &event );
++    }
+     else if( newval.i_int == INPUT_EVENT_VOUT )
+     {
+         vout_thread_t **pp_vout;
+@@ -644,6 +651,8 @@ libvlc_media_player_new( libvlc_instance_t *instance )
+ 
+     register_event(mp, MediaChanged);
+ 
++    register_event(mp, BufferingTotal);
++
+     /* Attach a var callback to the global object to provide the glue between
+      * vout_thread that generates the event and media_player that re-emits it
+      * with its own event manager
+diff --git a/src/input/event.c b/src/input/event.c
+index 453e04b..2b0a4bc 100644
+--- a/src/input/event.c
++++ b/src/input/event.c
+@@ -195,6 +195,16 @@ void input_SendEventCache( input_thread_t *p_input, double f_level )
+     Trigger( p_input, INPUT_EVENT_CACHE );
+ }
+ 
++void input_SendEventCacheTotal( input_thread_t *p_input, double f_level )
++{
++    vlc_value_t val;
++
++    val.f_float = f_level;
++    var_Change( p_input, "cache-total", VLC_VAR_SETVALUE, &val, NULL );
++
++    Trigger( p_input, INPUT_EVENT_CACHE_TOTAL );
++}
++
+ /* FIXME: review them because vlc_event_send might be
+  * moved inside input_item* functions.
+  */
+diff --git a/src/input/event.h b/src/input/event.h
+index c8f1071..3991453 100644
+--- a/src/input/event.h
++++ b/src/input/event.h
+@@ -43,6 +43,7 @@ void input_SendEventSeekpoint( input_thread_t *p_input, int i_title, int i_seekp
+ void input_SendEventSignal( input_thread_t *p_input, double f_quality, double f_strength );
+ void input_SendEventState( input_thread_t *p_input, int i_state );
+ void input_SendEventCache( input_thread_t *p_input, double f_level );
++void input_SendEventCacheTotal( input_thread_t *p_input, double f_level );
+ 
+ /* TODO rename Item* */
+ void input_SendEventMeta( input_thread_t *p_input );
+diff --git a/src/input/var.c b/src/input/var.c
+index 258b5f4..04e2dff 100644
+--- a/src/input/var.c
++++ b/src/input/var.c
+@@ -509,6 +509,9 @@ void input_ConfigVarInit ( input_thread_t *p_input )
+     var_Create( p_input, "cache", VLC_VAR_FLOAT );
+     var_SetFloat( p_input, "cache", 0.0 );
+ 
++    var_Create( p_input, "cache-total", VLC_VAR_FLOAT );
++    var_SetFloat( p_input, "cache-total", 0.0 );
++
+     /* */
+     var_Create( p_input, "input-record-native", VLC_VAR_BOOL | VLC_VAR_DOINHERIT );
+ 
+-- 
+2.1.2
+

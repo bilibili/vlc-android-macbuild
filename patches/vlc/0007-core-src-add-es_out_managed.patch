@@ -1,0 +1,32 @@
+From 4b2fed5135e873c44d3c672c6e256cd66fff0c00 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Thu, 21 Jun 2012 15:44:39 +0800
+Subject: [PATCH 07/19] core: src: add es_out_managed
+
+---
+ src/Makefile.am | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 4472271..ef7deb4 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -44,6 +44,7 @@ pluginsinclude_HEADERS = \
+ 	../include/vlc_epg.h \
+ 	../include/vlc_es.h \
+ 	../include/vlc_es_out.h \
++	../include/vlc_es_out_managed.h \
+ 	../include/vlc_events.h \
+ 	../include/vlc_filter.h \
+ 	../include/vlc_fourcc.h \
+@@ -367,6 +368,7 @@ SOURCES_libvlc_common = \
+ 	input/demux.c \
+ 	input/es_out.c \
+ 	input/es_out_timeshift.c \
++	input/es_out_managed.c \
+ 	input/event.c \
+ 	input/input.c \
+ 	input/info.h \
+-- 
+2.1.3
+

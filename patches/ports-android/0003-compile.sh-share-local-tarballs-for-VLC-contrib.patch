@@ -1,0 +1,29 @@
+From e629e9e673174fcc4d61e7d5fd6626b7b8299901 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Thu, 23 Oct 2014 14:34:52 +0800
+Subject: [PATCH 03/11] compile.sh: share local tarballs for VLC contrib
+
+---
+ compile.sh | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/compile.sh b/compile.sh
+index 004c284..bb48f0b 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -332,6 +332,12 @@ echo "EXTRA_LDFLAGS= ${EXTRA_LDFLAGS}" >> config.mak
+ export VLC_EXTRA_CFLAGS="${EXTRA_CFLAGS}"
+ export VLC_EXTRA_LDFLAGS="${EXTRA_LDFLAGS}"
+ 
++if  test -d "../../../../tarballs" ; then
++    echo "fetch local tarballs"
++    mkdir -p ../tarballs
++    cp -n -v ../../../../tarballs/* ../tarballs/ || true
++fi
++
+ make fetch
+ # We already have zlib available
+ [ -e .zlib ] || (mkdir -p zlib; touch .zlib)
+-- 
+2.1.3
+

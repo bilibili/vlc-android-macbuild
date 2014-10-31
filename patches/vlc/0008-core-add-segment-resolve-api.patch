@@ -1,0 +1,110 @@
+From b8c60e02b00d8bc6dda317fafff2442a2f13d492 Mon Sep 17 00:00:00 2001
+From: bbcallen <bbcallen@gmail.com>
+Date: Tue, 4 Sep 2012 14:43:15 +0800
+Subject: [PATCH 08/17] core: add segment resolve api
+
+---
+ include/vlc/libvlc_media_player.h | 11 +++++++++++
+ include/vlc/libvlc_structures.h   | 10 ++++++++++
+ lib/media_player.c                | 31 +++++++++++++++++++++++++++++++
+ 3 files changed, 52 insertions(+)
+
+diff --git a/include/vlc/libvlc_media_player.h b/include/vlc/libvlc_media_player.h
+index 9ba313e..ad78f89 100644
+--- a/include/vlc/libvlc_media_player.h
++++ b/include/vlc/libvlc_media_player.h
+@@ -1871,6 +1871,17 @@ LIBVLC_API int libvlc_media_player_set_equalizer( libvlc_media_player_t *p_mi, l
+ 
+ /** @} audio */
+ 
++LIBVLC_API void libvlc_media_player_set_vsl_callback(
++        libvlc_media_player_t *p_mi,
++        void *p_cb_data,
++        libvlc_vsl_load_cb p_load_cb,
++        libvlc_vsl_load_segment_cb p_load_segment_cb,
++        libvlc_vsl_get_count_cb p_get_count_cb,
++        libvlc_vsl_get_mrl_cb p_get_mrl_cb,
++        libvlc_vsl_get_url_cb p_get_url_cb,
++        libvlc_vsl_get_duration_cb p_get_duration_cb,
++        libvlc_vsl_get_bytes_cb p_get_bytes_cb );
++
+ /** @} media_player */
+ 
+ # ifdef __cplusplus
+diff --git a/include/vlc/libvlc_structures.h b/include/vlc/libvlc_structures.h
+index 54cd1fd..40a7b39 100644
+--- a/include/vlc/libvlc_structures.h
++++ b/include/vlc/libvlc_structures.h
+@@ -30,6 +30,7 @@
+  */
+ 
+ #include <stdint.h>
++#include <stdbool.h>
+ 
+ # ifdef __cplusplus
+ extern "C" {
+@@ -64,6 +65,15 @@ typedef struct libvlc_log_message_t
+     const char *psz_message;  /* message */
+ } libvlc_log_message_t;
+ 
++/* returned string need free() */
++typedef int     (*libvlc_vsl_load_cb)( void *p_cb_data, bool b_force_reload );
++typedef int     (*libvlc_vsl_load_segment_cb)( void *p_cb_data, bool b_force_reload, int segment );
++typedef int     (*libvlc_vsl_get_count_cb)( void *p_cb_data );
++typedef char   *(*libvlc_vsl_get_mrl_cb)( void *p_cb_data, int i_order );
++typedef char   *(*libvlc_vsl_get_url_cb)( void *p_cb_data, int i_order );
++typedef int     (*libvlc_vsl_get_duration_cb)( void *p_cb_data, int i_order );
++typedef int64_t (*libvlc_vsl_get_bytes_cb)( void *p_cb_data, int i_order );
++
+ /**@} */
+ 
+ # ifdef __cplusplus
+diff --git a/lib/media_player.c b/lib/media_player.c
+index 6eb0068..396ed81 100644
+--- a/lib/media_player.c
++++ b/lib/media_player.c
+@@ -606,6 +606,16 @@ libvlc_media_player_new( libvlc_instance_t *instance )
+     var_Create (mp, "equalizer-vlcfreqs", VLC_VAR_BOOL);
+     var_Create (mp, "equalizer-bands", VLC_VAR_STRING);
+ 
++    /* Video Segment List */
++    var_Create (mp, "vsl-data", VLC_VAR_ADDRESS);
++    var_Create (mp, "vsl-load", VLC_VAR_ADDRESS);
++    var_Create (mp, "vsl-load-segment", VLC_VAR_ADDRESS);
++    var_Create (mp, "vsl-get-count", VLC_VAR_ADDRESS);
++    var_Create (mp, "vsl-get-mrl", VLC_VAR_ADDRESS);
++    var_Create (mp, "vsl-get-url", VLC_VAR_ADDRESS);
++    var_Create (mp, "vsl-get-duration", VLC_VAR_ADDRESS);
++    var_Create (mp, "vsl-get-bytes", VLC_VAR_ADDRESS);
++
+     mp->p_md = NULL;
+     mp->state = libvlc_NothingSpecial;
+     mp->p_libvlc_instance = instance;
+@@ -1668,3 +1678,24 @@ int libvlc_media_player_set_equalizer( libvlc_media_player_t *p_mi, libvlc_equal
+ 
+     return 0;
+ }
++
++void libvlc_media_player_set_vsl_callback(
++    libvlc_media_player_t *p_mi,
++    void *p_cb_data,
++    libvlc_vsl_load_cb p_load_cb,
++    libvlc_vsl_load_segment_cb p_load_segment_cb,
++    libvlc_vsl_get_count_cb p_get_count_cb,
++    libvlc_vsl_get_mrl_cb p_get_mrl_cb,
++    libvlc_vsl_get_url_cb p_get_url_cb,
++    libvlc_vsl_get_duration_cb p_get_duration_cb,
++    libvlc_vsl_get_bytes_cb p_get_bytes_cb )
++{
++    var_SetAddress( p_mi, "vsl-data", p_cb_data );
++    var_SetAddress( p_mi, "vsl-load", p_load_cb );
++    var_SetAddress( p_mi, "vsl-load-segment", p_load_segment_cb );
++    var_SetAddress( p_mi, "vsl-get-count", p_get_count_cb );
++    var_SetAddress( p_mi, "vsl-get-mrl", p_get_mrl_cb );
++    var_SetAddress( p_mi, "vsl-get-url", p_get_url_cb );
++    var_SetAddress( p_mi, "vsl-get-duration", p_get_duration_cb );
++    var_SetAddress( p_mi, "vsl-get-bytes", p_get_bytes_cb );
++}
+-- 
+2.1.2
+

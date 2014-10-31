@@ -1,0 +1,24 @@
+From 990c4278f9800a041ef0c4cc9fc03443e80f9a58 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Thu, 23 Oct 2014 14:31:40 +0800
+Subject: [PATCH 02/11] Makefile: do not build APK
+
+---
+ Makefile | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 4fa0141..baed40e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -54,7 +54,6 @@ define build_apk
+ 	echo `id -u -n`@`hostname` > $(SRC)/assets/builder.txt
+ 	git rev-parse --short HEAD > $(SRC)/assets/revision.txt
+ 	./gen-env.sh $(SRC)
+-	$(VERBOSE)cd $(SRC) && ant $(ANT_OPTS) $(ANT_TARGET)
+ endef
+ 
+ $(VLC_APK): $(LIBVLCJNI) $(JAVA_SOURCES)
+-- 
+2.1.3
+

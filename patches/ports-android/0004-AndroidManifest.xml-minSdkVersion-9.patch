@@ -1,0 +1,25 @@
+From f11edf3c8a0ad14ad0ebefae3bb596273ee4fb9b Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Thu, 23 Oct 2014 14:41:46 +0800
+Subject: [PATCH 04/11] AndroidManifest.xml: minSdkVersion=9
+
+---
+ vlc-android/AndroidManifest.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/vlc-android/AndroidManifest.xml b/vlc-android/AndroidManifest.xml
+index 350180c..fdfaaa2 100644
+--- a/vlc-android/AndroidManifest.xml
++++ b/vlc-android/AndroidManifest.xml
+@@ -6,7 +6,7 @@
+     android:versionName="1.0.0-git" >
+ 
+     <uses-sdk
+-        android:minSdkVersion="7"
++        android:minSdkVersion="9"
+         android:targetSdkVersion="19" />
+ 
+     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+-- 
+2.1.3
+
