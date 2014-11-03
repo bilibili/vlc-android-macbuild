@@ -1,0 +1,24 @@
+From 27874645721e8f3f1b89b71a47194d7c1c0f74b2 Mon Sep 17 00:00:00 2001
+From: ctiao <calmer91@gmail.com>
+Date: Mon, 3 Nov 2014 15:17:45 +0800
+Subject: [PATCH] MediaCodec: add k3v2 to white list
+
+---
+ modules/codec/omxil/android_mediacodec.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
+index aae1353..b3b4bd9 100644
+--- a/modules/codec/omxil/android_mediacodec.c
++++ b/modules/codec/omxil/android_mediacodec.c
+@@ -310,6 +310,7 @@ static const codec_quirk_t s_codec_quirk_list[] = {
+     {"OMX.SEC.AVC.Decoder",     MCODEC_PREFER,      MCODEC_PREFER},
+ 
+     {"OMX.ittiam.",             MCODEC_UNSUPPORT,   MCODEC_UNSUPPORT},
++    {"OMX.k3.",                 MCODEC_PREFER,      MCODEC_PREFER},
+ 
+     {NULL,                      MCODEC_UNKNOWN,     MCODEC_UNKNOWN},
+ };
+-- 
+1.8.5.2 (Apple Git-48)
+
