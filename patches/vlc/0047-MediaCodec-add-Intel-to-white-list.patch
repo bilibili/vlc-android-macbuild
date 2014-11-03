@@ -1,0 +1,24 @@
+From 808bc14a6b8e0d4ee32dca27852db505331d2ef7 Mon Sep 17 00:00:00 2001
+From: ctiao <calmer91@gmail.com>
+Date: Mon, 3 Nov 2014 15:59:01 +0800
+Subject: [PATCH] MediaCodec: add Intel to white list
+
+---
+ modules/codec/omxil/android_mediacodec.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
+index b3b4bd9..b11ff2b 100644
+--- a/modules/codec/omxil/android_mediacodec.c
++++ b/modules/codec/omxil/android_mediacodec.c
+@@ -311,6 +311,7 @@ static const codec_quirk_t s_codec_quirk_list[] = {
+ 
+     {"OMX.ittiam.",             MCODEC_UNSUPPORT,   MCODEC_UNSUPPORT},
+     {"OMX.k3.",                 MCODEC_PREFER,      MCODEC_PREFER},
++    {"OMX.Intel.",              MCODEC_PREFER,      MCODEC_PREFER},
+ 
+     {NULL,                      MCODEC_UNKNOWN,     MCODEC_UNKNOWN},
+ };
+-- 
+1.8.5.2 (Apple Git-48)
+
