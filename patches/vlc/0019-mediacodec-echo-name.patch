@@ -1,7 +1,7 @@
-From 22b800bbfee4e59ba35c84ee51ff54a6babb968f Mon Sep 17 00:00:00 2001
+From 64f2ba78d04f39826e4f1dc51df8a09a9053b10f Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Thu, 13 Feb 2014 12:41:38 +0800
-Subject: [PATCH 19/19] mediacodec: echo name
+Subject: [PATCH 19/20] mediacodec: echo name
 
 ---
  modules/codec/omxil/android_mediacodec.c | 9 +++++++++

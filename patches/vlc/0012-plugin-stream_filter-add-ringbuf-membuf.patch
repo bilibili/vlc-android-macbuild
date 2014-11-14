@@ -1,7 +1,7 @@
-From 9e0a370540c5efdf1283c94b453bc67830db585b Mon Sep 17 00:00:00 2001
+From 79a009cfe2ac3c58fb50139c7b5eb9fe9840c6bc Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 14:36:09 +0800
-Subject: [PATCH 12/19] plugin: stream_filter: add ringbuf, membuf
+Subject: [PATCH 12/20] plugin: stream_filter: add ringbuf, membuf
 
 ---
  modules/stream_filter/Makefile.am | 12 ++++++++++++

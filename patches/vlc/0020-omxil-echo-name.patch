@@ -1,0 +1,28 @@
+From c6691e698f3a186910b71043806ec203ab02d930 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Fri, 14 Nov 2014 10:47:23 +0800
+Subject: [PATCH 20/20] omxil: echo name
+
+---
+ modules/codec/omxil/omxil.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/modules/codec/omxil/omxil.c b/modules/codec/omxil/omxil.c
+index a9b496a..172b808 100644
+--- a/modules/codec/omxil/omxil.c
++++ b/modules/codec/omxil/omxil.c
+@@ -1275,6 +1275,11 @@ static int OpenGeneric( vlc_object_t *p_this, bool b_encode )
+     if (!p_sys->b_use_pts)
+         msg_Dbg( p_dec, "using dts timestamp mode for %s", p_sys->psz_component);
+ 
++    if( p_dec->fmt_in.i_cat != VIDEO_ES )
++        var_SetString( p_dec, "module-audio-decoder-impl", p_sys->psz_component );
++    else
++        var_SetString( p_dec, "module-video-decoder-impl", p_sys->psz_component );
++
+     return VLC_SUCCESS;
+ 
+  error:
+-- 
+2.1.3
+

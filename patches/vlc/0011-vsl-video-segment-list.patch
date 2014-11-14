@@ -1,7 +1,7 @@
-From 1a397f82b8bf97d0d6338cd8d945bf91e3da96cc Mon Sep 17 00:00:00 2001
+From 1e3113bf6e1c4b05a6518e1cabc72791dde235b3 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Fri, 31 Oct 2014 11:04:28 +0800
-Subject: [PATCH 11/19] vsl: video segment list
+Subject: [PATCH 11/20] vsl: video segment list
 
 ---
  modules/access/vsl/index.c   | 878 ++++++++++++++++++++++++++++++++++++++++++

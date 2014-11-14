@@ -1,7 +1,7 @@
-From bb3ec42f4c67ae9ff482360f6c64d983db1b7ac8 Mon Sep 17 00:00:00 2001
+From b55382ae2bbd446a8414a7c923731b42167833f1 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Fri, 9 May 2014 00:40:32 +0800
-Subject: [PATCH 18/19] es_out: change input underrun behaviour
+Subject: [PATCH 18/20] es_out: change input underrun behaviour
 
 When input is underrun VLC drops all data and flushes decoders.
 This patch attempts to not dropping any data. Instead, it stops decoders when input is underrun.
