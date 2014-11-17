@@ -1,4 +1,4 @@
-From fa79e1754ab29962f69e6d20c854ed9dafc74eaf Mon Sep 17 00:00:00 2001
+From a223e8bae2642af32077f2469d281279d2acd79f Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 23 Oct 2014 16:57:51 +0800
 Subject: [PATCH 06/11] libvlcjni_danmaku.c: another JNI wrapper
@@ -11,14 +11,14 @@ Subject: [PATCH 06/11] libvlcjni_danmaku.c: another JNI wrapper
  vlc-android/jni/jni_libvlc.h                   |  38 ++
  vlc-android/jni/jni_libvlcevent.c              |  92 +++
  vlc-android/jni/jni_libvlcevent.h              |  32 +
- vlc-android/jni/jni_vsl.c                      | 300 ++++++++++
+ vlc-android/jni/jni_vsl.c                      | 305 ++++++++++
  vlc-android/jni/jni_vsl.h                      |  37 ++
  vlc-android/jni/libvlcjni.c                    |   2 +-
  vlc-android/jni/libvlcjni_danmaku.c            | 777 +++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c |  65 +++
  vlc-android/jni/utils.h                        |   2 +
  vlc-android/jni/vout.c                         |   5 +
- 14 files changed, 1645 insertions(+), 2 deletions(-)
+ 14 files changed, 1650 insertions(+), 2 deletions(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.c
@@ -543,10 +543,10 @@ index 0000000..92e39f2
 +#endif//JNI_LIBVLCEVENT_H
 diff --git a/vlc-android/jni/jni_vsl.c b/vlc-android/jni/jni_vsl.c
 new file mode 100644
-index 0000000..d7b510e
+index 0000000..e76ac51
 --- /dev/null
 +++ b/vlc-android/jni/jni_vsl.c
-@@ -0,0 +1,300 @@
+@@ -0,0 +1,305 @@
 +/*****************************************************************************
 + * jni_vsl.c: video segment list access
 + *****************************************************************************
@@ -696,6 +696,7 @@ index 0000000..d7b510e
 +    }
 +
 +    JavaBundle javaBundle;
++    memset(&javaBundle, 0, sizeof(javaBundle));
 +    jbundle_attach(env, &javaBundle, jbundle);
 +    int ret = jbundle_get_int(env, &javaBundle, BUNDLE_COUNT, -1);
 +    jbundle_destroy(env, &javaBundle);
@@ -728,6 +729,7 @@ index 0000000..d7b510e
 +    char szBuf[BUNDLE_KEY_BUF_SIZE];
 +    sprintf(szBuf, "%d_%s", order, BUNDLE_MRL);
 +    JavaBundle javaBundle;
++    memset(&javaBundle, 0, sizeof(javaBundle));
 +    jbundle_attach(env, &javaBundle, jbundle);
 +    LOGD("do_get_mrl: %s", szBuf);
 +    char *ret = jbundle_get_string(env, &javaBundle, szBuf);
@@ -761,6 +763,7 @@ index 0000000..d7b510e
 +    char szBuf[BUNDLE_KEY_BUF_SIZE];
 +    sprintf(szBuf, "%d_%s", order, BUNDLE_URL);
 +    JavaBundle javaBundle;
++    memset(&javaBundle, 0, sizeof(javaBundle));
 +    jbundle_attach(env, &javaBundle, jbundle);
 +    LOGD("do_get_url: %s", szBuf);
 +    char *ret = jbundle_get_string(env, &javaBundle, szBuf);
@@ -794,6 +797,7 @@ index 0000000..d7b510e
 +    char szBuf[BUNDLE_KEY_BUF_SIZE];
 +    sprintf(szBuf, "%d_%s", order, BUNDLE_DURATION);
 +    JavaBundle javaBundle;
++    memset(&javaBundle, 0, sizeof(javaBundle));
 +    jbundle_attach(env, &javaBundle, jbundle);
 +    LOGD("do_get_duratuon: %s", szBuf);
 +    int ret = jbundle_get_int(env, &javaBundle, szBuf, -1);
@@ -827,6 +831,7 @@ index 0000000..d7b510e
 +    char szBuf[BUNDLE_KEY_BUF_SIZE];
 +    sprintf(szBuf, "%d_%s", order, BUNDLE_BYTES);
 +    JavaBundle javaBundle;
++    memset(&javaBundle, 0, sizeof(javaBundle));
 +    jbundle_attach(env, &javaBundle, jbundle);
 +    LOGD("do_get_bytes: %s", szBuf);
 +    int64_t ret = jbundle_get_long(env, &javaBundle, szBuf, -1);
