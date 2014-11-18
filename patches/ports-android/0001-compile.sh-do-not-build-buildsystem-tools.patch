@@ -1,4 +1,4 @@
-From a957c90056a531ac3247a0b3beaed09bee5ac05b Mon Sep 17 00:00:00 2001
+From 3ab1a3054915445f61845c8a6a819cad86a95d8d Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 23 Oct 2014 14:28:10 +0800
 Subject: [PATCH 01/11] compile.sh: do not build buildsystem tools

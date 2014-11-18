@@ -1,4 +1,4 @@
-From a7169cb589d81df96db3a9bc567e7e1f6491fbe6 Mon Sep 17 00:00:00 2001
+From 1285843b0cc5e7dad1cfa5862f6f51d420eeb983 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 23 Oct 2014 15:44:54 +0800
 Subject: [PATCH 05/11] libvlcjni-util.c: fix leak of Java class local ref

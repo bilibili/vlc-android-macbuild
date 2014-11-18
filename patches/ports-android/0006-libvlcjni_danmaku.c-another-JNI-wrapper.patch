@@ -1,28 +1,24 @@
-From a223e8bae2642af32077f2469d281279d2acd79f Mon Sep 17 00:00:00 2001
+From edc45b1bb8f1d876fce1744a739a1b2ff2a6f9cc Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 23 Oct 2014 16:57:51 +0800
 Subject: [PATCH 06/11] libvlcjni_danmaku.c: another JNI wrapper
 
 ---
  vlc-android/jni/Android.mk                     |   3 +-
- vlc-android/jni/jni_bundle.c                   | 162 ++++++
- vlc-android/jni/jni_bundle.h                   |  60 ++
- vlc-android/jni/jni_libvlc.c                   |  72 +++
- vlc-android/jni/jni_libvlc.h                   |  38 ++
+ vlc-android/jni/jni_bundle.c                   | 163 ++++++
+ vlc-android/jni/jni_bundle.h                   |  61 ++
  vlc-android/jni/jni_libvlcevent.c              |  92 +++
  vlc-android/jni/jni_libvlcevent.h              |  32 +
- vlc-android/jni/jni_vsl.c                      | 305 ++++++++++
+ vlc-android/jni/jni_vsl.c                      | 337 +++++++++++
  vlc-android/jni/jni_vsl.h                      |  37 ++
  vlc-android/jni/libvlcjni.c                    |   2 +-
- vlc-android/jni/libvlcjni_danmaku.c            | 777 +++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c            | 776 +++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c |  65 +++
  vlc-android/jni/utils.h                        |   2 +
  vlc-android/jni/vout.c                         |   5 +
- 14 files changed, 1650 insertions(+), 2 deletions(-)
+ 12 files changed, 1573 insertions(+), 2 deletions(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
- create mode 100644 vlc-android/jni/jni_libvlc.c
- create mode 100644 vlc-android/jni/jni_libvlc.h
  create mode 100644 vlc-android/jni/jni_libvlcevent.c
  create mode 100644 vlc-android/jni/jni_libvlcevent.h
  create mode 100644 vlc-android/jni/jni_vsl.c
@@ -31,7 +27,7 @@ Subject: [PATCH 06/11] libvlcjni_danmaku.c: another JNI wrapper
  create mode 100644 vlc-android/jni/libvlcjni_danmaku_events.inc.c
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 0ce845e..15b3871 100644
+index 0ce845e..a73bf97 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -3,12 +3,13 @@ include $(CLEAR_VARS)
@@ -45,16 +41,16 @@ index 0ce845e..15b3871 100644
  # compat functions not needed after android-21
  LOCAL_SRC_FILES += pthread-condattr.c pthread-rwlocks.c pthread-once.c eventfd.c sem.c pipe2.c
  endif
-+LOCAL_SRC_FILES += jni_bundle.c jni_vsl.c jni_libvlc.c
++LOCAL_SRC_FILES += jni_bundle.c jni_vsl.c
  LOCAL_SRC_FILES += wchar/wcpcpy.c
  LOCAL_SRC_FILES += wchar/wcpncpy.c
  LOCAL_SRC_FILES += wchar/wcscasecmp.c
 diff --git a/vlc-android/jni/jni_bundle.c b/vlc-android/jni/jni_bundle.c
 new file mode 100644
-index 0000000..3722cea
+index 0000000..eacbd0b
 --- /dev/null
 +++ b/vlc-android/jni/jni_bundle.c
-@@ -0,0 +1,162 @@
+@@ -0,0 +1,163 @@
 +/*****************************************************************************
 + * jni_bundle.c
 + *****************************************************************************
@@ -78,6 +74,7 @@ index 0000000..3722cea
 + *****************************************************************************/
 +
 +#include <stdbool.h>
++#include <string.h>
 +
 +#define LOG_TAG "VLC/JNI/jni_bundle"
 +#include "log.h"
@@ -219,10 +216,10 @@ index 0000000..3722cea
 +}
 diff --git a/vlc-android/jni/jni_bundle.h b/vlc-android/jni/jni_bundle.h
 new file mode 100644
-index 0000000..f32054c
+index 0000000..f894b65
 --- /dev/null
 +++ b/vlc-android/jni/jni_bundle.h
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,61 @@
 +/*****************************************************************************
 + * jni_bundle.h
 + *****************************************************************************
@@ -248,7 +245,8 @@ index 0000000..f32054c
 +#ifndef JNI_BUNDLE_H
 +#define JNI_BUNDLE_H
 +
-+#include "jni_libvlc.h"
++#include <jni.h>
++#include <stdint.h>
 +
 +typedef struct {
 +    jobject bundle;
@@ -283,128 +281,6 @@ index 0000000..f32054c
 +char *jbundle_get_string(JNIEnv *env, JavaBundle *p_bundle, const char *key);
 +
 +#endif//JNI_BUNDLE_H
-diff --git a/vlc-android/jni/jni_libvlc.c b/vlc-android/jni/jni_libvlc.c
-new file mode 100644
-index 0000000..a5cf11c
---- /dev/null
-+++ b/vlc-android/jni/jni_libvlc.c
-@@ -0,0 +1,72 @@
-+/*****************************************************************************
-+ * jni_libvlc.c
-+ *****************************************************************************
-+ * Copyright (C) 2012~2014 Zhang Rui
-+ *
-+ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU Lesser General Public License as published by
-+ * the Free Software Foundation; either version 2.1 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
-+ *****************************************************************************/
-+
-+#include "jni_libvlc.h"
-+
-+#define LOG_TAG "VLC/JNI/jni"
-+#include "log.h"
-+
-+#include <pthread.h>
-+
-+extern JavaVM *myVm;
-+
-+static pthread_key_t g_thread_key;
-+static pthread_once_t g_key_once = PTHREAD_ONCE_INIT;
-+
-+static void SDL_AndroidJni_ThreadDestroyed(void* value)
-+{
-+    JNIEnv *env = (JNIEnv*) value;
-+    if (env != NULL) {
-+        (*myVm)->DetachCurrentThread(myVm);
-+        pthread_setspecific(g_thread_key, NULL);
-+    }
-+}
-+
-+static void make_thread_key()
-+{
-+    pthread_key_create(&g_thread_key, SDL_AndroidJni_ThreadDestroyed);
-+}
-+
-+jint SDL_AndroidJni_SetupThreadEnv(JNIEnv **p_env, void *thr_args)
-+{
-+    JavaVM *jvm = myVm;
-+    if (!jvm) {
-+        LOGE("SDL_AndroidJni_GetJvm: AttachCurrentThread: NULL jvm");
-+        return -1;
-+    }
-+
-+    pthread_once(&g_key_once, make_thread_key);
-+
-+    JNIEnv *env = (JNIEnv*) pthread_getspecific(g_thread_key);
-+    if (env) {
-+        *p_env = env;
-+        return 0;
-+    }
-+
-+    if ((*jvm)->AttachCurrentThread(jvm, &env, thr_args) == JNI_OK) {
-+        pthread_setspecific(g_thread_key, env);
-+        *p_env = env;
-+        return 0;
-+    }
-+
-+    return -1;
-+}
-diff --git a/vlc-android/jni/jni_libvlc.h b/vlc-android/jni/jni_libvlc.h
-new file mode 100644
-index 0000000..f33abf0
---- /dev/null
-+++ b/vlc-android/jni/jni_libvlc.h
-@@ -0,0 +1,38 @@
-+/*****************************************************************************
-+ * jni_libvlc.h
-+ *****************************************************************************
-+ * Copyright (C) 2012~2014 Zhang Rui
-+ *
-+ * Author: Rui Zhang <bbcallen _AT_ gmail _DOT_ com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU Lesser General Public License as published by
-+ * the Free Software Foundation; either version 2.1 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
-+ *****************************************************************************/
-+
-+#ifndef JNI_LIBVLC_H
-+#define JNI_LIBVLC_H
-+
-+#include <stdint.h>
-+#include <string.h>
-+#include <jni.h>
-+
-+/* Pointer to the Java virtual machine
-+ * Note: It's okay to use a static variable for the VM pointer since there
-+ * can only be one instance of this shared library in a single VM
-+ */
-+extern JavaVM *myVm;
-+
-+extern jint SDL_AndroidJni_SetupThreadEnv(JNIEnv **p_env, void *thr_args);
-+
-+#endif//JNI_LIBVLC_H
 diff --git a/vlc-android/jni/jni_libvlcevent.c b/vlc-android/jni/jni_libvlcevent.c
 new file mode 100644
 index 0000000..9dc5ecd
@@ -543,10 +419,10 @@ index 0000000..92e39f2
 +#endif//JNI_LIBVLCEVENT_H
 diff --git a/vlc-android/jni/jni_vsl.c b/vlc-android/jni/jni_vsl.c
 new file mode 100644
-index 0000000..e76ac51
+index 0000000..ff185d0
 --- /dev/null
 +++ b/vlc-android/jni/jni_vsl.c
-@@ -0,0 +1,305 @@
+@@ -0,0 +1,337 @@
 +/*****************************************************************************
 + * jni_vsl.c: video segment list access
 + *****************************************************************************
@@ -595,7 +471,11 @@ index 0000000..e76ac51
 +#define BUNDLE_DURATION "duration"
 +#define BUNDLE_BYTES "bytes"
 +
-+static JavaVMAttachArgs g_jvsl_thr_args = {JNI_VERSION_1_2, "vsl-thread", NULL};
++static struct JavaVMAttachArgs g_vsl_attach_args = {
++    .version = JNI_VERSION_1_2,
++    .name = "vsl-thr",
++    .group = NULL,
++};
 +
 +static jobject do_get_bundle(JNIEnv* env, jobject gui)
 +{
@@ -642,13 +522,17 @@ index 0000000..e76ac51
 +
 +int jvsl_load(void *p_cb_data, bool b_force_reload)
 +{
++    int rc;
 +    JNIEnv *env = NULL;
-+    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++
++    rc = (*myVm)->AttachCurrentThread(myVm, &env, &g_vsl_attach_args);
++    if (rc != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
 +        return -1;
 +    }
-+
 +    int ret = do_load(env, p_cb_data, b_force_reload);
++    (*myVm)->DetachCurrentThread(myVm);
++
 +    return ret;
 +}
 +
@@ -676,13 +560,17 @@ index 0000000..e76ac51
 +
 +int jvsl_load_segment(void *p_cb_data, bool b_force_reload, int segment)
 +{
++    int rc;
 +    JNIEnv *env = NULL;
-+    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++
++    rc = (*myVm)->AttachCurrentThread(myVm, &env, &g_vsl_attach_args);
++    if (rc != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
 +        return -1;
 +    }
-+
 +    int ret = do_load_segment(env, p_cb_data, b_force_reload, segment);
++    (*myVm)->DetachCurrentThread(myVm);
++
 +    return ret;
 +}
 +
@@ -707,13 +595,17 @@ index 0000000..e76ac51
 +
 +int jvsl_get_count(void *p_cb_data)
 +{
++    int rc;
 +    JNIEnv *env = NULL;
-+    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++
++    rc = (*myVm)->AttachCurrentThread(myVm, &env, &g_vsl_attach_args);
++    if (rc != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
 +        return -1;
 +    }
-+
 +    int ret = do_get_count(env, p_cb_data);
++    (*myVm)->DetachCurrentThread(myVm);
++
 +    return ret;
 +}
 +
@@ -741,13 +633,17 @@ index 0000000..e76ac51
 +
 +char *jvsl_get_mrl(void *p_cb_data, int order)
 +{
++    int rc;
 +    JNIEnv *env = NULL;
-+    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++
++    rc = (*myVm)->AttachCurrentThread(myVm, &env, &g_vsl_attach_args);
++    if (rc != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
 +        return NULL;
 +    }
-+
 +    char *ret = do_get_mrl(env, p_cb_data, order);
++    (*myVm)->DetachCurrentThread(myVm);
++
 +    return ret;
 +}
 +
@@ -775,13 +671,17 @@ index 0000000..e76ac51
 +
 +char *jvsl_get_url(void *p_cb_data, int order)
 +{
++    int rc;
 +    JNIEnv *env = NULL;
-+    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++
++    rc = (*myVm)->AttachCurrentThread(myVm, &env, &g_vsl_attach_args);
++    if (rc != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
 +        return NULL;
 +    }
-+
 +    char *ret = do_get_url(env, p_cb_data, order);
++    (*myVm)->DetachCurrentThread(myVm);
++
 +    return ret;
 +}
 +
@@ -809,13 +709,17 @@ index 0000000..e76ac51
 +
 +int jvsl_get_duration(void *p_cb_data, int order)
 +{
++    int rc;
 +    JNIEnv *env = NULL;
-+    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++
++    rc = (*myVm)->AttachCurrentThread(myVm, &env, &g_vsl_attach_args);
++    if (rc != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
 +        return -1;
 +    }
-+
 +    int ret = do_get_duratuon(env, p_cb_data, order);
++    (*myVm)->DetachCurrentThread(myVm);
++
 +    return ret;
 +}
 +
@@ -843,13 +747,17 @@ index 0000000..e76ac51
 +
 +int64_t jvsl_get_bytes(void *p_cb_data, int order)
 +{
++    int rc;
 +    JNIEnv *env = NULL;
-+    if (SDL_AndroidJni_SetupThreadEnv(&env, &g_jvsl_thr_args) != 0) {
++    rc = (*myVm)->AttachCurrentThread(myVm, &env, &g_vsl_attach_args);
++
++    if (rc != 0) {
 +        LOGE("Could not attach the jvsl thread to the JVM !");
 +        return -1;
 +    }
-+
 +    int64_t ret = do_get_bytes(env, p_cb_data, order);
++    (*myVm)->DetachCurrentThread(myVm);
++
 +    return ret;
 +}
 diff --git a/vlc-android/jni/jni_vsl.h b/vlc-android/jni/jni_vsl.h
@@ -910,10 +818,10 @@ index 0813d7c..2cc71fe 100644
  
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..cf8eeba
+index 0000000..279536e
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,777 @@
+@@ -0,0 +1,776 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -970,7 +878,6 @@ index 0000000..cf8eeba
 +#define NO_IOMX_DR ""
 +#endif
 +
-+#include "jni_libvlc.h"
 +#include "jni_vsl.h"
 +#include "libvlcjni_danmaku_events.inc.c"
 +

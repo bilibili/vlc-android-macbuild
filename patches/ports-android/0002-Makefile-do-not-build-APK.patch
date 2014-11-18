@@ -1,4 +1,4 @@
-From 990c4278f9800a041ef0c4cc9fc03443e80f9a58 Mon Sep 17 00:00:00 2001
+From 9120ce71f80d885a22ceab2ca76761bae765db51 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 23 Oct 2014 14:31:40 +0800
 Subject: [PATCH 02/11] Makefile: do not build APK

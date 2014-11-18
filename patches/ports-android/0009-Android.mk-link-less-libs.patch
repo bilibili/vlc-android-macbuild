@@ -1,4 +1,4 @@
-From 1492696a3c11264072403ce09b5104443ed67487 Mon Sep 17 00:00:00 2001
+From 07bc186929370e0e4e55adb8d268d8ffffa53eae Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Fri, 31 Oct 2014 11:38:10 +0800
 Subject: [PATCH 09/11] Android.mk: link less libs
@@ -8,7 +8,7 @@ Subject: [PATCH 09/11] Android.mk: link less libs
  1 file changed, 2 insertions(+), 13 deletions(-)
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 15b3871..d92ddaf 100644
+index a73bf97..8a903b1 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -67,19 +67,8 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \

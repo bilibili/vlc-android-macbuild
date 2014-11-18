@@ -1,4 +1,4 @@
-From f34019acf4510f9c13236d0d16b7e6bc24f4c33b Mon Sep 17 00:00:00 2001
+From b60ba3d85ee61b5a8c270d03a165ca7ffa74cb1c Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 6 Nov 2014 12:54:11 +0800
 Subject: [PATCH 11/11] compile.sh: use ffmpeg from ijkplayer
