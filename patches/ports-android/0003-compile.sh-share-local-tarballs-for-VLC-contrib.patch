@@ -1,7 +1,7 @@
-From dd47ec6ad9a220094f023c13ad5d56d9e65ecfb0 Mon Sep 17 00:00:00 2001
+From 00220fa67f77b19c6bce3ddde690f03778d0c603 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 23 Oct 2014 14:34:52 +0800
-Subject: [PATCH 03/11] compile.sh: share local tarballs for VLC contrib
+Subject: [PATCH 03/12] compile.sh: share local tarballs for VLC contrib
 
 ---
  compile.sh | 6 ++++++

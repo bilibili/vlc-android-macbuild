@@ -1,7 +1,7 @@
-From 6d798785783bc7915a110f650c3381cb15621af2 Mon Sep 17 00:00:00 2001
+From 0d519c3c2a6cf095da8909eb52c896d5071879de Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Fri, 31 Oct 2014 11:18:50 +0800
-Subject: [PATCH 08/11] find_modules: correct a name
+Subject: [PATCH 08/12] find_modules: correct a name
 
 ---
  find_modules.sh | 2 +-

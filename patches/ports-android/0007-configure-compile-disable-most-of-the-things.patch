@@ -1,7 +1,7 @@
-From b09861ec1028883d8da55574af48dd2fdf7e9efd Mon Sep 17 00:00:00 2001
+From 0fbf39798414875ca1e8bf5c19f237adacac6096 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Fri, 31 Oct 2014 10:34:32 +0800
-Subject: [PATCH 07/11] configure & compile: disable most of the things
+Subject: [PATCH 07/12] configure & compile: disable most of the things
 
 ---
  compile.sh   | 46 +++++++++++++++++++++++++++++++++++++++++-----

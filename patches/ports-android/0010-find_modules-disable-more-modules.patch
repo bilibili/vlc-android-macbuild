@@ -1,7 +1,7 @@
-From cbb2a5d7de5cdf85de316be67f36c717d2f186bc Mon Sep 17 00:00:00 2001
+From 1acf414c6f2db9dc8f54d7ee06380d0df5bab8a9 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Fri, 31 Oct 2014 11:47:54 +0800
-Subject: [PATCH 10/11] find_modules: disable more modules
+Subject: [PATCH 10/12] find_modules: disable more modules
 
 ---
  find_modules.sh | 101 +++++++++++++++++++++++++++++++++++++++++++++++++++++++-

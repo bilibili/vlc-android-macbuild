@@ -1,7 +1,7 @@
-From 1285843b0cc5e7dad1cfa5862f6f51d420eeb983 Mon Sep 17 00:00:00 2001
+From 8ccc4df69a3d822cbaaf76f2bc7ed31f382ca6fa Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 23 Oct 2014 15:44:54 +0800
-Subject: [PATCH 05/11] libvlcjni-util.c: fix leak of Java class local ref
+Subject: [PATCH 05/12] libvlcjni-util.c: fix leak of Java class local ref
 
 ---
  vlc-android/jni/libvlcjni-util.c | 17 ++++++++++++++---

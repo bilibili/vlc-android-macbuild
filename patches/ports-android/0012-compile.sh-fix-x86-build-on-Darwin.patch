@@ -1,0 +1,53 @@
+From 6630d527a364547c628b70ef477aac396b0066c3 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Thu, 20 Nov 2014 18:56:43 +0800
+Subject: [PATCH 12/12] compile.sh: fix x86 build on Darwin
+
+---
+ compile.sh | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/compile.sh b/compile.sh
+index c037aeb..7afecbb 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -6,6 +6,13 @@
+ 
+ set -e
+ 
++HOST=$(uname -s)
++if [ ${HOST} == "Darwin" ]; then
++    echo "Warning, GNU coreutils required, please brew install coreutils."
++    STAT=gstat
++    TOUCH=gtouch
++    SED=gsed
++fi
+ 
+ if [ -z "$ANDROID_NDK" -o -z "$ANDROID_SDK" ]; then
+    echo "You must define ANDROID_NDK, ANDROID_SDK and ANDROID_ABI before starting."
+@@ -394,7 +401,7 @@ fi
+ 
+ make fetch
+ # We already have zlib available
+-[ -e .zlib ] || (mkdir -p zlib; touch .zlib)
++[ -e .zlib ] || (mkdir -p zlib; ${TOUCH} .zlib)
+ which autopoint >/dev/null || make $MAKEFLAGS .gettext
+ export PATH="$PATH:$PWD/../$TARGET_TUPLE/bin"
+ make $MAKEFLAGS
+@@ -421,10 +428,10 @@ fi
+ # ANDROID NDK FIXUP (BLAME GOOGLE)
+ config_undef ()
+ {
+-    previous_change=`stat -c "%y" config.h`
+-    sed -i 's,#define '$1' 1,/\* #undef '$1' \*/,' config.h
++    previous_change=`${STAT} -c "%y" config.h`
++    ${SED} -i 's,#define '$1' 1,/\* #undef '$1' \*/,' config.h
+     # don't change modified date in order to don't trigger a full build
+-    touch -d "$previous_change" config.h
++    ${TOUCH} -d "$previous_change" config.h
+ }
+ 
+ # if config dependencies change, ./config.status
+-- 
+2.1.3
+

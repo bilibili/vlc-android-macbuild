@@ -1,7 +1,7 @@
-From f11d280d4f7a415821a8180a50be6b50b19a1489 Mon Sep 17 00:00:00 2001
+From 865f7477e0f61ec4f32e81b9918a5334d64478ee Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 23 Oct 2014 14:41:46 +0800
-Subject: [PATCH 04/11] AndroidManifest.xml: minSdkVersion=9
+Subject: [PATCH 04/12] AndroidManifest.xml: minSdkVersion=9
 
 ---
  vlc-android/AndroidManifest.xml | 2 +-

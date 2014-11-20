@@ -1,7 +1,7 @@
-From a5b313fde89a988e16a7962eb835479f390f05bf Mon Sep 17 00:00:00 2001
+From ff1a85cf890a912070b0001070b123b312804aff Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 23 Oct 2014 16:57:51 +0800
-Subject: [PATCH 06/11] libvlcjni_danmaku.c: another JNI wrapper
+Subject: [PATCH 06/12] libvlcjni_danmaku.c: another JNI wrapper
 
 ---
  vlc-android/jni/Android.mk                     |   3 +-
