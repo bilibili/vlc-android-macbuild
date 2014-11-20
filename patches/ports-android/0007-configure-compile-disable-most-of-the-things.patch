@@ -1,4 +1,4 @@
-From 0a95f729135471bf3a9a0a86cd2f90ffcf023c74 Mon Sep 17 00:00:00 2001
+From b09861ec1028883d8da55574af48dd2fdf7e9efd Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Fri, 31 Oct 2014 10:34:32 +0800
 Subject: [PATCH 07/11] configure & compile: disable most of the things

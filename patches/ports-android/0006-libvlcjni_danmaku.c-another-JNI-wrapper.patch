@@ -1,4 +1,4 @@
-From edc45b1bb8f1d876fce1744a739a1b2ff2a6f9cc Mon Sep 17 00:00:00 2001
+From a5b313fde89a988e16a7962eb835479f390f05bf Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 23 Oct 2014 16:57:51 +0800
 Subject: [PATCH 06/11] libvlcjni_danmaku.c: another JNI wrapper
@@ -11,12 +11,13 @@ Subject: [PATCH 06/11] libvlcjni_danmaku.c: another JNI wrapper
  vlc-android/jni/jni_libvlcevent.h              |  32 +
  vlc-android/jni/jni_vsl.c                      | 337 +++++++++++
  vlc-android/jni/jni_vsl.h                      |  37 ++
+ vlc-android/jni/libvlcjni-util.c               |   3 +-
  vlc-android/jni/libvlcjni.c                    |   2 +-
- vlc-android/jni/libvlcjni_danmaku.c            | 776 +++++++++++++++++++++++++
+ vlc-android/jni/libvlcjni_danmaku.c            | 774 +++++++++++++++++++++++++
  vlc-android/jni/libvlcjni_danmaku_events.inc.c |  65 +++
  vlc-android/jni/utils.h                        |   2 +
- vlc-android/jni/vout.c                         |   5 +
- 12 files changed, 1573 insertions(+), 2 deletions(-)
+ vlc-android/jni/vout.c                         |  13 +-
+ 13 files changed, 1577 insertions(+), 7 deletions(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlcevent.c
@@ -803,6 +804,27 @@ index 0000000..527277a
 +int64_t jvsl_get_bytes(void *p_cb_data, int i_order);
 +
 +#endif // JNI_VSL_H
+diff --git a/vlc-android/jni/libvlcjni-util.c b/vlc-android/jni/libvlcjni-util.c
+index b4a4492..54ebae1 100644
+--- a/vlc-android/jni/libvlcjni-util.c
++++ b/vlc-android/jni/libvlcjni-util.c
+@@ -21,6 +21,7 @@
+ #include <dirent.h>
+ #include <errno.h>
+ #include <sys/stat.h>
++#include <unistd.h>
+ 
+ #include <vlc/vlc.h>
+ #include <vlc_common.h>
+@@ -217,7 +218,7 @@ void debug_log(void *data, int level, const libvlc_log_t *ctx, const char *fmt,
+ 
+     /* Add emitting module & type */
+     char* fmt2 = NULL;
+-    if(asprintf(&fmt2, "%s %s: %s", ctx->psz_module, ctx->psz_object_type, fmt) < 0)
++    if(asprintf(&fmt2, "[%d] %s %s: %s", gettid(), ctx->psz_module, ctx->psz_object_type, fmt) < 0)
+         return;
+ 
+     if (buffer_logging) {
 diff --git a/vlc-android/jni/libvlcjni.c b/vlc-android/jni/libvlcjni.c
 index 0813d7c..2cc71fe 100644
 --- a/vlc-android/jni/libvlcjni.c
@@ -818,10 +840,10 @@ index 0813d7c..2cc71fe 100644
  
 diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
 new file mode 100644
-index 0000000..279536e
+index 0000000..c32e8fb
 --- /dev/null
 +++ b/vlc-android/jni/libvlcjni_danmaku.c
-@@ -0,0 +1,776 @@
+@@ -0,0 +1,774 @@
 +/*****************************************************************************
 + * libvlcjni.c
 + *****************************************************************************
@@ -1399,8 +1421,6 @@ index 0000000..279536e
 +                } else {
 +                    libvlc_audio_output_set(mp, aout_name);
 +                }
-+            } else {
-+                libvlc_media_add_option(p_md, p_st); // option
 +            }
 +            (*env)->ReleaseStringUTFChars(env, option, p_st);
 +        }
@@ -1681,7 +1701,7 @@ index f8502d9..182099b 100644
 +
  #endif // LIBVLCJNI_UTILS_H
 diff --git a/vlc-android/jni/vout.c b/vlc-android/jni/vout.c
-index e178bcb..c48e65e 100644
+index e178bcb..d48e520 100644
 --- a/vlc-android/jni/vout.c
 +++ b/vlc-android/jni/vout.c
 @@ -35,6 +35,11 @@ static jobject vout_android_java_surf = NULL;
@@ -1696,6 +1716,26 @@ index e178bcb..c48e65e 100644
  void *jni_LockAndGetSubtitlesSurface() {
      pthread_mutex_lock(&vout_android_lock);
      while (vout_android_subtitles_surf == NULL)
+@@ -44,15 +49,15 @@ void *jni_LockAndGetSubtitlesSurface() {
+ 
+ void *jni_LockAndGetAndroidSurface() {
+     pthread_mutex_lock(&vout_android_lock);
+-    while (vout_android_surf == NULL)
+-        pthread_cond_wait(&vout_android_surf_attached, &vout_android_lock);
++    //while (vout_android_surf == NULL)
++    //    pthread_cond_wait(&vout_android_surf_attached, &vout_android_lock);
+     return vout_android_surf;
+ }
+ 
+ jobject jni_LockAndGetAndroidJavaSurface() {
+     pthread_mutex_lock(&vout_android_lock);
+-    while (vout_android_java_surf == NULL)
+-        pthread_cond_wait(&vout_android_surf_attached, &vout_android_lock);
++    //while (vout_android_java_surf == NULL)
++    //    pthread_cond_wait(&vout_android_surf_attached, &vout_android_lock);
+     return vout_android_java_surf;
+ }
+ 
 -- 
 2.1.3
 

@@ -1,4 +1,4 @@
-From 07bc186929370e0e4e55adb8d268d8ffffa53eae Mon Sep 17 00:00:00 2001
+From 8b849cd0637cbfc8b649a5c96790ff9666a09106 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Fri, 31 Oct 2014 11:38:10 +0800
 Subject: [PATCH 09/11] Android.mk: link less libs
