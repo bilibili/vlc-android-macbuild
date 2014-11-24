@@ -1,0 +1,25 @@
+From c59afc6c99678f55de1c85cc8fddd96183c9581b Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Mon, 24 Nov 2014 16:16:30 +0800
+Subject: [PATCH] jni: compat
+
+---
+ vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c b/vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c
+index ab052f3..37c76f4 100644
+--- a/vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c
++++ b/vlc-android/jni/libvlcjni_danmaku_nativeInitEx.inc.c
+@@ -23,7 +23,7 @@
+ #ifndef LIBVLCJNI_DANMAKU_NATIVEINITEX_INC_C
+ #define LIBVLCJNI_DANMAKU_NATIVEINITEX_INC_C
+ 
+-void Java_org_videolan_libvlc_LibVLC_nativeInitEx(JNIEnv *env, jobject thiz, jboolean verbose, jarray arguments)
++void Java_org_videolan_libvlc_LibVLC_nativeInitEx(JNIEnv *env, jobject thiz, jarray arguments)
+ {
+     libvlc_instance_t *instance = NULL;
+ 
+-- 
+2.1.3
+

@@ -1,0 +1,99 @@
+From eac36e245e46e3759e4032fdbe7f3a9592dc8dfc Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Mon, 24 Nov 2014 15:32:37 +0800
+Subject: [PATCH 4/4] compile.sh: use ffmpeg from ijkplayer
+
+---
+ Makefile                            |  1 +
+ compile.sh                          | 19 +++++++++++++++++++
+ vlc-android/jni/Android.mk          |  7 +++++++
+ vlc-android/jni/libvlcjni_danmaku.c |  4 ++--
+ 4 files changed, 29 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 34d2af6..e90581f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -90,6 +90,7 @@ $(LIBVLCJNI): $(JNI_SOURCES) $(LIBVLCJNI_H) $(PRIVATE_LIBS)
+ 		VLC_CONTRIB="$$VLC_CONTRIB" \
+ 		VLC_BUILD_DIR="$$VLC_BUILD_DIR" \
+ 		VLC_MODULES="$$vlc_modules" \
++		IJKPLAYER="$$IJKPLAYER" \
+ 		NDK_DEBUG=$(NDK_DEBUG) \
+ 		TARGET_CFLAGS="$$VLC_EXTRA_CFLAGS"
+ 
+diff --git a/compile.sh b/compile.sh
+index c264c10..b7de04c 100755
+--- a/compile.sh
++++ b/compile.sh
+@@ -213,6 +213,25 @@ mkdir -p contrib/${TARGET_TUPLE}/lib/pkgconfig
+ gen_pc_file EGL 1.1
+ gen_pc_file GLESv2 2
+ 
++IJKPLAYER=`pwd`/../../../ijkplayer
++if [ -d $IJKPLAYER ]; then
++    IJKFFMPEG=""
++    if [ $ANDROID_ABI = "armeabi-v7a" ]; then
++        IJKFFMPEG=${IJKPLAYER}/android/build/ffmpeg-armv7a/output/shared
++    elif [ $ANDROID_ABI = "armeabi" ]; then
++        IJKFFMPEG=${IJKPLAYER}/android/build/ffmpeg-armv5/output/shared
++    elif [ $ANDROID_ABI = "x86" ]; then
++        IJKFFMPEG=${IJKPLAYER}/android/build/ffmpeg-x86/output/shared
++    else
++        echo "Unknown ABI ${ANDROID_ABI} to ijkplayer"
++        exit 1
++    fi
++    cp ${IJKFFMPEG}/lib/pkgconfig/*.pc contrib/${TARGET_TUPLE}/lib/pkgconfig
++    # find a way to make Android.mk use -L in pkgconfig
++    ln -sf ${IJKFFMPEG}/lib/libijkffmpeg.so contrib/${TARGET_TUPLE}/lib/libijkffmpeg.so
++export IJKPLAYER
++fi
++
+ cd contrib/android
+ ../bootstrap --host=${TARGET_TUPLE} --disable-disc --disable-sout \
+     --disable-dvdread \
+diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
+index 3a83ab7..f955895 100644
+--- a/vlc-android/jni/Android.mk
++++ b/vlc-android/jni/Android.mk
+@@ -44,8 +44,14 @@ LOCAL_C_INCLUDES := $(VLC_SRC_DIR)/include
+ 
+ ifeq ($(ANDROID_ABI), x86)
+     LOCAL_C_INCLUDES += $(VLC_SRC_DIR)/contrib/i686-linux-android/include
++    LOCAL_C_INCLUDES += $(IJKPLAYER)/android/ffmpeg-x86
+ else
+     LOCAL_C_INCLUDES += $(VLC_SRC_DIR)/contrib/arm-linux-androideabi/include
++    ifeq ($(ANDROID_ABI), armeabi-v7a)
++        LOCAL_C_INCLUDES += $(IJKPLAYER)/android/ffmpeg-armv7a
++    else
++        LOCAL_C_INCLUDES += $(IJKPLAYER)/android/ffmpeg-armv5
++    endif
+ endif
+ 
+ ARCH=$(ANDROID_ABI)
+@@ -68,6 +74,7 @@ LOCAL_LDLIBS := -L$(VLC_CONTRIB)/lib \
+ 	$(VLC_BUILD_DIR)/src/.libs/libvlccore.a \
+ 	$(VLC_BUILD_DIR)/compat/.libs/libcompat.a \
+ 	-ldl -lz -lm -llog \
++	-lijkffmpeg \
+ 	-lEGL -lGLESv2
+ 
+ include $(BUILD_SHARED_LIBRARY)
+diff --git a/vlc-android/jni/libvlcjni_danmaku.c b/vlc-android/jni/libvlcjni_danmaku.c
+index 59a5441..7e577b7 100644
+--- a/vlc-android/jni/libvlcjni_danmaku.c
++++ b/vlc-android/jni/libvlcjni_danmaku.c
+@@ -34,8 +34,8 @@
+ 
+ #include <android/api-level.h>
+ 
+-#include "../../vlc/contrib/android/ffmpeg/libavutil/avstring.h"
+-#include "../../vlc/contrib/android/ffmpeg/libavutil/log.h"
++#include <libavutil/avstring.h>
++#include <libavutil/log.h>
+ 
+ #include "libvlcjni.h"
+ #include "aout.h"
+-- 
+2.1.3
+

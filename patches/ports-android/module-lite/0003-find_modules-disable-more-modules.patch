@@ -1,0 +1,131 @@
+From 5ea5332aff7e48765f4ead1f87e999462b84d9a2 Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Fri, 31 Oct 2014 11:47:54 +0800
+Subject: [PATCH 3/4] find_modules: disable more modules
+
+---
+ find_modules.sh | 101 +++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 100 insertions(+), 1 deletion(-)
+
+diff --git a/find_modules.sh b/find_modules.sh
+index 3885799..22f7c37 100755
+--- a/find_modules.sh
++++ b/find_modules.sh
+@@ -9,7 +9,7 @@ fi
+ blacklist="
+ addons.*
+ stats
+-access_(bd|shm|imem)
++access_(bd|shm|imem|mms)
+ oldrc
+ real
+ hotkeys
+@@ -58,6 +58,105 @@ fb
+ aout_file
+ yuv
+ .dummy
++a52
++decom
++ftp
++adpcm
++aes3
++afile
++aiff
++araw
++asf
++attachment
++au
++avi
++caf
++cc
++cdg
++cvdsub
++dash
++decomp
++demux_(cdg|stl)
++demuxdump
++diracsys
++dts
++dummy
++dvbsub
++es
++flacsys
++g711
++gles2
++grey_yuv
++h264
++hevc
++hds
++httplive
++image
++imem
++lpcm
++mjpeg
++mp4
++mpeg_audio
++mpgv
++nsc
++nsv
++nuv
++playlist
++ps
++pva
++rar
++rawaud
++rawdv
++rawvid
++rawvideo
++rtp
++rv32
++scte27
++sdp
++shm
++smooth
++spatializer
++spudec
++stl
++subsdec
++substx3g
++subsusf
++subtitle
++svcdsub
++tcp
++telx
++timecode
++tta
++ty
++udp
++uleaddvaudio
++vc1
++vdr
++vobsub
++voc
++wav
++xa
++zip
++dolby_surround_decoder
++stereo_diden
++adjust
++anaglyph
++antiflicker
++colorthres
++extract
++freeze
++gaussianblur
++gradfun
++hqdn3d
++invert
++logo
++marq
++oldmovie
++rotate
++sepia
++subsdelay
++vhs
++wave
+ "
+ 
+ regexp=
+-- 
+2.1.3
+
