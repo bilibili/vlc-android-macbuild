@@ -1,7 +1,7 @@
-From 3e9bfa3ca16b214dd914bbd9d3773bb0f623b2af Mon Sep 17 00:00:00 2001
+From af3d69a06132b78444042f9874cbb94a14b6b0bc Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sat, 13 Oct 2012 09:18:44 +0800
-Subject: [PATCH 13/16] libvlcjni: another libvlc wrapper
+Subject: [PATCH] libvlcjni: another libvlc wrapper
 
 ---
  vlc-android/jni/Android.mk                         |   6 +-
@@ -11,7 +11,7 @@ Subject: [PATCH 13/16] libvlcjni: another libvlc wrapper
  vlc-android/jni/jni_libvlc.h                       |  38 ++
  vlc-android/jni/jni_libvlcevent.c                  |  92 ++++
  vlc-android/jni/jni_libvlcevent.h                  |  32 ++
- vlc-android/jni/jni_vsl.c                          | 300 +++++++++++
+ vlc-android/jni/jni_vsl.c                          | 305 +++++++++++
  vlc-android/jni/jni_vsl.h                          |  37 ++
  vlc-android/jni/libvlcjni-util.c                   |  17 +-
  vlc-android/jni/libvlcjni_danmaku.c                | 600 +++++++++++++++++++++
@@ -20,7 +20,7 @@ Subject: [PATCH 13/16] libvlcjni: another libvlc wrapper
  vlc-android/jni/libvlcjni_fflog.inc.c              |  71 +++
  vlc-android/jni/utils.h                            |   2 +
  vlc-android/jni/vout.c                             |   9 +
- 16 files changed, 1619 insertions(+), 5 deletions(-)
+ 16 files changed, 1624 insertions(+), 5 deletions(-)
  create mode 100644 vlc-android/jni/jni_bundle.c
  create mode 100644 vlc-android/jni/jni_bundle.h
  create mode 100644 vlc-android/jni/jni_libvlc.c
@@ -35,7 +35,7 @@ Subject: [PATCH 13/16] libvlcjni: another libvlc wrapper
  create mode 100644 vlc-android/jni/libvlcjni_fflog.inc.c
 
 diff --git a/vlc-android/jni/Android.mk b/vlc-android/jni/Android.mk
-index 7e1225b..982f6e2 100644
+index fca8553..8373aa8 100644
 --- a/vlc-android/jni/Android.mk
 +++ b/vlc-android/jni/Android.mk
 @@ -3,8 +3,10 @@ include $(CLEAR_VARS)
@@ -545,10 +545,10 @@ index 0000000..92e39f2
 +#endif//JNI_LIBVLCEVENT_H
 diff --git a/vlc-android/jni/jni_vsl.c b/vlc-android/jni/jni_vsl.c
 new file mode 100644
-index 0000000..d7b510e
+index 0000000..1218f1d
 --- /dev/null
 +++ b/vlc-android/jni/jni_vsl.c
-@@ -0,0 +1,300 @@
+@@ -0,0 +1,305 @@
 +/*****************************************************************************
 + * jni_vsl.c: video segment list access
 + *****************************************************************************
@@ -698,6 +698,7 @@ index 0000000..d7b510e
 +    }
 +
 +    JavaBundle javaBundle;
++    memset(&javaBundle, 0, sizeof(javaBundle));
 +    jbundle_attach(env, &javaBundle, jbundle);
 +    int ret = jbundle_get_int(env, &javaBundle, BUNDLE_COUNT, -1);
 +    jbundle_destroy(env, &javaBundle);
@@ -730,6 +731,7 @@ index 0000000..d7b510e
 +    char szBuf[BUNDLE_KEY_BUF_SIZE];
 +    sprintf(szBuf, "%d_%s", order, BUNDLE_MRL);
 +    JavaBundle javaBundle;
++    memset(&javaBundle, 0, sizeof(javaBundle));
 +    jbundle_attach(env, &javaBundle, jbundle);
 +    LOGD("do_get_mrl: %s", szBuf);
 +    char *ret = jbundle_get_string(env, &javaBundle, szBuf);
@@ -763,6 +765,7 @@ index 0000000..d7b510e
 +    char szBuf[BUNDLE_KEY_BUF_SIZE];
 +    sprintf(szBuf, "%d_%s", order, BUNDLE_URL);
 +    JavaBundle javaBundle;
++    memset(&javaBundle, 0, sizeof(javaBundle));
 +    jbundle_attach(env, &javaBundle, jbundle);
 +    LOGD("do_get_url: %s", szBuf);
 +    char *ret = jbundle_get_string(env, &javaBundle, szBuf);
@@ -796,6 +799,7 @@ index 0000000..d7b510e
 +    char szBuf[BUNDLE_KEY_BUF_SIZE];
 +    sprintf(szBuf, "%d_%s", order, BUNDLE_DURATION);
 +    JavaBundle javaBundle;
++    memset(&javaBundle, 0, sizeof(javaBundle));
 +    jbundle_attach(env, &javaBundle, jbundle);
 +    LOGD("do_get_duratuon: %s", szBuf);
 +    int ret = jbundle_get_int(env, &javaBundle, szBuf, -1);
@@ -829,6 +833,7 @@ index 0000000..d7b510e
 +    char szBuf[BUNDLE_KEY_BUF_SIZE];
 +    sprintf(szBuf, "%d_%s", order, BUNDLE_BYTES);
 +    JavaBundle javaBundle;
++    memset(&javaBundle, 0, sizeof(javaBundle));
 +    jbundle_attach(env, &javaBundle, jbundle);
 +    LOGD("do_get_bytes: %s", szBuf);
 +    int64_t ret = jbundle_get_long(env, &javaBundle, szBuf, -1);
@@ -1797,7 +1802,7 @@ index f8502d9..182099b 100644
 +
  #endif // LIBVLCJNI_UTILS_H
 diff --git a/vlc-android/jni/vout.c b/vlc-android/jni/vout.c
-index 3fed2b9..6038718 100644
+index f2f4346..319e98a 100644
 --- a/vlc-android/jni/vout.c
 +++ b/vlc-android/jni/vout.c
 @@ -34,6 +34,11 @@ static jobject vout_android_java_surf = NULL;
@@ -1833,5 +1838,5 @@ index 3fed2b9..6038718 100644
  }
  
 -- 
-1.9.0
+2.1.3
 
