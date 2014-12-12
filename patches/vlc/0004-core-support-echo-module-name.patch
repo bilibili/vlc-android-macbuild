@@ -1,7 +1,7 @@
-From 40e1110e60dc523cceddc63ffc5315631ee996d8 Mon Sep 17 00:00:00 2001
+From dea89d762d9fab4c5e194e6907a4e636211e4e94 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Sun, 22 Jul 2012 15:42:47 +0800
-Subject: [PATCH 04/20] core: support echo module name
+Subject: [PATCH 04/21] core: support echo module name
 
 ---
  include/vlc/libvlc_events.h |  8 ++++++++

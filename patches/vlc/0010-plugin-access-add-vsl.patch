@@ -1,7 +1,7 @@
-From 5ee6e6ad02db9943095e998935144f8fbecca6b1 Mon Sep 17 00:00:00 2001
+From cc6ed98bc40a8c32ba9235b5562d3bcba967f671 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 17:53:11 +0800
-Subject: [PATCH 10/20] plugin: access: add vsl
+Subject: [PATCH 10/21] plugin: access: add vsl
 
 ---
  modules/access/Makefile.am |  14 ++++

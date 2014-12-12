@@ -1,7 +1,7 @@
-From c6691e698f3a186910b71043806ec203ab02d930 Mon Sep 17 00:00:00 2001
+From 4e4c2c1289498b1d7dae859e92a896c585d3ad98 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Fri, 14 Nov 2014 10:47:23 +0800
-Subject: [PATCH 20/20] omxil: echo name
+Subject: [PATCH 20/21] omxil: echo name
 
 ---
  modules/codec/omxil/omxil.c | 5 +++++

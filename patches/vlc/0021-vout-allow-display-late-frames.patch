@@ -1,0 +1,84 @@
+From 3a9203b5e37081372d9deff14994cadc10f89daf Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Fri, 12 Dec 2014 17:30:03 +0800
+Subject: [PATCH 21/21] vout: allow display late frames
+
+---
+ src/libvlc-module.c              | 7 +++++++
+ src/video_output/video_output.c  | 6 +++++-
+ src/video_output/vout_internal.h | 3 +++
+ 3 files changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/src/libvlc-module.c b/src/libvlc-module.c
+index 539d52e..433604b 100644
+--- a/src/libvlc-module.c
++++ b/src/libvlc-module.c
+@@ -486,6 +486,9 @@ static const char *const ppsz_pos_descriptions[] =
+ #define MOUSE_EVENTS_LONGTEXT N_( \
+     "This enables handling of mouse clicks on the video." )
+ 
++#define DTAD_TEXT N_("Display timeshift adjust")
++#define DTAD_LONGTEXT N_("Display timeshift adjust forces displaying late pictures.")
++
+ /*****************************************************************************
+  * Input
+  ****************************************************************************/
+@@ -1531,6 +1534,10 @@ vlc_module_begin ()
+                  VIDEO_TITLE_POSITION_LONGTEXT, false )
+         change_safe()
+         change_integer_list( pi_pos_values, ppsz_pos_descriptions )
++
++    add_integer( "display-timeshift-adjust", 0, DTAD_TEXT,
++                 DTAD_LONGTEXT, true)
++
+     // autohide after 1 second
+     add_integer( "mouse-hide-timeout", 1000, MOUSE_HIDE_TIMEOUT_TEXT,
+                  MOUSE_HIDE_TIMEOUT_LONGTEXT, false )
+diff --git a/src/video_output/video_output.c b/src/video_output/video_output.c
+index 51a32b7..6e77dfa 100644
+--- a/src/video_output/video_output.c
++++ b/src/video_output/video_output.c
+@@ -187,6 +187,9 @@ static vout_thread_t *VoutCreate(vlc_object_t *object,
+     if (vout->p->input)
+         spu_Attach(vout->p->spu, vout->p->input, true);
+ 
++    /* */
++    vout->p->display_timeshift_adjust = var_InheritInteger(vout, "display-timeshift-adjust");
++
+     return vout;
+ }
+ 
+@@ -1085,7 +1088,7 @@ static int ThreadDisplayPicture(vout_thread_t *vout, mtime_t *deadline)
+         while (!vout->p->displayed.next && !ThreadDisplayPreparePicture(vout, false, frame_by_frame))
+             ;
+ 
+-    const mtime_t date = mdate();
++    const mtime_t date = mdate() + var_InheritInteger(vout, "display-timeshift-adjust");
+     const mtime_t render_delay = vout_chrono_GetHigh(&vout->p->render) + VOUT_MWAIT_TOLERANCE;
+ 
+     bool drop_next_frame = frame_by_frame;
+@@ -1121,6 +1124,7 @@ static int ThreadDisplayPicture(vout_thread_t *vout, mtime_t *deadline)
+             if (date_next != VLC_TS_INVALID && date_next < *deadline)
+                 *deadline = date_next;
+         }
++        msg_Dbg(vout, "late pic not disp, date = %"PRIu64, vout->p->displayed.current->date);
+         return VLC_EGENERIC;
+     }
+ 
+diff --git a/src/video_output/vout_internal.h b/src/video_output/vout_internal.h
+index f6ad269..24989cc 100644
+--- a/src/video_output/vout_internal.h
++++ b/src/video_output/vout_internal.h
+@@ -136,6 +136,9 @@ struct vout_thread_sys_t
+     picture_pool_t  *decoder_pool;
+     picture_fifo_t  *decoder_fifo;
+     vout_chrono_t   render;           /**< picture render time estimator */
++
++    /* */
++    mtime_t display_timeshift_adjust;
+ };
+ 
+ /* TODO to move them to vlc_vout.h */
+-- 
+2.1.3
+

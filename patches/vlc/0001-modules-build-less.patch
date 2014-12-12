@@ -1,7 +1,7 @@
-From f1d3821c87721a26a501800f6cda730bf05826e7 Mon Sep 17 00:00:00 2001
+From 0d4e0646dcbe2e54decb166a874c337d48f259c0 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 6 Nov 2014 12:57:26 +0800
-Subject: [PATCH 01/20] modules: build less
+Subject: [PATCH 01/21] modules: build less
 
 ---
  modules/Makefile.am | 16 ++++++++--------

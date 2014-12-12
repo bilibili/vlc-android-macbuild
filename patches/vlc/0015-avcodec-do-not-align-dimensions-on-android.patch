@@ -1,7 +1,7 @@
-From 33e0f9a4415ae8a792491155f954080b26680bb2 Mon Sep 17 00:00:00 2001
+From cff913a88afa6810330cc9aea6eb4b2c1174f3a4 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Thu, 24 Oct 2013 16:29:21 +0800
-Subject: [PATCH 15/20] avcodec: do not align dimensions on android
+Subject: [PATCH 15/21] avcodec: do not align dimensions on android
 
 ---
  modules/codec/avcodec/video.c | 3 ++-

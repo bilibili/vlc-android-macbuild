@@ -1,7 +1,7 @@
-From b07b6a7e00e9b021a955c1246c1f198d88bcba39 Mon Sep 17 00:00:00 2001
+From bf0b221c6a229dfc1fc4d8e24aaee10b96d6702f Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 4 Sep 2012 14:43:15 +0800
-Subject: [PATCH 09/20] core: add segment resolve api
+Subject: [PATCH 09/21] core: add segment resolve api
 
 ---
  include/vlc/libvlc_media_player.h | 11 +++++++++++
