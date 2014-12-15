@@ -1,4 +1,4 @@
-From c9389bade1a11ed48b39d9388d80ed4030ee29dc Mon Sep 17 00:00:00 2001
+From 3310b0f3462f39bdbecff1dd9034ec49d43c3791 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Fri, 9 May 2014 00:40:32 +0800
 Subject: [PATCH 18/21] es_out: change input underrun behaviour

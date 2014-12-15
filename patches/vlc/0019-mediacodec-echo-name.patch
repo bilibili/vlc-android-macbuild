@@ -1,4 +1,4 @@
-From 1b06cfd772544c9a971defe8719d52ff2de38365 Mon Sep 17 00:00:00 2001
+From 9fc662d83aca36ea007d86cd58429b2bcfddb9d8 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Thu, 13 Feb 2014 12:41:38 +0800
 Subject: [PATCH 19/21] mediacodec: echo name

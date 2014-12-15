@@ -1,0 +1,43 @@
+From 2091f78e43e2f542cb4c6d3fca1ed794369eb35a Mon Sep 17 00:00:00 2001
+From: Ming Hu <tewilove@gmail.com>
+Date: Mon, 15 Dec 2014 17:09:38 +0800
+Subject: [PATCH 21/21] Revert "vout: fix a deadlock with the picture pool
+ lock"
+
+This reverts commit 22c80ce310c58f6730291b4026af9c7c8b38fb63.
+
+There is logic regression in mediacodec.
+Before the commit all decoded frames are displayed regardless PTS.
+The commit has exposed the issue.
+This temporarily fixes frame lost.
+---
+ src/video_output/video_output.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/src/video_output/video_output.c b/src/video_output/video_output.c
+index 51a32b7..e13ead1 100644
+--- a/src/video_output/video_output.c
++++ b/src/video_output/video_output.c
+@@ -1112,7 +1112,6 @@ static int ThreadDisplayPicture(vout_thread_t *vout, mtime_t *deadline)
+         date_refresh = vout->p->displayed.date + VOUT_REDISPLAY_DELAY - render_delay;
+         refresh = date_refresh <= date;
+     }
+-    bool force_refresh = !drop_next_frame && refresh;
+ 
+     if (!first && !refresh && !drop_next_frame) {
+         if (!frame_by_frame) {
+@@ -1134,9 +1133,8 @@ static int ThreadDisplayPicture(vout_thread_t *vout, mtime_t *deadline)
+         return VLC_EGENERIC;
+ 
+     /* display the picture immediately */
+-    bool is_forced = frame_by_frame || force_refresh || vout->p->displayed.current->b_force;
+-    int ret = ThreadDisplayRenderPicture(vout, is_forced);
+-    return force_refresh ? VLC_EGENERIC : ret;
++    bool is_forced = frame_by_frame || (!drop_next_frame && refresh) || vout->p->displayed.current->b_force;
++    return ThreadDisplayRenderPicture(vout, is_forced);
+ }
+ 
+ static void ThreadDisplaySubpicture(vout_thread_t *vout,
+-- 
+2.1.3
+

@@ -1,4 +1,4 @@
-From 51c921de7c6608fb08c2d44376940b839d67d720 Mon Sep 17 00:00:00 2001
+From 7c58ba514fc2fe8a6c80681c751fae339ddb305b Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Tue, 22 Oct 2013 14:36:09 +0800
 Subject: [PATCH 12/21] plugin: stream_filter: add ringbuf, membuf

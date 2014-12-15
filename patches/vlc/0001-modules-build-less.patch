@@ -1,4 +1,4 @@
-From 0d4e0646dcbe2e54decb166a874c337d48f259c0 Mon Sep 17 00:00:00 2001
+From f4a49fe3a18533456ceb5715bf5e7e7225074f97 Mon Sep 17 00:00:00 2001
 From: Ming Hu <tewilove@gmail.com>
 Date: Thu, 6 Nov 2014 12:57:26 +0800
 Subject: [PATCH 01/21] modules: build less

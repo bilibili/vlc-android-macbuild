@@ -1,4 +1,4 @@
-From 87082ad691538e012ed1f72c807cc0ed365710ad Mon Sep 17 00:00:00 2001
+From 87b31f8a075e08c96600bbdf4533ef52ee539c58 Mon Sep 17 00:00:00 2001
 From: bbcallen <bbcallen@gmail.com>
 Date: Fri, 31 May 2013 18:19:47 +0800
 Subject: [PATCH 13/21] ringbuf: support asynchronized ring buffer
