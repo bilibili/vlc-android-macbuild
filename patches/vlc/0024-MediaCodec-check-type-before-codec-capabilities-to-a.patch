@@ -1,7 +1,7 @@
-From 0d94f8e156909fe146a195ff6e1dab56ee598ce2 Mon Sep 17 00:00:00 2001
+From a42c0b37f012c917ac4c6623e22a2dd2279835e6 Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Sun, 4 Jan 2015 15:28:44 +0800
-Subject: [PATCH 24/24] MediaCodec: check type before codec capabilities to
+Subject: [PATCH 24/25] MediaCodec: check type before codec capabilities to
  avoid crash on some devices
 
 ---
@@ -9,10 +9,10 @@ Subject: [PATCH 24/24] MediaCodec: check type before codec capabilities to
  1 file changed, 16 insertions(+), 16 deletions(-)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index cc67701..82c8944 100644
+index c6096b2..161b7a4 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -429,22 +429,6 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -430,22 +430,6 @@ static int OpenDecoder(vlc_object_t *p_this)
              }
          }
  
@@ -35,7 +35,7 @@ index cc67701..82c8944 100644
          jobject types = (*env)->CallObjectMethod(env, info, p_sys->get_supported_types);
          int num_types = (*env)->GetArrayLength(env, types);
          bool found = false;
-@@ -454,6 +438,22 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -455,6 +439,22 @@ static int OpenDecoder(vlc_object_t *p_this)
                  /* The mime type is matching for this component. We
                     now check if the capabilities of the codec is
                     matching the video format. */

@@ -1,17 +1,17 @@
-From 138c9b6df261f895b8e78e75dd7a5a4557a8193f Mon Sep 17 00:00:00 2001
+From e5db4408f036fc01cf4fe97effa8114343d2a2af Mon Sep 17 00:00:00 2001
 From: Zhang Rui <bbcallen@gmail.com>
 Date: Sun, 4 Jan 2015 15:11:33 +0800
-Subject: [PATCH 22/24] MediaCodec: skip codec in black list
+Subject: [PATCH 22/25] MediaCodec: skip codec in black list
 
 ---
- modules/codec/omxil/android_mediacodec.c | 37 ++++++++++++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
+ modules/codec/omxil/android_mediacodec.c | 38 ++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
 
 diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
-index 1313b12..52b57f0 100644
+index 1313b12..ef2478f 100644
 --- a/modules/codec/omxil/android_mediacodec.c
 +++ b/modules/codec/omxil/android_mediacodec.c
-@@ -392,6 +392,43 @@ static int OpenDecoder(vlc_object_t *p_this)
+@@ -392,6 +392,44 @@ static int OpenDecoder(vlc_object_t *p_this)
              continue;
          }
  
@@ -49,6 +49,7 @@ index 1313b12..52b57f0 100644
 +            (*env)->DeleteLocalRef(env, name);
 +            if (skip) {
 +                (*env)->DeleteLocalRef(env, info);
++                continue;
 +            }
 +        }
 +
