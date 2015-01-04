@@ -1,0 +1,30 @@
+From e0da061985ce38112cc54a4b63ee2e9474cc4cc2 Mon Sep 17 00:00:00 2001
+From: Zhang Rui <bbcallen@gmail.com>
+Date: Sun, 4 Jan 2015 15:41:02 +0800
+Subject: [PATCH] MediaCodec: do not drop packet
+
+---
+ modules/codec/omxil/android_mediacodec.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
+index 82c8944..65e00e9 100644
+--- a/modules/codec/omxil/android_mediacodec.c
++++ b/modules/codec/omxil/android_mediacodec.c
+@@ -953,7 +953,12 @@ static picture_t *DecodeVideo(decoder_t *p_dec, block_t **pp_block)
+ 
+     jni_attach_thread(&env, THREAD_NAME);
+ 
+-    if (p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED)) {
++    /* XXX: this is really a flush block from
++     +       DecoderBlockFlushNew() */
++    if ((p_block->i_flags & (BLOCK_FLAG_DISCONTINUITY|BLOCK_FLAG_CORRUPTED)) &&
++        (p_block->i_buffer == 128) &&
++        (p_block->i_dts == VLC_TS_INVALID) &&
++        (p_block->i_pts == VLC_TS_INVALID)) {
+         block_Release(p_block);
+         timestamp_FifoEmpty(p_sys->timestamp_fifo);
+         if (p_sys->decoded) {
+-- 
+2.0.0
+
