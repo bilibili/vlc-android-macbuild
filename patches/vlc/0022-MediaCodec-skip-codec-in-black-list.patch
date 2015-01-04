@@ -1,0 +1,60 @@
+From 138c9b6df261f895b8e78e75dd7a5a4557a8193f Mon Sep 17 00:00:00 2001
+From: Zhang Rui <bbcallen@gmail.com>
+Date: Sun, 4 Jan 2015 15:11:33 +0800
+Subject: [PATCH 22/24] MediaCodec: skip codec in black list
+
+---
+ modules/codec/omxil/android_mediacodec.c | 37 ++++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
+
+diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
+index 1313b12..52b57f0 100644
+--- a/modules/codec/omxil/android_mediacodec.c
++++ b/modules/codec/omxil/android_mediacodec.c
+@@ -392,6 +392,43 @@ static int OpenDecoder(vlc_object_t *p_this)
+             continue;
+         }
+ 
++        {
++            bool skip = false;
++            jobject name = (*env)->CallObjectMethod(env, info, p_sys->get_name);
++            jsize name_len = (*env)->GetStringUTFLength(env, name);
++            const char *name_ptr = (*env)->GetStringUTFChars(env, name, NULL);
++            if (!name_ptr || !*name_ptr) {
++                msg_Dbg(p_dec, "ignore null-name codec\n");
++                skip = true;
++            } else if (name_len >= 4 && 0 != strncmp(name_ptr, "OMX.", 4)) {
++                msg_Dbg(p_dec, "ignore non-standard codec named %.*s\n", name_len, name_ptr);
++                skip = true;
++            } else if (name_len >= 11 &&0 == strncmp(name_ptr, "OMX.google.", 11)) {
++                msg_Dbg(p_dec, "ignore software codec named %.*s\n", name_len, name_ptr);
++                skip = true;
++            } else if (name_len >= 11 &&0 == strncmp(name_ptr, "OMX.ffmpeg.", 11)) {
++                msg_Dbg(p_dec, "ignore software codec named %.*s\n", name_len, name_ptr);
++                skip = true;
++            } else if (name_len >= 14 &&0 == strncmp(name_ptr, "OMX.k3.ffmpeg.", 14)) {
++                msg_Dbg(p_dec, "ignore software codec named %.*s\n", name_len, name_ptr);
++                skip = true;
++            } else if (name_len >= 11 &&0 == strncmp(name_ptr, "OMX.ittiam.", 11)) {
++                msg_Dbg(p_dec, "ignore bad codec named %.*s\n", name_len, name_ptr);
++                skip = true;
++            } else if (name_len >= 8 &&0 == strncmp(name_ptr, "OMX.MTK.", 8)) {
++                msg_Dbg(p_dec, "ignore bad codec named %.*s\n", name_len, name_ptr);
++                skip = true;
++            } else {
++                msg_Dbg(p_dec, "continue check codec named %.*s\n", name_len, name_ptr);
++            }
++
++            (*env)->ReleaseStringUTFChars(env, name, name_ptr);
++            (*env)->DeleteLocalRef(env, name);
++            if (skip) {
++                (*env)->DeleteLocalRef(env, info);
++            }
++        }
++
+         jobject codec_capabilities = (*env)->CallObjectMethod(env, info, p_sys->get_capabilities_for_type,
+                                                               (*env)->NewStringUTF(env, mime));
+         jobject profile_levels = NULL;
+-- 
+2.0.0
+

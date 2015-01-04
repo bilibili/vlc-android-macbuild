@@ -1,0 +1,63 @@
+From 0d94f8e156909fe146a195ff6e1dab56ee598ce2 Mon Sep 17 00:00:00 2001
+From: Zhang Rui <bbcallen@gmail.com>
+Date: Sun, 4 Jan 2015 15:28:44 +0800
+Subject: [PATCH 24/24] MediaCodec: check type before codec capabilities to
+ avoid crash on some devices
+
+---
+ modules/codec/omxil/android_mediacodec.c | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/modules/codec/omxil/android_mediacodec.c b/modules/codec/omxil/android_mediacodec.c
+index cc67701..82c8944 100644
+--- a/modules/codec/omxil/android_mediacodec.c
++++ b/modules/codec/omxil/android_mediacodec.c
+@@ -429,22 +429,6 @@ static int OpenDecoder(vlc_object_t *p_this)
+             }
+         }
+ 
+-        jobject codec_capabilities = (*env)->CallObjectMethod(env, info, p_sys->get_capabilities_for_type,
+-                                                              (*env)->NewStringUTF(env, mime));
+-        jobject profile_levels = NULL;
+-        int profile_levels_len = 0;
+-        if ((*env)->ExceptionOccurred(env)) {
+-            msg_Warn(p_dec, "Exception occurred in MediaCodecInfo.getCapabilitiesForType");
+-            (*env)->ExceptionClear(env);
+-            (*env)->DeleteLocalRef(env, info);
+-            continue;
+-        } else if (codec_capabilities) {
+-            profile_levels = (*env)->GetObjectField(env, codec_capabilities, p_sys->profile_levels_field);
+-            if (profile_levels)
+-                profile_levels_len = (*env)->GetArrayLength(env, profile_levels);
+-        }
+-        msg_Dbg(p_dec, "Number of profile levels: %d", profile_levels_len);
+-
+         jobject types = (*env)->CallObjectMethod(env, info, p_sys->get_supported_types);
+         int num_types = (*env)->GetArrayLength(env, types);
+         bool found = false;
+@@ -454,6 +438,22 @@ static int OpenDecoder(vlc_object_t *p_this)
+                 /* The mime type is matching for this component. We
+                    now check if the capabilities of the codec is
+                    matching the video format. */
++                jobject codec_capabilities = (*env)->CallObjectMethod(env, info, p_sys->get_capabilities_for_type,
++                                                                      (*env)->NewStringUTF(env, mime));
++                jobject profile_levels = NULL;
++                int profile_levels_len = 0;
++                if ((*env)->ExceptionOccurred(env)) {
++                    msg_Warn(p_dec, "Exception occurred in MediaCodecInfo.getCapabilitiesForType");
++                    (*env)->ExceptionClear(env);
++                    (*env)->DeleteLocalRef(env, info);
++                    continue;
++                } else if (codec_capabilities) {
++                    profile_levels = (*env)->GetObjectField(env, codec_capabilities, p_sys->profile_levels_field);
++                    if (profile_levels)
++                        profile_levels_len = (*env)->GetArrayLength(env, profile_levels);
++                }
++                msg_Dbg(p_dec, "Number of profile levels: %d", profile_levels_len);
++
+                 if (p_dec->fmt_in.i_codec == VLC_CODEC_H264 && fmt_profile) {
+                     for (int i = 0; i < profile_levels_len && !found; ++i) {
+                         jobject profile_level = (*env)->GetObjectArrayElement(env, profile_levels, i);
+-- 
+2.0.0
+
