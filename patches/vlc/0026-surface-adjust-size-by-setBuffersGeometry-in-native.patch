@@ -1,0 +1,71 @@
+From 17c5195fbd39f079646bfef3f0d7b4449d3c65e7 Mon Sep 17 00:00:00 2001
+From: xqq <xqq@0ginr.com>
+Date: Thu, 30 Jul 2015 18:24:07 +0800
+Subject: [PATCH] surface: adjust size by setBuffersGeometry in native
+
+---
+ modules/video_output/android/surface.c | 1 +
+ modules/video_output/android/utils.c   | 5 ++++-
+ modules/video_output/android/utils.h   | 2 ++
+ 3 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/modules/video_output/android/surface.c b/modules/video_output/android/surface.c
+index 9ab2f53..00afe26 100644
+--- a/modules/video_output/android/surface.c
++++ b/modules/video_output/android/surface.c
+@@ -411,6 +411,7 @@ static int  AndroidLockSurface(picture_t *picture)
+ 
+     if (info->w != aligned_width || info->h != sh || sys->b_changed_crop) {
+         // input size doesn't match the surface size -> request a resize
++        sys->native_window.setBuffersGeometry(sys->window, aligned_width, sh, info->format);
+         jni_SetAndroidSurfaceSize(aligned_width, sh, sys->fmt.i_visible_width, sys->fmt.i_visible_height, sys->i_sar_num, sys->i_sar_den);
+         // When using ANativeWindow, one should use ANativeWindow_setBuffersGeometry
+         // to set the size and format. In our case, these are set via the SurfaceHolder
+diff --git a/modules/video_output/android/utils.c b/modules/video_output/android/utils.c
+index ed3b905..19a2b4d 100644
+--- a/modules/video_output/android/utils.c
++++ b/modules/video_output/android/utils.c
+@@ -32,16 +32,19 @@ void *LoadNativeWindowAPI(native_window_api_t *native)
+         (ptr_ANativeWindow_fromSurface)(dlsym(p_library, "ANativeWindow_fromSurface"));
+     native->winRelease =
+         (ptr_ANativeWindow_release)(dlsym(p_library, "ANativeWindow_release"));
++    native->setBuffersGeometry =
++        (ptr_ANativeWindow_setBuffersGeometry)(dlsym(p_library, "ANativeWindow_setBuffersGeometry"));
+     native->winLock =
+         (ptr_ANativeWindow_lock)(dlsym(p_library, "ANativeWindow_lock"));
+     native->unlockAndPost =
+         (ptr_ANativeWindow_unlockAndPost)(dlsym(p_library, "ANativeWindow_unlockAndPost"));
+ 
+-    if (native->winFromSurface && native->winRelease && native->winLock && native->unlockAndPost)
++    if (native->winFromSurface && native->winRelease && native->setBuffersGeometry && native->winLock && native->unlockAndPost)
+         return p_library;
+ 
+     native->winFromSurface = NULL;
+     native->winRelease = NULL;
++    native->setBuffersGeometry = NULL;
+     native->winLock = NULL;
+     native->unlockAndPost = NULL;
+ 
+diff --git a/modules/video_output/android/utils.h b/modules/video_output/android/utils.h
+index e78c688..0274f74 100644
+--- a/modules/video_output/android/utils.h
++++ b/modules/video_output/android/utils.h
+@@ -33,6 +33,7 @@
+ 
+ typedef ANativeWindow* (*ptr_ANativeWindow_fromSurface)(JNIEnv*, jobject);
+ typedef void (*ptr_ANativeWindow_release)(ANativeWindow*);
++typedef int32_t (*ptr_ANativeWindow_setBuffersGeometry)(ANativeWindow*, int32_t, int32_t, int32_t);
+ typedef int32_t (*ptr_ANativeWindow_lock)(ANativeWindow*, ANativeWindow_Buffer*, ARect*);
+ typedef void (*ptr_ANativeWindow_unlockAndPost)(ANativeWindow*);
+ 
+@@ -40,6 +41,7 @@ typedef struct
+ {
+     ptr_ANativeWindow_fromSurface winFromSurface;
+     ptr_ANativeWindow_release winRelease;
++    ptr_ANativeWindow_setBuffersGeometry setBuffersGeometry;
+     ptr_ANativeWindow_lock winLock;
+     ptr_ANativeWindow_unlockAndPost unlockAndPost;
+ } native_window_api_t;
+-- 
+2.3.4
+
